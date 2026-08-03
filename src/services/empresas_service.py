@@ -7,7 +7,7 @@ class EmpresasService:
 
     @staticmethod
     def obtener_todas():
-        """Obtiene la lista de empresas registradas."""
+        """Obtiene la lista de empresas registradas desde la base de datos MySQL."""
         data, error = APIClient.get('/empresas/')
         if error:
             print(f"Error al obtener empresas: {error}")
@@ -22,6 +22,11 @@ class EmpresasService:
             print(f"Error al obtener empresa {empresa_id}: {error}")
             return None
         return data
+
+    @staticmethod
+    def crear(datos_empresa):
+        """Crea y registra una nueva empresa en el Backend."""
+        return APIClient.post('/empresas/', data=datos_empresa)
 
     @staticmethod
     def actualizar(empresa_id, datos_empresa):

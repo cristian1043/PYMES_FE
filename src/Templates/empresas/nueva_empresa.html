@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Nueva Empresa - PYMES.SOFT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 15px;
+        }
+        .card-custom {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            width: 100%;
+            max-width: 550px;
+            background-color: #ffffff;
+        }
+        .card-header-custom {
+            background-color: #0f2b5c;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card-custom">
+    <div class="card-header-custom">
+        <h3 class="mb-0 font-weight-bold">🏢 Registrar Nueva Empresa</h3>
+        <p class="text-white-50 mb-0 mt-1">Crea un nuevo espacio de trabajo empresarial</p>
+    </div>
+    <div class="card-body p-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} text-center" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('empresas.nueva_empresa') }}" method="POST">
+            <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                    <label for="nombre" class="font-weight-bold">Nombre de la Empresa *</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required minlength="3" placeholder="Ej: Empresa Los Laureles S.A.S.">
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                    <label for="nit" class="font-weight-bold">NIT / Identificación *</label>
+                    <input type="text" class="form-control" id="nit" name="nit" required pattern="[0-9.\-]{5,20}" placeholder="900.555.777-1">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                    <label for="telefono" class="font-weight-bold">Teléfono de Contacto</label>
+                    <input type="tel" class="form-control" id="telefono" name="telefono" pattern="[0-9+\s\-]{7,15}" placeholder="+57 300 9998877">
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                    <label for="email" class="font-weight-bold">Correo Electrónico</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="contacto@laureles.com">
+                </div>
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="direccion" class="font-weight-bold">Dirección Fiscal / Sede</label>
+                <input type="text" class="form-control" id="direccion" name="direccion" placeholder="Calle 50 #12-34">
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('auth.seleccionar_empresa') }}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary px-4 font-weight-bold">Registrar Empresa</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

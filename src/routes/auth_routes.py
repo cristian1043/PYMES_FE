@@ -1,31 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from src.services.auth_service import AuthService
+from src.services.empresas_service import EmpresasService
 
 auth_bp = Blueprint('auth', __name__)
-
-# Lista de empresas de demostración con estados por usuario
-EMPRESAS_DISPONIBLES = [
-    {
-        'id': 1,
-        'nombre': 'Empresa Chaneques S.A.S.',
-        'nit': '900.123.456-1',
-        'rol_id': 1,
-        'rol_nombre': 'Administrador',
-        'estado': 'Activo',
-        'icono': '🏢',
-        'color': '#1e3c72'
-    },
-    {
-        'id': 2,
-        'nombre': 'Empresa La Vainilla S.A.S.',
-        'nit': '900.654.321-2',
-        'rol_id': 2,
-        'rol_nombre': 'Vendedor',
-        'estado': 'Activo',
-        'icono': '🏬',
-        'color': '#2a5298'
-    }
-]
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -42,14 +19,26 @@ def login():
         if error:
             flash(error, "danger")
         else:
+            # Obtener el rol real del usuario desde la base de datos
+            real_rol_id = int(usuario.get('id_rol', 2))
+            estado_usuario = usuario.get('estado', 'Activo')
+
+            if estado_usuario == 'Desvinculado':
+                flash("Acceso Denegado: Tu cuenta ha sido desvinculada por el Administrador.", "danger")
+                return redirect(url_for('auth.login'))
+
             session['usuario'] = {
                 'id': usuario.get('id'),
                 'nombre': f"{usuario.get('nombre', '')} {usuario.get('apellido', '')}".strip(),
                 'email': usuario.get('email'),
-                'rol_id': usuario.get('id_rol', 1),
-                'estado_global': usuario.get('estado', 'Activo')
+                'rol_id': real_rol_id,
+                'estado': estado_usuario
             }
-            session['empresas'] = EMPRESAS_DISPONIBLES
+            
+            # Obtener las empresas reales almacenadas en la base de datos MySQL
+            empresas_db = EmpresasService.obtener_todas()
+            session['empresas'] = empresas_db
+            
             flash(f"¡Bienvenido/a {session['usuario']['nombre']}!", "success")
             return redirect(url_for('auth.seleccionar_empresa'))
 
@@ -57,36 +46,35 @@ def login():
 
 @auth_bp.route('/seleccionar_empresa', methods=['GET'])
 def seleccionar_empresa():
-    """Pantalla de selección de empresas que muestra únicamente espacios de trabajo activos."""
+    """Pantalla con tarjetas para elegir en qué empresa trabajar."""
     if 'usuario' not in session:
         return redirect(url_for('auth.login'))
 
-    empresas_todas = session.get('empresas', EMPRESAS_DISPONIBLES)
-    
-    # Filtrar únicamente las empresas donde la vinculación del usuario esté Activa
-    empresas_activas = [e for e in empresas_todas if e.get('estado', 'Activo') == 'Activo']
-
-    return render_template('seleccionar_empresa.html', empresas=empresas_activas)
+    # Consultar empresas reales en el Backend
+    empresas = EmpresasService.obtener_todas()
+    session['empresas'] = empresas
+    return render_template('seleccionar_empresa.html', empresas=empresas)
 
 @auth_bp.route('/seleccionar_empresa/<int:empresa_id>', methods=['GET'])
 def activar_empresa(empresa_id):
-    """Activa el espacio de trabajo de la empresa seleccionada si está vinculado."""
+    """Establece la empresa activa en la sesión respetando el rol del usuario."""
     if 'usuario' not in session:
         return redirect(url_for('auth.login'))
 
-    empresas = session.get('empresas', EMPRESAS_DISPONIBLES)
+    empresas = EmpresasService.obtener_todas()
     empresa_seleccionada = next((e for e in empresas if e['id'] == empresa_id), None)
 
     if not empresa_seleccionada:
         flash("La empresa seleccionada no existe.", "danger")
         return redirect(url_for('auth.seleccionar_empresa'))
 
-    if empresa_seleccionada.get('estado') == 'Desvinculado':
-        flash("Acceso Denegado: Tu cuenta ha sido desvinculada del espacio de trabajo de esta empresa.", "danger")
-        return redirect(url_for('auth.seleccionar_empresa'))
-
+    # Mantener el rol real del usuario logueado en la sesión
     session['empresa_activa'] = empresa_seleccionada
-    session['usuario']['rol_id'] = empresa_seleccionada['rol_id']
+    # Asignar rol_nombre legible para la interfaz
+    rol_id = session['usuario']['rol_id']
+    roles_nombres = {1: 'Administrador', 2: 'Vendedor', 3: 'Almacenista'}
+    session['empresa_activa']['rol_nombre'] = roles_nombres.get(rol_id, 'Vendedor')
+    session['empresa_activa']['icono'] = '🏢'
 
     flash(f"Entraste a trabajar en {empresa_seleccionada['nombre']}", "info")
     return redirect(url_for('index'))
@@ -107,7 +95,7 @@ def register():
             'email': request.form.get('email'),
             'username': request.form.get('username') or request.form.get('email').split('@')[0],
             'password_hash': request.form.get('password'),
-            'id_rol': int(request.form.get('id_rol', 1)),
+            'id_rol': int(request.form.get('id_rol', 2)),
             'estado': 'Activo'
         }
 

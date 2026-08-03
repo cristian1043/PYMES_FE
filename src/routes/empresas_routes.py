@@ -4,6 +4,27 @@ from src.utils.decorators import requiere_rol
 
 empresas_bp = Blueprint('empresas', __name__, url_prefix='/empresa')
 
+@empresas_bp.route('/nueva', methods=['GET', 'POST'])
+def nueva_empresa():
+    """Formulario para crear y registrar una nueva empresa en la base de datos."""
+    if request.method == 'POST':
+        data = {
+            'nombre': request.form.get('nombre'),
+            'nit': request.form.get('nit'),
+            'direccion': request.form.get('direccion'),
+            'telefono': request.form.get('telefono'),
+            'email': request.form.get('email')
+        }
+
+        res, err = EmpresasService.crear(data)
+        if err:
+            flash(f"Error al registrar la empresa: {err}", "danger")
+        else:
+            flash("¡Nueva empresa registrada exitosamente en el sistema!", "success")
+            return redirect(url_for('auth.seleccionar_empresa'))
+
+    return render_template('empresas/nueva_empresa.html')
+
 @empresas_bp.route('/configuracion', methods=['GET', 'POST'])
 @requiere_rol(1) # Exclusivo para Administrador
 def configuracion():

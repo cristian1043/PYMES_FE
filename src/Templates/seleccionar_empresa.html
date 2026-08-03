@@ -70,26 +70,31 @@
       {% endif %}
     {% endwith %}
 
-    <div class="row justify-content-center">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0 text-dark font-weight-bold">Empresas Disponibles</h4>
+        <a href="{{ url_for('empresas.nueva_empresa') }}" class="btn btn-success font-weight-bold">+ Registrar Nueva Empresa</a>
+    </div>
+
+    <div class="row">
         {% for emp in empresas %}
-        <div class="col-md-5 col_lg_4 mb-4">
+        <div class="col-md-4 mb-4">
             <div class="card company-card h-100">
                 <div class="card-banner">
-                    {{ emp.icono }}
+                    {{ emp.get('icono', '🏢') }}
                 </div>
                 <div class="card-body d-flex flex-column justify-content-between text-center">
                     <div>
                         <h4 class="card-title font-weight-bold text-dark mb-1">{{ emp.nombre }}</h4>
                         <p class="text-muted small mb-3">NIT: {{ emp.nit }}</p>
-                        
+
                         <div class="mb-4">
-                            <span class="text-muted small">Tu Rol en esta empresa:</span><br>
-                            {% if emp.rol_id == 1 %}
-                                <span class="badge badge-primary p-2 mt-1">👑 {{ emp.rol_nombre }}</span>
-                            {% elif emp.rol_id == 3 %}
-                                <span class="badge badge-warning p-2 mt-1">📦 {{ emp.rol_nombre }}</span>
+                            <span class="text-muted small">Tu Perfil en el Sistema:</span><br>
+                            {% if session['usuario']['rol_id'] == 1 %}
+                                <span class="badge badge-primary p-2 mt-1">👑 Administrador</span>
+                            {% elif session['usuario']['rol_id'] == 3 %}
+                                <span class="badge badge-warning p-2 mt-1">📦 Almacenista</span>
                             {% else %}
-                                <span class="badge badge-info p-2 mt-1">🏷️ {{ emp.rol_nombre }}</span>
+                                <span class="badge badge-info p-2 mt-1">🏷️ Vendedor</span>
                             {% endif %}
                         </div>
                     </div>
@@ -99,6 +104,11 @@
                     </a>
                 </div>
             </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted lead">No hay empresas registradas aún en el sistema.</p>
+            <a href="{{ url_for('empresas.nueva_empresa') }}" class="btn btn-primary font-weight-bold">+ Crear la Primera Empresa</a>
         </div>
         {% endfor %}
     </div>
