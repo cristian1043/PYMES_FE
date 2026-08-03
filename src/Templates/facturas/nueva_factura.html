@@ -12,22 +12,24 @@
                     <form action="{{ url_for('facturas.nueva_factura') }}" method="POST">
                         <div class="row">
                             <div class="col-md-6 form-group mb-3">
-                                <label for="numero">Número de Factura *</label>
+                                <label for="numero" class="font-weight-bold">Número de Factura *</label>
                                 <input type="text" class="form-control" id="numero" name="numero" required minlength="3" placeholder="FAC-001">
                             </div>
                             <div class="col-md-6 form-group mb-3">
-                                <label for="id_cliente">Cliente *</label>
-                                <select class="form-control" id="id_cliente" name="id_cliente" required>
-                                    <option value="">-- Seleccionar Cliente --</option>
+                                <label for="cliente_search" class="font-weight-bold">Buscar Cliente (por Cédula / NIT / Nombre) *</label>
+                                <input type="text" list="lista_clientes" class="form-control" id="cliente_search" placeholder="Escribe documento o nombre..." autocomplete="off" required>
+                                <input type="hidden" name="id_cliente" id="id_cliente" required>
+                                <datalist id="lista_clientes">
                                     {% for cli in clientes %}
-                                        <option value="{{ cli.id }}">{{ cli.tipo_documento }} {{ cli.documento }} - {{ cli.nombre }} {{ cli.apellido }}</option>
+                                        <option data-id="{{ cli.id }}" value="{{ cli.tipo_documento }} {{ cli.documento }} - {{ cli.nombre }} {{ cli.apellido }}"></option>
                                     {% endfor %}
-                                </select>
+                                </datalist>
+                                <small class="form-text text-muted">A medida que escribas la cédula o el nombre, se filtrarán los clientes al instante.</small>
                             </div>
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="id_metodo_pago">Método de Pago *</label>
+                            <label for="id_metodo_pago" class="font-weight-bold">Método de Pago *</label>
                             <select class="form-control" id="id_metodo_pago" name="id_metodo_pago" required>
                                 <option value="">-- Seleccionar Método de Pago --</option>
                                 {% for m in metodos_pago %}
@@ -42,15 +44,15 @@
 
                         <div class="row">
                             <div class="col-md-4 form-group mb-3">
-                                <label for="subtotal">Subtotal ($) *</label>
+                                <label for="subtotal" class="font-weight-bold">Subtotal ($) *</label>
                                 <input type="number" step="0.01" min="0.01" class="form-control" id="subtotal" name="subtotal" required placeholder="0.00">
                             </div>
                             <div class="col-md-4 form-group mb-3">
-                                <label for="iva">IVA ($)</label>
+                                <label for="iva" class="font-weight-bold">IVA ($)</label>
                                 <input type="number" step="0.01" min="0" class="form-control" id="iva" name="iva" value="0.00">
                             </div>
                             <div class="col-md-4 form-group mb-3">
-                                <label for="descuento">Descuento ($)</label>
+                                <label for="descuento" class="font-weight-bold">Descuento ($)</label>
                                 <input type="number" step="0.01" min="0" class="form-control" id="descuento" name="descuento" value="0.00">
                             </div>
                         </div>
@@ -65,4 +67,21 @@
         </div>
     </div>
 </div>
+
+<script>
+    // JavaScript en tiempo real para enlazar el autocompletado del buscador con el ID de cliente
+    document.getElementById('cliente_search').addEventListener('input', function() {
+        var valorIngresado = this.value;
+        var opciones = document.getElementById('lista_clientes').options;
+        var hiddenInput = document.getElementById('id_cliente');
+        
+        hiddenInput.value = "";
+        for (var i = 0; i < opciones.length; i++) {
+            if (opciones[i].value === valorIngresado) {
+                hiddenInput.value = opciones[i].getAttribute('data-id');
+                break;
+            }
+        }
+    });
+</script>
 {% endblock %}
