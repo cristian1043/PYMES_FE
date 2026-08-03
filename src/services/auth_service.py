@@ -8,7 +8,8 @@ class AuthService:
     @staticmethod
     def autenticar(identificador, password):
         """
-        Valida las credenciales ingresadas (correo o documento) comparando con la API del Backend.
+        Valida las credenciales globales del usuario (correo o documento) permitiendo el inicio de sesión.
+        El acceso a cada empresa específica se valida a nivel de espacio de trabajo.
         """
         usuarios, error = APIClient.get('/usuarios/')
         if error:
@@ -26,8 +27,6 @@ class AuthService:
             if identificador_clean == user_email or identificador_clean == user_doc:
                 pass_hash = str(user.get('password_hash', ''))
                 if pass_hash == password or pass_hash == password.strip():
-                    if user.get('estado') == 'Desvinculado':
-                        return None, "Acceso Denegado: Tu cuenta se encuentra desvinculada por el Administrador de la empresa."
                     return user, None
                 else:
                     return None, "La contraseña ingresada es incorrecta."
