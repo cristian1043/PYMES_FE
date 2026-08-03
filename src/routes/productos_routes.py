@@ -1,17 +1,20 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from src.services.productos_service import ProductosService
+from src.utils.decorators import requiere_rol
 
 productos_bp = Blueprint('productos', __name__, url_prefix='/productos')
 
 @productos_bp.route('/', methods=['GET'])
+@requiere_rol(1, 2, 3)
 def ver_productos():
-    """Muestra el catálogo / tabla de productos."""
+    """Muestra el catálogo / tabla de productos (Todos los empleados activos)."""
     productos = ProductosService.obtener_todos()
     return render_template('productos/ver_productos.html', productos=productos)
 
 @productos_bp.route('/nuevo', methods=['GET', 'POST'])
+@requiere_rol(1, 3) # Admin y Almacenista pueden crear/modificar productos e inventario
 def nuevo_producto():
-    """Formulario y registro de un nuevo producto."""
+    """Formulario y registro de un nuevo producto (Admin y Almacenista)."""
     if request.method == 'POST':
         data = {
             'nombre': request.form.get('nombre'),
