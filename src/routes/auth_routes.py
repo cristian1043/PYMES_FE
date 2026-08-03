@@ -52,32 +52,30 @@ def seleccionar_empresa():
 
     empresas_visibles = []
     for emp in empresas_todas:
-        # Los administradores maestros ven todas las empresas
         if rol_id == 1:
             empresas_visibles.append(emp)
         else:
-            # Consultar el estado independiente del usuario para ESTA empresa en particular
-            estado_empresa = UsuariosService.obtener_estado_en_empresa(usuario_id, emp['id'])
-            if estado_empresa == 'Activo':
+            vinculacion = UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id'])
+            if vinculacion.get('estado', 'Activo') == 'Activo':
                 empresas_visibles.append(emp)
 
     return render_template('seleccionar_empresa.html', empresas=empresas_visibles)
 
 @auth_bp.route('/seleccionar_empresa/<int:empresa_id>', methods=['GET'])
 def activar_empresa(empresa_id):
-    """Establece la empresa activa si el usuario no está desvinculado en ella."""
+    """Establece la empresa activa cargando el rol específico para esa empresa desde MySQL."""
     if 'usuario' not in session:
         return redirect(url_for('auth.login'))
 
     usuario_actual = session['usuario']
     usuario_id = usuario_actual['id']
-    rol_id = usuario_actual['rol_id']
+    rol_id_global = usuario_actual['rol_id']
 
-    if rol_id != 1:
-        estado_empresa = UsuariosService.obtener_estado_en_empresa(usuario_id, empresa_id)
-        if estado_empresa == 'Desvinculado':
-            flash("Acceso Denegado: Tu vinculación en esta empresa ha sido desactivada.", "danger")
-            return redirect(url_for('auth.seleccionar_empresa'))
+    vinculacion = UsuariosService.obtener_vinculacion_empresa(usuario_id, empresa_id)
+
+    if rol_id_global != 1 and vinculacion.get('estado') == 'Desvinculado':
+        flash("Acceso Denegado: Tu vinculación en esta empresa ha sido desactivada.", "danger")
+        return redirect(url_for('auth.seleccionar_empresa'))
 
     empresas = EmpresasService.obtener_todas()
     empresa_seleccionada = next((e for e in empresas if e['id'] == empresa_id), None)
@@ -86,9 +84,13 @@ def activar_empresa(empresa_id):
         flash("La empresa seleccionada no existe.", "danger")
         return redirect(url_for('auth.seleccionar_empresa'))
 
+    # Asignar rol exclusivo de esta empresa para el usuario
+    rol_especifico = vinculacion.get('rol_id', rol_id_global)
+    session['usuario']['rol_id'] = rol_especifico
+
     session['empresa_activa'] = empresa_seleccionada
     roles_nombres = {1: 'Administrador', 2: 'Vendedor', 3: 'Almacenista'}
-    session['empresa_activa']['rol_nombre'] = roles_nombres.get(rol_id, 'Vendedor')
+    session['empresa_activa']['rol_nombre'] = roles_nombres.get(rol_especifico, 'Vendedor')
     session['empresa_activa']['icono'] = '🏢'
 
     flash(f"Entraste a trabajar en {empresa_seleccionada['nombre']}", "info")

@@ -2,7 +2,7 @@ from src.services.api_client import APIClient
 
 class UsuariosService:
     """
-    Servicio para consumir la API de usuarios y vinculaciones multitenant del Backend en MySQL.
+    Servicio para consumir la API de usuarios y vinculaciones multitenant (Rol + Estado independiente por empresa) del Backend en MySQL.
     """
 
     @staticmethod
@@ -24,32 +24,32 @@ class UsuariosService:
         return data
 
     @staticmethod
-    def cambiar_rol(usuario_id, nuevo_rol_id):
-        """Actualiza el rol_id de un usuario específico en el Backend."""
-        usuario = UsuariosService.obtener_por_id(usuario_id)
-        if not usuario:
-            return None, "Usuario no encontrado"
-
-        usuario['id_rol'] = int(nuevo_rol_id)
-        return APIClient.put(f'/usuarios/{usuario_id}', data=usuario)
+    def obtener_vinculacion_empresa(usuario_id, empresa_id):
+        """Obtiene el rol_id y estado exclusivo del usuario para una empresa en la BD MySQL."""
+        data, error = APIClient.get(f'/usuario_empresas/vinculacion?usuario_id={usuario_id}&empresa_id={empresa_id}')
+        if error or not data:
+            return {"rol_id": 2, "estado": "Activo"}
+        return data
 
     @staticmethod
-    def obtener_estado_en_empresa(usuario_id, empresa_id):
-        """Obtiene el estado laboral independiente de la BD MySQL del Backend (/api/usuario_empresas/estado)."""
-        data, error = APIClient.get(f'/usuario_empresas/estado?usuario_id={usuario_id}&empresa_id={empresa_id}')
-        if error or not data:
-            return 'Activo'
-        return data.get('estado', 'Activo')
+    def cambiar_rol_en_empresa(usuario_id, empresa_id, nuevo_rol_id):
+        """Actualiza el rol del usuario de forma 100% exclusiva para esa empresa en la BD MySQL."""
+        payload = {
+            "usuario_id": int(usuario_id),
+            "empresa_id": int(empresa_id),
+            "rol_id": int(nuevo_rol_id)
+        }
+        return APIClient.put('/usuario_empresas/vinculacion', data=payload)
 
     @staticmethod
     def cambiar_estado_en_empresa(usuario_id, empresa_id, nuevo_estado):
-        """Persiste el nuevo estado laboral en la tabla MySQL del Backend (/api/usuario_empresas/estado)."""
+        """Actualiza el estado del usuario de forma 100% exclusiva para esa empresa en la BD MySQL."""
         payload = {
             "usuario_id": int(usuario_id),
             "empresa_id": int(empresa_id),
             "estado": nuevo_estado
         }
-        return APIClient.put('/usuario_empresas/estado', data=payload)
+        return APIClient.put('/usuario_empresas/vinculacion', data=payload)
 
     @staticmethod
     def obtener_roles():

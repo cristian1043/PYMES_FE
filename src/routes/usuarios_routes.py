@@ -8,23 +8,25 @@ usuarios_bp = Blueprint('usuarios', __name__, url_prefix='/usuarios')
 @usuarios_bp.route('/', methods=['GET'])
 @requiere_rol(1) # Exclusivo para Administrador
 def ver_usuarios():
-    """Muestra la tabla de gestión de usuarios calculando el estado exclusivo para la empresa activa."""
+    """Muestra la tabla de gestión de usuarios calculando rol y estado exclusivos para la empresa activa."""
     empresa_activa = session.get('empresa_activa', {})
     empresa_id = empresa_activa.get('id', 1)
 
     usuarios = UsuariosService.obtener_todos()
     roles = UsuariosService.obtener_roles()
 
-    # Asignar el estado independiente específico de esta empresa para cada usuario
+    # Asignar rol y estado independientes para esta empresa a cada usuario
     for u in usuarios:
-        u['estado'] = UsuariosService.obtener_estado_en_empresa(u['id'], empresa_id)
+        vinculacion = UsuariosService.obtener_vinculacion_empresa(u['id'], empresa_id)
+        u['id_rol'] = vinculacion.get('rol_id', u.get('id_rol', 2))
+        u['estado'] = vinculacion.get('estado', 'Activo')
 
     return render_template('usuarios/ver_usuarios.html', usuarios=usuarios, roles=roles)
 
 @usuarios_bp.route('/afiliar', methods=['POST'])
 @requiere_rol(1) # Exclusivo para Administrador
 def afiliar_usuario():
-    """Afilia a un trabajador asegurando estado Activo exclusivo en la empresa activa."""
+    """Afilia a un trabajador guardando su rol y estado Activo exclusivamente en la empresa activa."""
     empresa_activa = session.get('empresa_activa', {})
     empresa_id = empresa_activa.get('id', 1)
 
@@ -59,8 +61,9 @@ def afiliar_usuario():
 
     res, err = AuthService.registrar(datos)
     
-    # Marcar estado Activo específicamente en esta empresa
+    # Vincular rol y estado exclusivamente a esta empresa en la BD MySQL
     if res and 'id' in res:
+        UsuariosService.cambiar_rol_en_empresa(res['id'], empresa_id, id_rol)
         UsuariosService.cambiar_estado_en_empresa(res['id'], empresa_id, 'Activo')
 
     if err:
@@ -73,17 +76,17 @@ def afiliar_usuario():
 @usuarios_bp.route('/cambiar_rol/<int:id>', methods=['POST'])
 @requiere_rol(1)
 def cambiar_rol(id):
-    """Procesa el cambio de rol de un usuario en la base de datos."""
+    """Procesa el cambio de rol exclusivamente para la empresa activa."""
+    empresa_activa = session.get('empresa_activa', {})
+    empresa_id = empresa_activa.get('id', 1)
+
     nuevo_rol_id = request.form.get('id_rol')
     if not nuevo_rol_id:
         flash("Debes seleccionar un rol válido.", "danger")
         return redirect(url_for('usuarios.ver_usuarios'))
 
-    res, err = UsuariosService.cambiar_rol(id, nuevo_rol_id)
-    if err:
-        flash(f"Error al cambiar el rol: {err}", "danger")
-    else:
-        flash("Rol de usuario actualizado exitosamente.", "success")
+    UsuariosService.cambiar_rol_en_empresa(id, empresa_id, nuevo_rol_id)
+    flash("Rol de usuario actualizado exitosamente para esta empresa.", "success")
 
     return redirect(url_for('usuarios.ver_usuarios'))
 
