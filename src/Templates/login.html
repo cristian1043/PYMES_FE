@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - PYMES.SOFT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            width: 100%;
+            max-width: 420px;
+        }
+        .login-header {
+            background-color: #0f2b5c;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .login-header h3 {
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .login-body {
+            padding: 30px;
+            background-color: #ffffff;
+        }
+        .btn-custom {
+            background-color: #1e3c72;
+            color: white;
+            font-weight: 600;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .btn-custom:hover {
+            background-color: #2a5298;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="login-header">
+        <h3>PYMES.SOFT</h3>
+        <p class="text-white-50 mb-0 mt-1">Sistema de Gestión e Inventario</p>
+    </div>
+    <div class="login-body">
+        <!-- MENSAJES DE ALERTA -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('auth.login') }}" method="POST">
+            <div class="form-group mb-3">
+                <label for="identificador" class="font-weight-bold">Correo o Documento</label>
+                <input type="text" class="form-control" id="identificador" name="identificador" required placeholder="ejemplo@pyme.com">
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="password" class="font-weight-bold">Contraseña</label>
+                <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-custom btn-block mb-3">Iniciar Sesión</button>
+
+            <div class="text-center mt-3">
+                <span class="text-muted">¿No tienes una cuenta?</span>
+                <a href="{{ url_for('auth.register') }}" class="font-weight-bold ml-1 text-primary">Regístrate aquí</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

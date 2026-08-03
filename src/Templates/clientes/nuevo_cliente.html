@@ -1,31 +1,56 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <h1 style="color: blue;">Clientes</h1>
-    <div class="container mt-5">
-        <h1>Lista de Clientes</h1>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>Email</th>
-                    <th>Teléfono</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cliente in clientes %}
-                <tr>
-                    <td>{{ cliente.id }}</td>
-                    <td>{{ cliente.nombre }}</td>
-                    <td>{{ cliente.apellido }}</td>
-                    <td>{{ cliente.email }}</td>
-                    <td>{{ cliente.telefono }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Registrar Nuevo Cliente</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('clientes.nuevo_cliente') }}" method="POST">
+                        <div class="row">
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="nombre">Nombre *</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" required minlength="2" maxlength="50" placeholder="Juan">
+                            </div>
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="apellido">Apellido *</label>
+                                <input type="text" class="form-control" id="apellido" name="apellido" required minlength="2" maxlength="50" placeholder="Pérez">
+                            </div>
+                        </div>
 
+                        <div class="row">
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="email">Correo Electrónico *</label>
+                                <input type="email" class="form-control" id="email" name="email" required placeholder="juan.perez@email.com">
+                            </div>
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="telefono">Teléfono *</label>
+                                <input type="tel" class="form-control" id="telefono" name="telefono" required pattern="[0-9+\s\-]{7,15}" title="Solo números, espacios o signo + (mínimo 7 dígitos)" placeholder="+57 300 1234567">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="cedula_runc">Cédula / RUNC / Documento</label>
+                                <input type="text" class="form-control" id="cedula_runc" name="cedula_runc" pattern="[0-9A-Za-z\-]{5,20}" title="Entre 5 y 20 caracteres alfanuméricos" placeholder="1098765432">
+                            </div>
+                            <div class="col-md-6 form-group mb-4">
+                                <label for="direccion">Dirección</label>
+                                <input type="text" class="form-control" id="direccion" name="direccion" placeholder="Carrera 10 #20-30">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('clientes.ver_clientes') }}" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-success">Guardar Cliente</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

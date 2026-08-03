@@ -5,7 +5,8 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'frontend-secret')
-    API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:5001/api')
+    API_BASE_URL = os.getenv('API_BASE_URL', 'http://127.0.0.1:5001/')
+    PORT = int(os.getenv('PORT', 5001))
 
 class DevelopmentConfig(Config):
     DEBUG = True

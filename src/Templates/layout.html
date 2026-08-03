@@ -23,51 +23,135 @@
        
        
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarFacturas" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Facturas
           </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="Nueva_Factura">Nueva Factura</a>
-            <a class="dropdown-item" href="Ver_Factura">Ver Facturas</a>
-            <a class="dropdown-item" href="Detalle_Factura">Detalle Factura</a>
+          <div class="dropdown-menu" aria-labelledby="navbarFacturas">
+            <a class="dropdown-item" href="{{ url_for('facturas.nueva_factura') }}">Nueva Factura</a>
+            <a class="dropdown-item" href="{{ url_for('facturas.ver_facturas') }}">Ver Facturas</a>
           </div>
         </li>
 
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarProductos" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Productos
           </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="Nuevo_Producto">Nuevo Producto</a>
-            <a class="dropdown-item" href="Ver_Producto">Ver Productos</a>
-
+          <div class="dropdown-menu" aria-labelledby="navbarProductos">
+            <a class="dropdown-item" href="{{ url_for('productos.nuevo_producto') }}">Nuevo Producto</a>
+            <a class="dropdown-item" href="{{ url_for('productos.ver_productos') }}">Ver Productos</a>
           </div>
         </li>
+
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarClientes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Clientes
           </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="Nuevo_Clientes">Nuevo Cliente</a>
-            <a class="dropdown-item" href="Ver_Clientes">Ver Clientes</a>
+          <div class="dropdown-menu" aria-labelledby="navbarClientes">
+            <a class="dropdown-item" href="{{ url_for('clientes.nuevo_cliente') }}">Nuevo Cliente</a>
+            <a class="dropdown-item" href="{{ url_for('clientes.ver_clientes') }}">Ver Clientes</a>
           </div>
         </li>
+
         <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarProveedores" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Proveedores
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarProveedores">
+            <a class="dropdown-item" href="{{ url_for('proveedores.nuevo_proveedor') }}">Nuevo Proveedor</a>
+            <a class="dropdown-item" href="{{ url_for('proveedores.ver_proveedores') }}">Ver Proveedores</a>
+          </div>
+        </li>
+
+        {% if session.get('usuario') and session['usuario'].get('rol_id') in [1, 3] %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarCompras" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Compras
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarCompras">
+            <a class="dropdown-item" href="{{ url_for('compras.nueva_compra') }}">Nueva Compra</a>
+            <a class="dropdown-item" href="{{ url_for('compras.ver_compras') }}">Ver Compras</a>
+          </div>
+        </li>
+        {% endif %}
+
+        {% if session.get('usuario') and session['usuario'].get('rol_id') in [1, 3] %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarReportes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Reportes
-        </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="Reporte_Ventas">Reporte de Ventas</a>
-                <a class="dropdown-item" href="Reporte_Clientes">Reporte de Clientes</a>
-              </div>
-         </li>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarReportes">
+            {% if session['usuario'].get('rol_id') == 1 %}
+            <a class="dropdown-item" href="{{ url_for('reportes.reporte_ventas') }}">Reporte de Ventas</a>
+            <a class="dropdown-item" href="{{ url_for('reportes.reporte_clientes') }}">Reporte de Clientes</a>
+            {% endif %}
+            <a class="dropdown-item" href="{{ url_for('reportes.reporte_inventario') }}">Reporte de Inventario</a>
+          </div>
+        </li>
+        {% endif %}
+
+        {% if session.get('usuario') and session['usuario'].get('rol_id') == 1 %}
+        <li class="nav-item">
+          <a class="nav-link font-weight-bold text-primary" href="{{ url_for('usuarios.ver_usuarios') }}">👥 Usuarios</a>
+        </li>
+        {% endif %}
       </ul>
-      <form class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-      </form>
+      {% if session.get('usuario') %}
+      <div class="d-flex align-items-center">
+        {% if session.get('empresa_activa') %}
+        <div class="dropdown mr-3">
+          <button class="btn btn-sm btn-outline-primary dropdown-toggle font-weight-bold" type="button" id="companyDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            {{ session['empresa_activa']['icono'] }} {{ session['empresa_activa']['nombre'] }}
+          </button>
+          <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="companyDropdown">
+            <h6 class="dropdown-header">Cambiar Espacio de Trabajo</h6>
+            {% for emp in session.get('empresas', []) %}
+              <a class="dropdown-item {% if emp.id == session['empresa_activa']['id'] %}active{% endif %}" href="{{ url_for('auth.activar_empresa', empresa_id=emp.id) }}">
+                {{ emp.icono }} {{ emp.nombre }} ({{ emp.rol_nombre }})
+              </a>
+            {% endfor %}
+            <div class="dropdown-divider"></div>
+            {% if session['usuario'].get('rol_id') == 1 %}
+            <a class="dropdown-item text-dark font-weight-bold" href="{{ url_for('empresas.configuracion') }}">
+              ⚙️ Configurar Datos de la Empresa
+            </a>
+            {% endif %}
+            <a class="dropdown-item text-primary font-weight-bold" href="{{ url_for('auth.seleccionar_empresa') }}">
+              🎛️ Ver Panel de Empresas
+            </a>
+          </div>
+        </div>
+        {% endif %}
+
+        <span class="navbar-text mr-3 font-weight-bold text-dark">
+            👤 {{ session['usuario']['nombre'] }}
+            {% if session['usuario'].get('rol_id') == 1 %}
+                <span class="badge badge-primary ml-1">👑 Admin</span>
+            {% elif session['usuario'].get('rol_id') == 3 %}
+                <span class="badge badge-warning ml-1">📦 Almacenista</span>
+            {% else %}
+                <span class="badge badge-info ml-1">🏷️ Vendedor</span>
+            {% endif %}
+        </span>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Cerrar Sesión</a>
+      </div>
+      {% endif %}
     </div>
   </nav>
+
+  <div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
 
 {% block content %}
 {% endblock %}

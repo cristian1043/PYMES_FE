@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleccionar Empresa - PYMES.SOFT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: #f4f6f9;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header-banner {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .company-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            background: #ffffff;
+            overflow: hidden;
+        }
+        .company-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        .card-banner {
+            height: 110px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+        }
+        .btn-enter {
+            background-color: #1e3c72;
+            color: white;
+            font-weight: 600;
+            border-radius: 6px;
+        }
+        .btn-enter:hover {
+            background-color: #2a5298;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-banner text-center mb-5">
+    <div class="container">
+        <h2>Mis Empresas y Espacios de Trabajo</h2>
+        <p class="lead mb-0">Selecciona la empresa con la que deseas trabajar hoy</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- MENSAJES ALERTA -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show text-center mb-4" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="row justify-content-center">
+        {% for emp in empresas %}
+        <div class="col-md-5 col_lg_4 mb-4">
+            <div class="card company-card h-100">
+                <div class="card-banner">
+                    {{ emp.icono }}
+                </div>
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <div>
+                        <h4 class="card-title font-weight-bold text-dark mb-1">{{ emp.nombre }}</h4>
+                        <p class="text-muted small mb-3">NIT: {{ emp.nit }}</p>
+                        
+                        <div class="mb-4">
+                            <span class="text-muted small">Tu Rol en esta empresa:</span><br>
+                            {% if emp.rol_id == 1 %}
+                                <span class="badge badge-primary p-2 mt-1">👑 {{ emp.rol_nombre }}</span>
+                            {% elif emp.rol_id == 3 %}
+                                <span class="badge badge-warning p-2 mt-1">📦 {{ emp.rol_nombre }}</span>
+                            {% else %}
+                                <span class="badge badge-info p-2 mt-1">🏷️ {{ emp.rol_nombre }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('auth.activar_empresa', empresa_id=emp.id) }}" class="btn btn-enter btn-block py-2">
+                        Ingresar al Espacio de Trabajo ➔
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mt-4 mb-5">
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary">Cerrar Sesión Global</a>
+    </div>
+</div>
+
+</body>
+</html>

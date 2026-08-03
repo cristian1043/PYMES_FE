@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Reporte de Inventario y Stock</h2>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-dark shadow">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">Valor Total del Inventario</h6>
+                    <h3 class="font-weight-bold">${{ "%.2f"|format(inventario.valor_total_inventario) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info shadow">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">Total Productos Registrados</h6>
+                    <h3 class="font-weight-bold">{{ inventario.total_productos }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger shadow">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">Productos con Bajo Stock (<= 5)</h6>
+                    <h3 class="font-weight-bold">{{ inventario.productos_bajo_stock }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Control y Alertas de Stock por Producto</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio Unitario</th>
+                        <th>Stock Actual</th>
+                        <th>Valor Total Stock</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in inventario.productos %}
+                    <tr>
+                        <td><strong>{{ p.nombre }}</strong></td>
+                        <td>${{ "%.2f"|format(p.precio) }}</td>
+                        <td>{{ p.stock }}</td>
+                        <td>${{ "%.2f"|format(p.precio * p.stock) }}</td>
+                        <td>
+                            {% if p.stock == 0 %}
+                                <span class="badge badge-danger p-2">Agotado</span>
+                            {% elif p.stock <= 5 %}
+                                <span class="badge badge-warning p-2">Reabastecer Urgente</span>
+                            {% else %}
+                                <span class="badge badge-success p-2">Stock Óptimo</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted p-4">No hay productos en inventario.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

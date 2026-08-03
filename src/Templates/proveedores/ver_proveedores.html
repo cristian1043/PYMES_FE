@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Directorio de Proveedores</h2>
+        <a href="{{ url_for('proveedores.nuevo_proveedor') }}" class="btn btn-primary">+ Nuevo Proveedor</a>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>NIT</th>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prov in proveedores %}
+            <tr>
+                <td>{{ prov.id }}</td>
+                <td><code>{{ prov.nit }}</code></td>
+                <td><strong>{{ prov.nombre }}</strong></td>
+                <td>{{ prov.telefono }}</td>
+                <td>{{ prov.direccion }}</td>
+                <td>{{ prov.email }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">No hay proveedores registrados en el sistema.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

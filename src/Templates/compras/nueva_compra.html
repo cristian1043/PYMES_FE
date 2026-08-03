@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Registrar Nueva Compra</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('compras.nueva_compra') }}" method="POST">
+                        <div class="row">
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="numero">Número de Factura de Compra *</label>
+                                <input type="text" class="form-control" id="numero" name="numero" required minlength="3" placeholder="COM-001">
+                            </div>
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="id_proveedor">Proveedor *</label>
+                                <select class="form-control" id="id_proveedor" name="id_proveedor" required>
+                                    <option value="">-- Seleccionar Proveedor --</option>
+                                    {% for prov in proveedores %}
+                                        <option value="{{ prov.id }}">{{ prov.nombre }} ({{ prov.nit }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 form-group mb-3">
+                                <label for="subtotal">Subtotal ($) *</label>
+                                <input type="number" step="0.01" min="0.01" class="form-control" id="subtotal" name="subtotal" required placeholder="0.00">
+                            </div>
+                            <div class="col-md-4 form-group mb-3">
+                                <label for="iva">IVA ($)</label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="iva" name="iva" value="0.00">
+                            </div>
+                            <div class="col-md-4 form-group mb-3">
+                                <label for="descuento">Descuento ($)</label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="descuento" name="descuento" value="0.00">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('compras.ver_compras') }}" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-success">Guardar Compra</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

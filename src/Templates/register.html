@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta - PYMES.SOFT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 15px;
+        }
+        .register-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            width: 100%;
+            max-width: 540px;
+        }
+        .register-header {
+            background-color: #0f2b5c;
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+        .register-header h3 {
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .register-body {
+            padding: 30px;
+            background-color: #ffffff;
+        }
+        .btn-custom {
+            background-color: #1e3c72;
+            color: white;
+            font-weight: 600;
+            padding: 11px;
+            border-radius: 6px;
+        }
+        .btn-custom:hover {
+            background-color: #2a5298;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="register-card">
+    <div class="register-header">
+        <h3>PYMES.SOFT</h3>
+        <p class="text-white-50 mb-0 mt-1">Registro de Nuevo Usuario</p>
+    </div>
+    <div class="register-body">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('auth.register') }}" method="POST">
+            <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                    <label for="nombre" class="font-weight-bold">Nombre *</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required minlength="2" placeholder="Carlos">
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                    <label for="apellido" class="font-weight-bold">Apellido *</label>
+                    <input type="text" class="form-control" id="apellido" name="apellido" required minlength="2" placeholder="Gómez">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 form-group mb-3">
+                    <label for="tipo_documento" class="font-weight-bold">Tipo Doc. *</label>
+                    <select class="form-control" id="tipo_documento" name="tipo_documento" required>
+                        <option value="CC">CC</option>
+                        <option value="NIT">NIT</option>
+                        <option value="CE">CE</option>
+                        <option value="PAS">Pasaporte</option>
+                    </select>
+                </div>
+                <div class="col-md-8 form-group mb-3">
+                    <label for="documento" class="font-weight-bold">N° Documento *</label>
+                    <input type="text" class="form-control" id="documento" name="documento" required pattern="[0-9A-Za-z\-]{5,20}" title="Documento válido" placeholder="1098765432">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                    <label for="telefono" class="font-weight-bold">Teléfono *</label>
+                    <input type="tel" class="form-control" id="telefono" name="telefono" required pattern="[0-9+\s\-]{7,15}" title="Solo números y signos +" placeholder="+57 300 1234567">
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                    <label for="email" class="font-weight-bold">Correo Electrónico *</label>
+                    <input type="email" class="form-control" id="email" name="email" required placeholder="carlos@pyme.com">
+                </div>
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="password" class="font-weight-bold">Contraseña *</label>
+                <input type="password" class="form-control" id="password" name="password" required minlength="4" placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-custom btn-block mb-3">Crear Cuenta</button>
+
+            <div class="text-center mt-3">
+                <span class="text-muted">¿Ya tienes una cuenta?</span>
+                <a href="{{ url_for('auth.login') }}" class="font-weight-bold ml-1 text-primary">Inicia Sesión aquí</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

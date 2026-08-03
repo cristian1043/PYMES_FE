@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">🏢 Configuración y Datos de la Empresa</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('empresas.configuracion') }}" method="POST">
+                        <div class="row">
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="nombre" class="font-weight-bold">Nombre / Razón Social *</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ empresa.nombre }}" required minlength="3">
+                            </div>
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="nit" class="font-weight-bold">NIT / Identificación Fiscal *</label>
+                                <input type="text" class="form-control" id="nit" name="nit" value="{{ empresa.nit }}" required pattern="[0-9.\-]{5,20}">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="telefono" class="font-weight-bold">Teléfono de Contacto</label>
+                                <input type="tel" class="form-control" id="telefono" name="telefono" value="{{ empresa.get('telefono', '') }}" pattern="[0-9+\s\-]{7,15}">
+                            </div>
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="email" class="font-weight-bold">Correo Electrónico Empresarial</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ empresa.get('email', '') }}">
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="direccion" class="font-weight-bold">Dirección Fiscal / Sede Principal</label>
+                            <input type="text" class="form-control" id="direccion" name="direccion" value="{{ empresa.get('direccion', '') }}">
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver al Inicio</a>
+                            <button type="submit" class="btn btn-success">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

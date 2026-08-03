@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Reporte Financiero de Ventas</h2>
+    </div>
+
+    <!-- TARJETAS DE INDICADORES (KPIs) -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary shadow">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">Total Ventas</h6>
+                    <h3 class="font-weight-bold">${{ "%.2f"|format(resumen.total_ventas) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success shadow">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">Total IVA Recaudado</h6>
+                    <h3 class="font-weight-bold">${{ "%.2f"|format(resumen.iva) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info shadow">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">N° Facturas</h6>
+                    <h3 class="font-weight-bold">{{ resumen.cantidad_facturas }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning shadow">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">Venta Promedio</h6>
+                    <h3 class="font-weight-bold">${{ "%.2f"|format(resumen.promedio_venta) }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA DETALLADA -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Detalle de Facturas Emitidas</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>N° Factura</th>
+                        <th>Fecha</th>
+                        <th>Subtotal</th>
+                        <th>IVA</th>
+                        <th>Descuento</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in resumen.facturas %}
+                    <tr>
+                        <td><code>{{ f.numero }}</code></td>
+                        <td>{{ f.fecha }}</td>
+                        <td>${{ "%.2f"|format(f.subtotal) }}</td>
+                        <td>${{ "%.2f"|format(f.iva) }}</td>
+                        <td>${{ "%.2f"|format(f.descuento) }}</td>
+                        <td><strong>${{ "%.2f"|format(f.total) }}</strong></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted p-4">No hay datos de ventas registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

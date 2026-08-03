@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Catálogo de Productos</h2>
+        <a href="{{ url_for('productos.nuevo_producto') }}" class="btn btn-primary">+ Nuevo Producto</a>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Categoría ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos %}
+            <tr>
+                <td>{{ producto.id }}</td>
+                <td><strong>{{ producto.nombre }}</strong></td>
+                <td>{{ producto.descripcion or 'N/A' }}</td>
+                <td>${{ "%.2f"|format(producto.precio) }}</td>
+                <td>
+                    <span class="badge {% if producto.stock > 5 %}badge-success{% else %}badge-warning{% endif %}">
+                        {{ producto.stock }}
+                    </span>
+                </td>
+                <td>{{ producto.id_categoria or 'Sin Categoría' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">No hay productos registrados en el sistema.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

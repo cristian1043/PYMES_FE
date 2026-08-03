@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Factura N° {{ factura.numero }}</h4>
+            <a href="{{ url_for('facturas.ver_facturas') }}" class="btn btn-sm btn-light">Volver a Facturas</a>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Fecha de Emisión:</strong> {{ factura.fecha }}</p>
+                    <p><strong>Cliente ID:</strong> {{ factura.id_cliente }}</p>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    <p><strong>Método de Pago ID:</strong> {{ factura.id_metodo_pago }}</p>
+                </div>
+            </div>
+
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Concepto</th>
+                        <th class="text-right">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Subtotal</td>
+                        <td class="text-right">${{ "%.2f"|format(factura.subtotal) }}</td>
+                    </tr>
+                    <tr>
+                        <td>IVA</td>
+                        <td class="text-right">${{ "%.2f"|format(factura.iva) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Descuento</td>
+                        <td class="text-right">-${{ "%.2f"|format(factura.descuento) }}</td>
+                    </tr>
+                    <tr class="table-dark text-white">
+                        <th>TOTAL FACTURA</th>
+                        <th class="text-right">${{ "%.2f"|format(factura.total) }}</th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
