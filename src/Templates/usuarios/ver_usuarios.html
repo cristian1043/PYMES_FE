@@ -3,12 +3,16 @@
 {% block content %}
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Gestión de Personal y Roles</h2>
+        <h2>Gestión de Personal y Datos Bancarios</h2>
+        <button type="button" class="btn btn-success font-weight-bold" data-toggle="modal" data-target="#modalAfiliarUsuario">
+            + Afiliar Nuevo Trabajador
+        </button>
     </div>
 
-    <div class="card shadow">
+    <!-- TABLA DE TRABAJADORES CON DATOS BANCARIOS -->
+    <div class="card shadow mb-5">
         <div class="card-header bg-dark text-white">
-            <h5 class="mb-0">Trabajadores y Personal de la Empresa</h5>
+            <h5 class="mb-0">Personal Afiliado a la Empresa</h5>
         </div>
         <div class="card-body p-0">
             <table class="table table-striped table-hover mb-0">
@@ -17,10 +21,10 @@
                         <th>ID</th>
                         <th>Documento</th>
                         <th>Nombre Completo</th>
-                        <th>Correo / Teléfono</th>
-                        <th>Rol Actual</th>
-                        <th>Cambiar Rol</th>
-                        <th>Estado Laboral</th>
+                        <th>Contacto</th>
+                        <th>Datos Bancarios (Nómina)</th>
+                        <th>Rol Asignado</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,12 +35,13 @@
                         <td><strong>{{ u.nombre }} {{ u.apellido }}</strong></td>
                         <td>{{ u.email }}<br><small class="text-muted">{{ u.telefono }}</small></td>
                         <td>
-                            {% if u.id_rol == 1 %}
-                                <span class="badge badge-primary p-2">👑 Administrador</span>
-                            {% elif u.id_rol == 3 %}
-                                <span class="badge badge-warning p-2">📦 Almacenista</span>
+                            {% if u.banco and u.numero_cuenta %}
+                                <span class="badge badge-light border text-dark p-2">
+                                    🏦 <strong>{{ u.banco }}</strong><br>
+                                    <small>{{ u.tipo_cuenta }}: {{ u.numero_cuenta }}</small>
+                                </span>
                             {% else %}
-                                <span class="badge badge-info p-2">🏷️ Vendedor</span>
+                                <span class="text-muted small">⚠️ Sin registrar</span>
                             {% endif %}
                         </td>
                         <td>
@@ -71,5 +76,111 @@
             </table>
         </div>
     </div>
+</div>
+
+<!-- MODAL AFILIAR NUEVO TRABAJADOR -->
+<div class="modal fade" id="modalAfiliarUsuario" tabindex="-1" role="dialog" aria-labelledby="modalAfiliarTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="modalAfiliarTitle">👤 Afiliar Trabajador e Información Bancaria</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{{ url_for('usuarios.afiliar_usuario') }}" method="POST">
+        <div class="modal-body">
+            <h6 class="text-primary font-weight-bold mb-3">1. Datos Personales del Trabajador</h6>
+            <div class="row">
+                <div class="col-md-4 form-group mb-3">
+                    <label for="tipo_documento" class="font-weight-bold">Tipo Doc. *</label>
+                    <select name="tipo_documento" id="tipo_documento" class="form-control" required>
+                        <option value="CC">Cédula de Ciudadanía (CC)</option>
+                        <option value="CE">Cédula de Extranjería (CE)</option>
+                        <option value="NIT">NIT</option>
+                        <option value="PP">Pasaporte</option>
+                    </select>
+                </div>
+                <div class="col-md-8 form-group mb-3">
+                    <label for="documento" class="font-weight-bold">Número de Documento *</label>
+                    <input type="text" name="documento" id="documento" class="form-control" placeholder="Ej: 1043302995" required pattern="[0-9]{5,20}">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                    <label for="nombre" class="font-weight-bold">Nombres *</label>
+                    <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Ej: Carlos" required minlength="2">
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                    <label for="apellido" class="font-weight-bold">Apellidos *</label>
+                    <input type="text" name="apellido" id="apellido" class="form-control" placeholder="Ej: Pérez" required minlength="2">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                    <label for="email" class="font-weight-bold">Correo Electrónico *</label>
+                    <input type="email" name="email" id="email" class="form-control" placeholder="carlos@gmail.com" required>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                    <label for="telefono" class="font-weight-bold">Teléfono de Contacto *</label>
+                    <input type="tel" name="telefono" id="telefono" class="form-control" placeholder="3001234567" required pattern="[0-9]{7,15}">
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6 form-group mb-3">
+                    <label for="id_rol" class="font-weight-bold">Rol Asignado en la Empresa *</label>
+                    <select name="id_rol" id="id_rol" class="form-control" required>
+                        <option value="2">🏷️ Vendedor</option>
+                        <option value="3">📦 Almacenista</option>
+                        <option value="1">👑 Administrador</option>
+                    </select>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                    <label for="password" class="font-weight-bold">Contraseña Inicial de Acceso *</label>
+                    <input type="password" name="password" id="password" class="form-control" required minlength="6" value="123456">
+                </div>
+            </div>
+
+            <hr>
+            <h6 class="text-primary font-weight-bold mb-3">2. Información Bancaria para Día de Pago / Nómina</h6>
+            <div class="row">
+                <div class="col-md-4 form-group mb-3">
+                    <label for="banco" class="font-weight-bold">Entidad Bancaria</label>
+                    <select name="banco" id="banco" class="form-control">
+                        <option value="">-- Seleccionar Banco --</option>
+                        <option value="Bancolombia">Bancolombia</option>
+                        <option value="Davivienda">Davivienda</option>
+                        <option value="Nequi">Nequi</option>
+                        <option value="Daviplata">Daviplata</option>
+                        <option value="Banco de Bogotá">Banco de Bogotá</option>
+                        <option value="BBVA">BBVA</option>
+                        <option value="Banco Agrario">Banco Agrario</option>
+                        <option value="Otro">Otro Banco</option>
+                    </select>
+                </div>
+                <div class="col-md-4 form-group mb-3">
+                    <label for="tipo_cuenta" class="font-weight-bold">Tipo de Cuenta</label>
+                    <select name="tipo_cuenta" id="tipo_cuenta" class="form-control">
+                        <option value="Ahorros">Cuenta de Ahorros</option>
+                        <option value="Corriente">Cuenta Corriente</option>
+                        <option value="Monedero">Monedero Digital (Nequi/Daviplata)</option>
+                    </select>
+                </div>
+                <div class="col-md-4 form-group mb-3">
+                    <label for="numero_cuenta" class="font-weight-bold">Número de Cuenta / Celular</label>
+                    <input type="text" name="numero_cuenta" id="numero_cuenta" class="form-control" placeholder="Ej: 123-456789-00">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-success font-weight-bold">Afiliar Trabajador con Datos Bancarios</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %}

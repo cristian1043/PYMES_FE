@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from src.services.auth_service import AuthService
 from src.services.empresas_service import EmpresasService
+from src.services.usuarios_service import UsuariosService
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -19,23 +20,15 @@ def login():
         if error:
             flash(error, "danger")
         else:
-            # Obtener el rol real del usuario desde la base de datos
             real_rol_id = int(usuario.get('id_rol', 2))
-            estado_usuario = usuario.get('estado', 'Activo')
-
-            if estado_usuario == 'Desvinculado':
-                flash("Acceso Denegado: Tu cuenta ha sido desvinculada por el Administrador.", "danger")
-                return redirect(url_for('auth.login'))
 
             session['usuario'] = {
                 'id': usuario.get('id'),
                 'nombre': f"{usuario.get('nombre', '')} {usuario.get('apellido', '')}".strip(),
                 'email': usuario.get('email'),
-                'rol_id': real_rol_id,
-                'estado': estado_usuario
+                'rol_id': real_rol_id
             }
             
-            # Obtener las empresas reales almacenadas en la base de datos MySQL
             empresas_db = EmpresasService.obtener_todas()
             session['empresas'] = empresas_db
             
@@ -46,20 +39,45 @@ def login():
 
 @auth_bp.route('/seleccionar_empresa', methods=['GET'])
 def seleccionar_empresa():
-    """Pantalla con tarjetas para elegir en qué empresa trabajar."""
+    """Pantalla con tarjetas de empresas filtrando el estado independiente por empresa."""
     if 'usuario' not in session:
         return redirect(url_for('auth.login'))
 
-    # Consultar empresas reales en el Backend
-    empresas = EmpresasService.obtener_todas()
-    session['empresas'] = empresas
-    return render_template('seleccionar_empresa.html', empresas=empresas)
+    usuario_actual = session['usuario']
+    usuario_id = usuario_actual['id']
+    rol_id = usuario_actual['rol_id']
+
+    empresas_todas = EmpresasService.obtener_todas()
+    session['empresas'] = empresas_todas
+
+    empresas_visibles = []
+    for emp in empresas_todas:
+        # Los administradores maestros ven todas las empresas
+        if rol_id == 1:
+            empresas_visibles.append(emp)
+        else:
+            # Consultar el estado independiente del usuario para ESTA empresa en particular
+            estado_empresa = UsuariosService.obtener_estado_en_empresa(usuario_id, emp['id'])
+            if estado_empresa == 'Activo':
+                empresas_visibles.append(emp)
+
+    return render_template('seleccionar_empresa.html', empresas=empresas_visibles)
 
 @auth_bp.route('/seleccionar_empresa/<int:empresa_id>', methods=['GET'])
 def activar_empresa(empresa_id):
-    """Establece la empresa activa en la sesión respetando el rol del usuario."""
+    """Establece la empresa activa si el usuario no está desvinculado en ella."""
     if 'usuario' not in session:
         return redirect(url_for('auth.login'))
+
+    usuario_actual = session['usuario']
+    usuario_id = usuario_actual['id']
+    rol_id = usuario_actual['rol_id']
+
+    if rol_id != 1:
+        estado_empresa = UsuariosService.obtener_estado_en_empresa(usuario_id, empresa_id)
+        if estado_empresa == 'Desvinculado':
+            flash("Acceso Denegado: Tu vinculación en esta empresa ha sido desactivada.", "danger")
+            return redirect(url_for('auth.seleccionar_empresa'))
 
     empresas = EmpresasService.obtener_todas()
     empresa_seleccionada = next((e for e in empresas if e['id'] == empresa_id), None)
@@ -68,10 +86,7 @@ def activar_empresa(empresa_id):
         flash("La empresa seleccionada no existe.", "danger")
         return redirect(url_for('auth.seleccionar_empresa'))
 
-    # Mantener el rol real del usuario logueado en la sesión
     session['empresa_activa'] = empresa_seleccionada
-    # Asignar rol_nombre legible para la interfaz
-    rol_id = session['usuario']['rol_id']
     roles_nombres = {1: 'Administrador', 2: 'Vendedor', 3: 'Almacenista'}
     session['empresa_activa']['rol_nombre'] = roles_nombres.get(rol_id, 'Vendedor')
     session['empresa_activa']['icono'] = '🏢'

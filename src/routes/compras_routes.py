@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from src.services.compras_service import ComprasService
 from src.services.proveedores_service import ProveedoresService
 from src.utils.decorators import requiere_rol
@@ -15,22 +15,19 @@ def ver_compras():
 @compras_bp.route('/nueva', methods=['GET', 'POST'])
 @requiere_rol(1, 3)
 def nueva_compra():
-    """Formulario y registro de una nueva compra (Admin y Almacenista)."""
+    """Formulario y registro de una nueva compra delegando el cálculo matemático al Backend (Admin y Almacenista)."""
     if request.method == 'POST':
-        subtotal = float(request.form.get('subtotal', 0))
-        iva = float(request.form.get('iva', 0))
-        descuento = float(request.form.get('descuento', 0))
-        total = subtotal + iva - descuento
+        usuario_id = session.get('usuario', {}).get('id', 1)
 
         data = {
             'numero': request.form.get('numero'),
-            'subtotal': subtotal,
-            'iva': iva,
-            'descuento': descuento,
-            'total': total,
+            'subtotal': float(request.form.get('subtotal', 0)),
+            'iva': float(request.form.get('iva', 0)),
+            'descuento': float(request.form.get('descuento', 0)),
             'id_proveedor': int(request.form.get('id_proveedor')),
-            'id_usuario': 1
+            'id_usuario': usuario_id
         }
+
         res, err = ComprasService.crear(data)
         if err:
             flash(f"Error al registrar la compra: {err}", "danger")

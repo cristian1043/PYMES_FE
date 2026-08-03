@@ -2,7 +2,7 @@ from src.services.api_client import APIClient
 
 class UsuariosService:
     """
-    Servicio para gestionar la lista de usuarios, asignación de roles y estados desde el Backend.
+    Servicio para consumir la API de usuarios y vinculaciones multitenant del Backend en MySQL.
     """
 
     @staticmethod
@@ -34,14 +34,22 @@ class UsuariosService:
         return APIClient.put(f'/usuarios/{usuario_id}', data=usuario)
 
     @staticmethod
-    def cambiar_estado(usuario_id, nuevo_estado):
-        """Actualiza el estado laboral (Activo / Desvinculado) de un usuario en el Backend."""
-        usuario = UsuariosService.obtener_por_id(usuario_id)
-        if not usuario:
-            return None, "Usuario no encontrado"
+    def obtener_estado_en_empresa(usuario_id, empresa_id):
+        """Obtiene el estado laboral independiente de la BD MySQL del Backend (/api/usuario_empresas/estado)."""
+        data, error = APIClient.get(f'/usuario_empresas/estado?usuario_id={usuario_id}&empresa_id={empresa_id}')
+        if error or not data:
+            return 'Activo'
+        return data.get('estado', 'Activo')
 
-        usuario['estado'] = nuevo_estado
-        return APIClient.put(f'/usuarios/{usuario_id}', data=usuario)
+    @staticmethod
+    def cambiar_estado_en_empresa(usuario_id, empresa_id, nuevo_estado):
+        """Persiste el nuevo estado laboral en la tabla MySQL del Backend (/api/usuario_empresas/estado)."""
+        payload = {
+            "usuario_id": int(usuario_id),
+            "empresa_id": int(empresa_id),
+            "estado": nuevo_estado
+        }
+        return APIClient.put('/usuario_empresas/estado', data=payload)
 
     @staticmethod
     def obtener_roles():
