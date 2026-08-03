@@ -20,7 +20,7 @@
                                 <select class="form-control" id="id_cliente" name="id_cliente" required>
                                     <option value="">-- Seleccionar Cliente --</option>
                                     {% for cli in clientes %}
-                                        <option value="{{ cli.id }}">{{ cli.nombre }} {{ cli.apellido }}</option>
+                                        <option value="{{ cli.id }}">{{ cli.tipo_documento }} {{ cli.documento }} - {{ cli.nombre }} {{ cli.apellido }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

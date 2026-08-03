@@ -21,16 +21,26 @@ def login():
             flash(error, "danger")
         else:
             real_rol_id = int(usuario.get('id_rol', 2))
+            usuario_id = usuario.get('id')
 
             session['usuario'] = {
-                'id': usuario.get('id'),
+                'id': usuario_id,
                 'nombre': f"{usuario.get('nombre', '')} {usuario.get('apellido', '')}".strip(),
                 'email': usuario.get('email'),
                 'rol_id': real_rol_id
             }
             
+            # Cargar y filtrar únicamente las empresas activas para la sesión
             empresas_db = EmpresasService.obtener_todas()
-            session['empresas'] = empresas_db
+            if real_rol_id == 1:
+                empresas_activas = empresas_db
+            else:
+                empresas_activas = [
+                    emp for emp in empresas_db 
+                    if UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id']).get('estado', 'Activo') == 'Activo'
+                ]
+
+            session['empresas'] = empresas_activas
             
             flash(f"¡Bienvenido/a {session['usuario']['nombre']}!", "success")
             return redirect(url_for('auth.seleccionar_empresa'))
@@ -39,7 +49,7 @@ def login():
 
 @auth_bp.route('/seleccionar_empresa', methods=['GET'])
 def seleccionar_empresa():
-    """Pantalla con tarjetas de empresas filtrando el estado independiente por empresa."""
+    """Pantalla con tarjetas de empresas filtrando estrictamente las empresas activas."""
     if 'usuario' not in session:
         return redirect(url_for('auth.login'))
 
@@ -48,16 +58,17 @@ def seleccionar_empresa():
     rol_id = usuario_actual['rol_id']
 
     empresas_todas = EmpresasService.obtener_todas()
-    session['empresas'] = empresas_todas
 
-    empresas_visibles = []
-    for emp in empresas_todas:
-        if rol_id == 1:
-            empresas_visibles.append(emp)
-        else:
-            vinculacion = UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id'])
-            if vinculacion.get('estado', 'Activo') == 'Activo':
-                empresas_visibles.append(emp)
+    if rol_id == 1:
+        empresas_visibles = empresas_todas
+    else:
+        empresas_visibles = [
+            emp for emp in empresas_todas 
+            if UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id']).get('estado', 'Activo') == 'Activo'
+        ]
+
+    # Guardar en sesión únicamente las empresas activas a las que el usuario tiene derecho a ingresar
+    session['empresas'] = empresas_visibles
 
     return render_template('seleccionar_empresa.html', empresas=empresas_visibles)
 
@@ -83,6 +94,15 @@ def activar_empresa(empresa_id):
     if not empresa_seleccionada:
         flash("La empresa seleccionada no existe.", "danger")
         return redirect(url_for('auth.seleccionar_empresa'))
+
+    # Actualizar la lista de empresas activas permitidas en sesión
+    if rol_id_global == 1:
+        session['empresas'] = empresas
+    else:
+        session['empresas'] = [
+            emp for emp in empresas 
+            if UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id']).get('estado', 'Activo') == 'Activo'
+        ]
 
     # Asignar rol exclusivo de esta empresa para el usuario
     rol_especifico = vinculacion.get('rol_id', rol_id_global)
