@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 def create_app(config_name='default'):
     app = Flask(__name__)
@@ -39,6 +39,12 @@ def create_app(config_name='default'):
                 return redirect(url_for('auth.login'))
             
             if 'empresa_activa' not in session:
+                return redirect(url_for('auth.seleccionar_empresa'))
+
+            # Bloqueo inmediato para empleados si la empresa activa pasa a estar Inactiva
+            if session.get('usuario', {}).get('rol_id') != 1 and session.get('empresa_activa', {}).get('estado') == 'Inactivo':
+                session.pop('empresa_activa', None)
+                flash("Las operaciones de esta empresa han sido pausadas por el Administrador.", "danger")
                 return redirect(url_for('auth.seleccionar_empresa'))
 
     @app.route('/')
