@@ -31,21 +31,24 @@ def create_app(config_name='default'):
     # Middleware para proteger todas las rutas privadas de la aplicación
     @app.before_request
     def proteger_rutas():
-        # Permitir libre acceso a login, registro, selector de empresas y archivos estáticos
-        rutas_publicas = ['auth.login', 'auth.register', 'auth.seleccionar_empresa', 'auth.activar_empresa', 'auth.logout', 'static']
-        
-        if request.endpoint and request.endpoint not in rutas_publicas:
+        # Rutas accesibles sin iniciar sesión
+        rutas_sin_login = ['auth.login', 'auth.register', 'auth.logout', 'static']
+        # Rutas accesibles tras iniciar sesión pero sin haber seleccionado empresa activa aún
+        rutas_sin_empresa = ['auth.seleccionar_empresa', 'auth.activar_empresa', 'empresas.nueva_empresa']
+
+        if request.endpoint and request.endpoint not in rutas_sin_login:
             if 'usuario' not in session:
                 return redirect(url_for('auth.login'))
             
-            if 'empresa_activa' not in session:
-                return redirect(url_for('auth.seleccionar_empresa'))
+            if request.endpoint not in rutas_sin_empresa:
+                if 'empresa_activa' not in session:
+                    return redirect(url_for('auth.seleccionar_empresa'))
 
-            # Bloqueo inmediato para empleados si la empresa activa pasa a estar Inactiva
-            if session.get('usuario', {}).get('rol_id') != 1 and session.get('empresa_activa', {}).get('estado') == 'Inactivo':
-                session.pop('empresa_activa', None)
-                flash("Las operaciones de esta empresa han sido pausadas por el Administrador.", "danger")
-                return redirect(url_for('auth.seleccionar_empresa'))
+                # Bloqueo inmediato para empleados si la empresa activa pasa a estar Inactiva
+                if session.get('usuario', {}).get('rol_id') != 1 and session.get('empresa_activa', {}).get('estado') == 'Inactivo':
+                    session.pop('empresa_activa', None)
+                    flash("Las operaciones de esta empresa han sido pausadas por el Administrador.", "danger")
+                    return redirect(url_for('auth.seleccionar_empresa'))
 
     @app.route('/')
     def index():
