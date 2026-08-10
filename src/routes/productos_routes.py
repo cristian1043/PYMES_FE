@@ -7,9 +7,13 @@ productos_bp = Blueprint('productos', __name__, url_prefix='/productos')
 @productos_bp.route('/', methods=['GET'])
 @requiere_rol(1, 2, 3)
 def ver_productos():
-    """Muestra el catálogo / tabla de productos (Todos los empleados activos)."""
-    productos = ProductosService.obtener_todos()
-    return render_template('productos/ver_productos.html', productos=productos)
+    """Muestra el catálogo / tabla de productos con soporte para paginación."""
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    res_paginado = ProductosService.obtener_todos(page=page, per_page=per_page)
+    
+    items = res_paginado.get("items", []) if isinstance(res_paginado, dict) else res_paginado
+    return render_template('productos/ver_productos.html', productos=items, paginacion=res_paginado)
 
 @productos_bp.route('/nuevo', methods=['GET', 'POST'])
 @requiere_rol(1, 3) # Admin y Almacenista pueden crear/modificar productos e inventario

@@ -1,37 +1,39 @@
+from flask import session
 from src.services.api_client import APIClient
 
 class AuthService:
     """
-    Servicio de autenticación para validar e inscribir nuevos usuarios contra el Backend.
+    Servicio de autenticación para validar e inscribir usuarios utilizando JWT contra el Backend.
     """
 
     @staticmethod
     def autenticar(identificador, password):
         """
-        Valida las credenciales globales del usuario (correo o documento) permitiendo el inicio de sesión.
-        El acceso a cada empresa específica se valida a nivel de espacio de trabajo.
+        Valida credenciales contra /api/auth/login, guarda el JWT en la sesión y retorna el usuario.
         """
-        usuarios, error = APIClient.get('/usuarios/')
+        resp, error = APIClient.post('/auth/login', data={
+            "email": identificador,
+            "password": password
+        })
+
         if error:
-            return None, "No se pudo conectar con el servidor de autenticación."
+            return None, error
 
-        if not usuarios:
-            return None, "No existen usuarios registrados en la base de datos."
+        if resp and resp.get("exito"):
+            session["access_token"] = resp.get("access_token")
+            session["refresh_token"] = resp.get("refresh_token")
+            session["usuario"] = resp.get("usuario")
+            return resp.get("usuario"), None
 
-        identificador_clean = str(identificador).strip().lower()
+        return None, "Error inesperado al iniciar sesión"
 
-        for user in usuarios:
-            user_email = str(user.get('email', '')).strip().lower()
-            user_doc = str(user.get('documento', '')).strip().lower()
-
-            if identificador_clean == user_email or identificador_clean == user_doc:
-                pass_hash = str(user.get('password_hash', ''))
-                if pass_hash == password or pass_hash == password.strip():
-                    return user, None
-                else:
-                    return None, "La contraseña ingresada es incorrecta."
-
-        return None, "El usuario o correo electrónico no se encuentra registrado."
+    @staticmethod
+    def logout():
+        """Limpia los tokens y datos del usuario de la sesión."""
+        session.pop("access_token", None)
+        session.pop("refresh_token", None)
+        session.pop("usuario", None)
+        session.pop("empresa_id", None)
 
     @staticmethod
     def registrar(datos_usuario):
