@@ -1,0 +1,7 @@
+$kind: http-request
+name: obtener
+url: {{base_url}}/metodos_pago
+method: GET
+headers:
+  Authorization: Bearer {{token}}
+order: 1000000000043000

@@ -1,0 +1,1444 @@
+{
+    "info": {
+        "_postman_id": "fe-pymes-collection-2026-id",
+        "name": "PYMES Frontend API Collection",
+        "description": "Colección completa de pruebas para el Frontend (PYMES_FE) con soporte para JWT Token (Bearer) y X-Empresa-ID.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://127.0.0.1:5000/api",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "TU_TOKEN_JWT_AQUI",
+            "type": "string"
+        },
+        {
+            "key": "empresa_id",
+            "value": "1",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "auth",
+            "item": [
+                {
+                    "name": "Login (Obtener Token)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"admin@pymesoft.com\",\n    \"password_hash\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Registro de Usuario",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"1001234567\",\n    \"nombre\": \"Admin\",\n    \"apellido\": \"Sistema\",\n    \"email\": \"admin@pymesoft.com\",\n    \"telefono\": \"3001234567\",\n    \"username\": \"admin\",\n    \"password_hash\": \"123456\",\n    \"id_rol\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Perfil (Me)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/auth/me",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "clientes",
+            "item": [
+                {
+                    "name": "GET clientes (Obtener Todos)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/clientes",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "clientes"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET clientes Por ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/clientes/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "clientes",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST clientes (Insertar / Crear)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"123456789\",\n    \"nombre\": \"Cliente Ejemplo\",\n    \"apellido\": \"Prueba\",\n    \"email\": \"cliente@test.com\",\n    \"telefono\": \"3001234567\",\n    \"direccion\": \"Calle 123 #45-67\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/clientes",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "clientes"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT clientes (Actualizar)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"123456789\",\n    \"nombre\": \"Cliente Ejemplo\",\n    \"apellido\": \"Prueba\",\n    \"email\": \"cliente@test.com\",\n    \"telefono\": \"3001234567\",\n    \"direccion\": \"Calle 123 #45-67\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/clientes/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "clientes",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE clientes (Eliminar)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/clientes/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "clientes",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "productos",
+            "item": [
+                {
+                    "name": "GET productos (Obtener Todos)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/productos",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "productos"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET productos Por ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/productos/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "productos",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST productos (Insertar / Crear)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Producto Ejemplo\",\n    \"descripcion\": \"Descripci\\u00f3n del producto de prueba\",\n    \"precio\": 25000.0,\n    \"stock\": 50,\n    \"id_categoria\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/productos",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "productos"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT productos (Actualizar)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Producto Ejemplo\",\n    \"descripcion\": \"Descripci\\u00f3n del producto de prueba\",\n    \"precio\": 25000.0,\n    \"stock\": 50,\n    \"id_categoria\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/productos/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "productos",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE productos (Eliminar)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/productos/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "productos",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "proveedores",
+            "item": [
+                {
+                    "name": "GET proveedores (Obtener Todos)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/proveedores",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "proveedores"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET proveedores Por ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/proveedores/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "proveedores",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST proveedores (Insertar / Crear)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nit_rut\": \"900123456-1\",\n    \"nombre\": \"Proveedor Ejemplo S.A.S\",\n    \"contacto\": \"Carlos P\\u00e9rez\",\n    \"telefono\": \"3109876543\",\n    \"email\": \"contacto@proveedor.com\",\n    \"direccion\": \"Zona Industrial Lote 4\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/proveedores",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "proveedores"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT proveedores (Actualizar)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nit_rut\": \"900123456-1\",\n    \"nombre\": \"Proveedor Ejemplo S.A.S\",\n    \"contacto\": \"Carlos P\\u00e9rez\",\n    \"telefono\": \"3109876543\",\n    \"email\": \"contacto@proveedor.com\",\n    \"direccion\": \"Zona Industrial Lote 4\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/proveedores/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "proveedores",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE proveedores (Eliminar)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/proveedores/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "proveedores",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "compras",
+            "item": [
+                {
+                    "name": "GET compras (Obtener Todos)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/compras",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "compras"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET compras Por ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/compras/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "compras",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST compras (Insertar / Crear)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id_proveedor\": 1,\n    \"id_metodo_pago\": 1,\n    \"detalles\": [\n        {\n            \"id_producto\": 1,\n            \"cantidad\": 10,\n            \"precio_unitario\": 15000.0\n        }\n    ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/compras",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "compras"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT compras (Actualizar)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id_proveedor\": 1,\n    \"id_metodo_pago\": 1,\n    \"detalles\": [\n        {\n            \"id_producto\": 1,\n            \"cantidad\": 10,\n            \"precio_unitario\": 15000.0\n        }\n    ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/compras/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "compras",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE compras (Eliminar)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/compras/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "compras",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "facturas",
+            "item": [
+                {
+                    "name": "GET facturas (Obtener Todos)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/facturas",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "facturas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET facturas Por ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/facturas/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "facturas",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST facturas (Insertar / Crear)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id_cliente\": 1,\n    \"id_metodo_pago\": 1,\n    \"detalles\": [\n        {\n            \"id_producto\": 1,\n            \"cantidad\": 2,\n            \"precio_unitario\": 25000.0\n        }\n    ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/facturas",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "facturas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT facturas (Actualizar)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id_cliente\": 1,\n    \"id_metodo_pago\": 1,\n    \"detalles\": [\n        {\n            \"id_producto\": 1,\n            \"cantidad\": 2,\n            \"precio_unitario\": 25000.0\n        }\n    ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/facturas/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "facturas",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE facturas (Eliminar)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/facturas/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "facturas",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "usuarios",
+            "item": [
+                {
+                    "name": "GET usuarios (Obtener Todos)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/usuarios",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "usuarios"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET usuarios Por ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/usuarios/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "usuarios",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST usuarios (Insertar / Crear)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"1002345678\",\n    \"nombre\": \"Juan\",\n    \"apellido\": \"G\\u00f3mez\",\n    \"email\": \"juan@pymesoft.com\",\n    \"telefono\": \"3112223344\",\n    \"username\": \"juangomez\",\n    \"password_hash\": \"123456\",\n    \"id_rol\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/usuarios",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "usuarios"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT usuarios (Actualizar)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"1002345678\",\n    \"nombre\": \"Juan\",\n    \"apellido\": \"G\\u00f3mez\",\n    \"email\": \"juan@pymesoft.com\",\n    \"telefono\": \"3112223344\",\n    \"username\": \"juangomez\",\n    \"password_hash\": \"123456\",\n    \"id_rol\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/usuarios/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "usuarios",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE usuarios (Eliminar)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/usuarios/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "usuarios",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "empresas",
+            "item": [
+                {
+                    "name": "GET empresas (Obtener Todos)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/empresas",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "empresas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET empresas Por ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/empresas/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "empresas",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST empresas (Insertar / Crear)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nit\": \"901234567-8\",\n    \"nombre\": \"Mi Pyme Ejemplo S.A.S\",\n    \"direccion\": \"Av Principal 100\",\n    \"telefono\": \"6015551234\",\n    \"email\": \"contacto@mipyme.com\",\n    \"estado\": \"Activo\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/empresas",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "empresas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT empresas (Actualizar)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nit\": \"901234567-8\",\n    \"nombre\": \"Mi Pyme Ejemplo S.A.S\",\n    \"direccion\": \"Av Principal 100\",\n    \"telefono\": \"6015551234\",\n    \"email\": \"contacto@mipyme.com\",\n    \"estado\": \"Activo\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/empresas/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "empresas",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE empresas (Eliminar)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/empresas/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "empresas",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "categorias",
+            "item": [
+                {
+                    "name": "GET categorias (Obtener Todos)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/categorias",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "categorias"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET categorias Por ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/categorias/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "categorias",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST categorias (Insertar / Crear)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Electr\\u00f3nica\",\n    \"descripcion\": \"Categor\\u00eda de productos electr\\u00f3nicos\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/categorias",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "categorias"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT categorias (Actualizar)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Electr\\u00f3nica\",\n    \"descripcion\": \"Categor\\u00eda de productos electr\\u00f3nicos\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/categorias/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "categorias",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE categorias (Eliminar)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/categorias/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "categorias",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "metodos_pago",
+            "item": [
+                {
+                    "name": "GET metodos_pago (Obtener Todos)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/metodos_pago",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "metodos_pago"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET metodos_pago Por ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/metodos_pago/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "metodos_pago",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST metodos_pago (Insertar / Crear)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Transferencia Bancaria\",\n    \"descripcion\": \"Pago mediante Nequi / Bancolombia\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/metodos_pago",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "metodos_pago"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PUT metodos_pago (Actualizar)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Transferencia Bancaria\",\n    \"descripcion\": \"Pago mediante Nequi / Bancolombia\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/metodos_pago/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "metodos_pago",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE metodos_pago (Eliminar)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/metodos_pago/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "metodos_pago",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "reportes",
+            "item": [
+                {
+                    "name": "GET Reporte Ventas",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/reportes/ventas",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "reportes",
+                                "ventas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET Top Productos",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "X-Empresa-ID",
+                                "value": "{{empresa_id}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/reportes/top-productos",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "reportes",
+                                "top-productos"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

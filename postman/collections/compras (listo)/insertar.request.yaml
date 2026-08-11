@@ -1,0 +1,12 @@
+$kind: http-request
+name: insertar
+url: {{base_url}}/compras
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  X-Empresa-ID: {{empresa_id}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r\n    \"id_proveedor\": 1,\r\n    \"id_metodo_pago\": 1,\r\n    \"detalles\": [\r\n        {\r\n            \"id_producto\": 1,\r\n            \"cantidad\": 10,\r\n            \"precio_unitario\": 15000.0\r\n        }\r\n    ]\r\n}"
+order: 1000000000021000

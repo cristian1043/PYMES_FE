@@ -1,0 +1,12 @@
+$kind: http-request
+name: actualizar
+url: {{base_url}}/productos/1
+method: PUT
+headers:
+  Authorization: Bearer {{token}}
+  X-Empresa-ID: {{empresa_id}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r\n    \"nombre\": \"Producto Editado\",\r\n    \"descripcion\": \"Descripción actualizada\",\r\n    \"precio\": 28000.0,\r\n    \"stock\": 45,\r\n    \"id_categoria\": 1\r\n}"
+order: 1000000000012000

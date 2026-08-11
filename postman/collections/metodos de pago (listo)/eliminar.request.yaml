@@ -1,0 +1,7 @@
+$kind: http-request
+name: eliminar
+url: {{base_url}}/metodos_pago/1
+method: DELETE
+headers:
+  Authorization: Bearer {{token}}
+order: 1000000000047000

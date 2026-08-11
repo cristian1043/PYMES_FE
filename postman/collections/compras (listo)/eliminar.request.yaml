@@ -1,0 +1,8 @@
+$kind: http-request
+name: eliminar
+url: {{base_url}}/compras/1
+method: DELETE
+headers:
+  Authorization: Bearer {{token}}
+  X-Empresa-ID: {{empresa_id}}
+order: 1000000000023000

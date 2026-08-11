@@ -1,0 +1,8 @@
+$kind: http-request
+name: obtener
+url: {{base_url}}/proveedores
+method: GET
+headers:
+  Authorization: Bearer {{token}}
+  X-Empresa-ID: {{empresa_id}}
+order: 1000000000014000

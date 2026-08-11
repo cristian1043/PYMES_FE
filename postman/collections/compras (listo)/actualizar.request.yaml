@@ -1,0 +1,12 @@
+$kind: http-request
+name: actualizar
+url: {{base_url}}/compras/1
+method: PUT
+headers:
+  Authorization: Bearer {{token}}
+  X-Empresa-ID: {{empresa_id}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r\n    \"estado\": \"Completada\"\r\n}"
+order: 1000000000022000

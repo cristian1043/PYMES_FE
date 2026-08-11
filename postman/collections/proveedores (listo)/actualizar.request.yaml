@@ -1,0 +1,12 @@
+$kind: http-request
+name: actualizar
+url: {{base_url}}/proveedores/1
+method: PUT
+headers:
+  Authorization: Bearer {{token}}
+  X-Empresa-ID: {{empresa_id}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r\n    \"nit_rut\": \"900123456-1\",\r\n    \"nombre\": \"Proveedor Actualizado S.A.S\",\r\n    \"contacto\": \"Carlos Pérez\",\r\n    \"telefono\": \"3109876543\",\r\n    \"email\": \"info@proveedor.com\",\r\n    \"direccion\": \"Zona Industrial Lote 5\"\r\n}"
+order: 1000000000017000
