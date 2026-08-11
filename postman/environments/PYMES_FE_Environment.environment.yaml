@@ -1,11 +1,9 @@
 name: PYMES FE Environment
 values:
   - key: base_url
-    value: http://127.0.0.1:5000/api
-    enabled: true
+    value: 'http://127.0.0.1:5000/api'
   - key: token
-    value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-    enabled: true
+    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
   - key: empresa_id
-    value: "1"
-    enabled: true
+    value: '1'
+color: 0
