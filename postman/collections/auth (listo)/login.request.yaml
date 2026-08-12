@@ -10,7 +10,7 @@ body:
   content: |-
     {
         "username": "admin@pymesoft.com",
-        "password_hash": "123456"
+        "password": "123456"
     }
 scripts:
   - type: afterResponse
