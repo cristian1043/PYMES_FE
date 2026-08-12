@@ -13,7 +13,7 @@
         },
         {
             "key": "token",
-            "value": "TU_TOKEN_JWT_AQUI",
+            "value": "",
             "type": "string"
         },
         {
@@ -28,6 +28,22 @@
             "item": [
                 {
                     "name": "Login (Obtener Token)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var json = pm.response.json();",
+                                    "if (json.access_token) {",
+                                    "    pm.environment.set('token', json.access_token);",
+                                    "    pm.collectionVariables.set('token', json.access_token);",
+                                    "    console.log('✅ Nuevo Token JWT guardado en variables:', json.access_token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
                     "request": {
                         "method": "POST",
                         "header": [
@@ -64,7 +80,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"1001234567\",\n    \"nombre\": \"Admin\",\n    \"apellido\": \"Sistema\",\n    \"email\": \"admin@pymesoft.com\",\n    \"telefono\": \"3001234567\",\n    \"username\": \"admin\",\n    \"password_hash\": \"123456\",\n    \"id_rol\": 1\n}"
+                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"1001234567\",\n    \"nombre\": \"Admin\",\n    \"apellido\": \"Sistema\",\n    \"email\": \"admin@pymesoft.com\",\n    \"telefono\": \"3001234567\",\n    \"username\": \"admin\",\n    \"password\": \"123456\",\n    \"id_rol\": 1\n}"
                         },
                         "url": {
                             "raw": "{{base_url}}/auth/register",
@@ -921,7 +937,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"1002345678\",\n    \"nombre\": \"Juan\",\n    \"apellido\": \"G\\u00f3mez\",\n    \"email\": \"juan@pymesoft.com\",\n    \"telefono\": \"3112223344\",\n    \"username\": \"juangomez\",\n    \"password_hash\": \"123456\",\n    \"id_rol\": 2\n}"
+                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"1002345678\",\n    \"nombre\": \"Juan\",\n    \"apellido\": \"G\\u00f3mez\",\n    \"email\": \"juan@pymesoft.com\",\n    \"telefono\": \"3112223344\",\n    \"username\": \"juangomez\",\n    \"password\": \"123456\",\n    \"id_rol\": 2\n}"
                         },
                         "url": {
                             "raw": "{{base_url}}/usuarios",
@@ -954,7 +970,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"1002345678\",\n    \"nombre\": \"Juan\",\n    \"apellido\": \"G\\u00f3mez\",\n    \"email\": \"juan@pymesoft.com\",\n    \"telefono\": \"3112223344\",\n    \"username\": \"juangomez\",\n    \"password_hash\": \"123456\",\n    \"id_rol\": 2\n}"
+                            "raw": "{\n    \"tipo_documento\": \"CC\",\n    \"documento\": \"1002345678\",\n    \"nombre\": \"Juan\",\n    \"apellido\": \"G\\u00f3mez\",\n    \"email\": \"juan@pymesoft.com\",\n    \"telefono\": \"3112223344\",\n    \"username\": \"juangomez\",\n    \"password\": \"123456\",\n    \"id_rol\": 2\n}"
                         },
                         "url": {
                             "raw": "{{base_url}}/usuarios/1",

@@ -1,9 +1,24 @@
-# Use this workspace to collaborate
 workspace:
   id: 752967cb-9f4c-4660-a8a4-fcd501f6d809
 
-# All resources in the `postman/` folder are automatically registered in Local View.
-# Point to additional files outside the `postman/` folder to register them individually. Example:
-#localResources:
-#  collections:
-#    - ../tests/E2E Test Collection/
+localResources:
+  collections:
+    - ../postman/collections/auth (listo)/
+    - ../postman/collections/categorias (listo)/
+    - ../postman/collections/clientes (listo)/
+    - ../postman/collections/compras (listo)/
+    - ../postman/collections/empresas (listo)/
+    - ../postman/collections/facturas (listo)/
+    - ../postman/collections/metodos de pago (listo)/
+    - ../postman/collections/productos (listo)/
+    - ../postman/collections/proveedores (listo)/
+    - ../postman/collections/reportes (listo)/
+    - ../postman/collections/usuarios (listo)/
+  environments:
+    - ../postman/environments/PYMES_FE_Environment.environment.yaml
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ../postman/collections/PYMES Frontend API Collection: 5957cd43-6e93-484e-af81-f17b58de8c35
