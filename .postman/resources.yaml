@@ -14,8 +14,7 @@ localResources:
     - ../postman/collections/proveedores (listo)/
     - ../postman/collections/reportes (listo)/
     - ../postman/collections/usuarios (listo)/
-  environments:
-    - ../postman/environments/PYMES_FE_Environment.environment.yaml
+  environments: []
 
 # Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
 
