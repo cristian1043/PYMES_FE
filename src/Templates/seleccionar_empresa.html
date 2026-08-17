@@ -88,10 +88,10 @@
                         <p class="text-muted small mb-3">NIT: {{ emp.nit }}</p>
 
                         <div class="mb-4">
-                            <span class="text-muted small">Tu Perfil en el Sistema:</span><br>
-                            {% if session['usuario']['rol_id'] == 1 %}
+                            <span class="text-muted small">Tu Perfil en esta Empresa:</span><br>
+                            {% if emp.get('rol_id') == 1 %}
                                 <span class="badge badge-primary p-2 mt-1">👑 Administrador (Activo)</span>
-                            {% elif session['usuario']['rol_id'] == 3 %}
+                            {% elif emp.get('rol_id') == 3 %}
                                 <span class="badge badge-warning p-2 mt-1">📦 Almacenista (Activo)</span>
                             {% else %}
                                 <span class="badge badge-info p-2 mt-1">🏷️ Vendedor (Activo)</span>

@@ -8,9 +8,13 @@ facturas_bp = Blueprint('facturas', __name__, url_prefix='/facturas')
 @facturas_bp.route('/', methods=['GET'])
 @requiere_rol(1, 2) # Admin y Vendedor
 def ver_facturas():
-    """Lista las facturas de venta (Admin y Vendedor)."""
-    facturas = FacturasService.obtener_todas()
-    return render_template('facturas/ver_facturas.html', facturas=facturas)
+    """Lista las facturas de venta con paginación (Admin y Vendedor)."""
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    res_paginado = FacturasService.obtener_todas(page=page, per_page=per_page)
+
+    items = res_paginado.get("items", []) if isinstance(res_paginado, dict) else (res_paginado if isinstance(res_paginado, list) else [])
+    return render_template('facturas/ver_facturas.html', facturas=items, paginacion=res_paginado)
 
 @facturas_bp.route('/nueva', methods=['GET', 'POST'])
 @requiere_rol(1, 2) # Admin y Vendedor
@@ -36,7 +40,8 @@ def nueva_factura():
             flash("Factura emitida exitosamente", "success")
             return redirect(url_for('facturas.ver_facturas'))
 
-    clientes = ClientesService.obtener_todos()
+    clientes_res = ClientesService.obtener_todos()
+    clientes = clientes_res.get("items", []) if isinstance(clientes_res, dict) else (clientes_res if isinstance(clientes_res, list) else [])
     metodos_pago = FacturasService.obtener_metodos_pago()
     return render_template('facturas/nueva_factura.html', clientes=clientes, metodos_pago=metodos_pago)
 

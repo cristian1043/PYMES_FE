@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 650px;">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-warning text-dark font-weight-bold d-flex justify-content-between align-items-center">
+            <span>✏️ Editar Producto #{{ producto.id }}</span>
+            <a href="{{ url_for('productos.ver_productos') }}" class="btn btn-sm btn-outline-dark">Volver</a>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="form-group mb-3">
+                    <label class="font-weight-bold">Nombre del Producto</label>
+                    <input type="text" name="nombre" class="form-control" value="{{ producto.nombre }}" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="font-weight-bold">Descripción</label>
+                    <textarea name="descripcion" class="form-control" rows="3">{{ producto.descripcion or '' }}</textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="font-weight-bold">Precio ($)</label>
+                        <input type="number" step="0.01" name="precio" class="form-control" value="{{ producto.precio }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="font-weight-bold">Stock en Inventario</label>
+                        <input type="number" name="stock" class="form-control" value="{{ producto.stock }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="font-weight-bold">Categoría</label>
+                    <select name="id_categoria" class="form-control">
+                        <option value="">-- Sin Categoría --</option>
+                        {% for cat in categorias %}
+                            <option value="{{ cat.id }}" {% if cat.id == producto.id_categoria %}selected{% endif %}>
+                                {{ cat.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <a href="{{ url_for('productos.ver_productos') }}" class="btn btn-secondary mr-2">Cancelar</a>
+                    <button type="submit" class="btn btn-warning font-weight-bold">💾 Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -50,26 +50,30 @@ def login():
 
 @auth_bp.route('/seleccionar_empresa', methods=['GET'])
 def seleccionar_empresa():
-    """Pantalla con tarjetas de empresas bloqueando empresas inactivas a trabajadores regulares."""
+    """Pantalla con tarjetas de empresas calculando el rol exclusivo de cada empresa para el usuario."""
     if 'usuario' not in session:
         return redirect(url_for('auth.login'))
 
     usuario_actual = session['usuario']
     usuario_id = usuario_actual['id']
-    rol_id = usuario_actual['rol_id']
+    rol_id_global = usuario_actual.get('rol_id', 2)
 
     empresas_todas = EmpresasService.obtener_todas()
 
-    if rol_id == 1:
-        # El Administrador ve todas las empresas (activas e inactivas para poder gestionarlas)
-        empresas_visibles = empresas_todas
-    else:
-        # Los trabajadores regulares solo ven empresas operativamente ACTIVAS y donde su perfil esté ACTIVO
-        empresas_visibles = [
-            emp for emp in empresas_todas 
-            if emp.get('estado', 'Activo') == 'Activo' and
-            UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id']).get('estado', 'Activo') == 'Activo'
-        ]
+    empresas_visibles = []
+    for emp in empresas_todas:
+        if isinstance(emp, dict):
+            vinculacion = UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id'])
+            estado_vinc = vinculacion.get('estado', 'No Vinculado')
+            rol_vinc = vinculacion.get('rol_id', rol_id_global)
+
+            # El Admin Global (rol_id 1) ve todas las empresas. Los demás ven solo en las que están 'Activo'
+            if rol_id_global == 1 or estado_vinc == 'Activo':
+                emp_copy = dict(emp)
+                emp_copy['rol_id'] = rol_vinc
+                roles_nombres = {1: 'Administrador', 2: 'Vendedor', 3: 'Almacenista'}
+                emp_copy['rol_nombre'] = roles_nombres.get(rol_vinc, 'Vendedor')
+                empresas_visibles.append(emp_copy)
 
     session['empresas'] = empresas_visibles
     return render_template('seleccionar_empresa.html', empresas=empresas_visibles)

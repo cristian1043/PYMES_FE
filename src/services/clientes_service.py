@@ -6,13 +6,17 @@ class ClientesService:
     """
 
     @staticmethod
-    def obtener_todos():
-        """Obtiene la lista completa de clientes."""
-        data, error = APIClient.get('/clientes/')
+    def obtener_todos(page=1, per_page=10):
+        """Obtiene la lista paginada de clientes."""
+        data, error = APIClient.get('/clientes/', params={"page": page, "per_page": per_page})
         if error:
             print(f"Error al obtener clientes: {error}")
-            return []
-        return data if data is not None else []
+            return {"items": [], "total": 0, "page": page, "per_page": per_page, "total_pages": 0}
+        if isinstance(data, dict) and "items" in data:
+            return data
+        if isinstance(data, list):
+            return {"items": data, "total": len(data), "page": 1, "per_page": len(data), "total_pages": 1}
+        return {"items": [], "total": 0, "page": page, "per_page": per_page, "total_pages": 0}
 
     @staticmethod
     def obtener_por_id(cliente_id):

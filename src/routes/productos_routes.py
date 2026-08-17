@@ -36,3 +36,30 @@ def nuevo_producto():
 
     categorias = ProductosService.obtener_categorias()
     return render_template('productos/nuevo_producto.html', categorias=categorias)
+
+@productos_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@requiere_rol(1, 3) # Admin y Almacenista pueden editar productos
+def editar_producto(id):
+    """Formulario y procesamiento para actualizar un producto existente."""
+    producto = ProductosService.obtener_por_id(id)
+    if not producto:
+        flash("El producto especificado no existe", "warning")
+        return redirect(url_for('productos.ver_productos'))
+
+    if request.method == 'POST':
+        data = {
+            'nombre': request.form.get('nombre'),
+            'descripcion': request.form.get('descripcion'),
+            'precio': float(request.form.get('precio', 0)),
+            'stock': int(request.form.get('stock', 0)),
+            'id_categoria': int(request.form.get('id_categoria')) if request.form.get('id_categoria') else None
+        }
+        res, err = ProductosService.actualizar(id, data)
+        if err:
+            flash(f"Error al actualizar el producto: {err}", "danger")
+        else:
+            flash("Producto actualizado exitosamente", "success")
+            return redirect(url_for('productos.ver_productos'))
+
+    categorias = ProductosService.obtener_categorias()
+    return render_template('productos/editar_producto.html', producto=producto, categorias=categorias)
