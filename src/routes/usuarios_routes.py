@@ -108,8 +108,11 @@ def cambiar_estado(id):
     estado_actual = request.form.get('estado', 'Activo')
     nuevo_estado = 'Desvinculado' if estado_actual == 'Activo' else 'Activo'
 
-    UsuariosService.cambiar_estado_en_empresa(id, empresa_id, nuevo_estado)
-    flash(f"El trabajador ha sido actualizado a estado {nuevo_estado} exclusivamente en esta empresa.", "info")
+    res, err = UsuariosService.cambiar_estado_en_empresa(id, empresa_id, nuevo_estado)
+    if err:
+        flash(f"Error al cambiar el estado del trabajador: {err}", "danger")
+    else:
+        flash(f"El trabajador ha sido actualizado a estado {nuevo_estado} exclusivamente en esta empresa.", "info")
     return redirect(url_for('usuarios.ver_usuarios'))
 
 @usuarios_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
