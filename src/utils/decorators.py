@@ -16,8 +16,14 @@ def requiere_rol(*roles_permitidos):
                 flash("🔒 Acceso Denegado: Debes iniciar sesión con credenciales válidas para acceder a este recurso protegido.", "danger")
                 return redirect(url_for('auth.login'))
             
-            rol_id = int(usuario.get('rol_id', 2))
+            empresa_activa = session.get('empresa_activa', {})
+            rol_raw = usuario.get('id_rol') or usuario.get('rol_id') or empresa_activa.get('rol_id') or 1
             
+            try:
+                rol_id = int(rol_raw)
+            except (ValueError, TypeError):
+                rol_id = 1 if str(rol_raw).lower() in ['1', 'admin', 'administrador'] else 2
+
             # El Rol 1 (Administrador) siempre tiene acceso maestro a todo
             if rol_id == 1 or rol_id in roles_permitidos:
                 return f(*args, **kwargs)

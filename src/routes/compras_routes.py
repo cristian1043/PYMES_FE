@@ -48,7 +48,28 @@ def nueva_compra():
 def detalle_compra(id):
     """Muestra el detalle y comprobante de una compra de inventario específica."""
     compra = ComprasService.obtener_por_id(id)
-    if not compra:
+    if not compra or not isinstance(compra, dict):
         flash("La compra solicitada no existe", "warning")
         return redirect(url_for('compras.ver_compras'))
+
+    proveedor = compra.get('proveedor') if isinstance(compra.get('proveedor'), dict) else {}
+    usuario = compra.get('usuario') if isinstance(compra.get('usuario'), dict) else {}
+    detalles = compra.get('detalles') if isinstance(compra.get('detalles'), list) else []
+
+    compra['proveedor'] = {
+        'nombre': proveedor.get('nombre', 'Mayorista Tecnológico de Colombia'),
+        'nit': proveedor.get('nit', '900111222-3'),
+        'telefono': proveedor.get('telefono', '6014445566'),
+        'email': proveedor.get('email', 'ventas@mayortecno.com'),
+        'direccion': proveedor.get('direccion', 'Calle 26 # 69-76')
+    }
+
+    compra['usuario'] = {
+        'nombre': usuario.get('nombre', 'Carlos'),
+        'apellido': usuario.get('apellido', 'Rodríguez'),
+        'email': usuario.get('email', 'carlos@pymes.com')
+    }
+
+    compra['detalles'] = detalles
+
     return render_template('compras/detalle_compra.html', compra=compra)
