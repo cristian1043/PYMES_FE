@@ -20,6 +20,7 @@ class AuthService:
             return None, error
 
         if resp and resp.get("exito"):
+            session.clear()
             session["access_token"] = resp.get("access_token")
             session["refresh_token"] = resp.get("refresh_token")
             session["usuario"] = resp.get("usuario")

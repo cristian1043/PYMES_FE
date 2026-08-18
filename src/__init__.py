@@ -38,6 +38,7 @@ def create_app(config_name='default'):
 
         if request.endpoint and request.endpoint not in rutas_sin_login:
             if 'usuario' not in session:
+                flash("🔒 Acceso Denegado: Debes iniciar sesión con credenciales válidas para acceder a las secciones del sistema.", "danger")
                 return redirect(url_for('auth.login'))
             
             if request.endpoint not in rutas_sin_empresa:

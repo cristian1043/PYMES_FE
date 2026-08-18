@@ -13,6 +13,7 @@ def requiere_rol(*roles_permitidos):
         def decorated_function(*args, **kwargs):
             usuario = session.get('usuario')
             if not usuario:
+                flash("🔒 Acceso Denegado: Debes iniciar sesión con credenciales válidas para acceder a este recurso protegido.", "danger")
                 return redirect(url_for('auth.login'))
             
             rol_id = int(usuario.get('rol_id', 2))
