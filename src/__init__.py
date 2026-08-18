@@ -54,5 +54,13 @@ def create_app(config_name='default'):
     @app.route('/')
     def index():
         return render_template('index.html')
-        
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        import traceback
+        traceback.print_exc()
+        original_exception = getattr(error, 'original_exception', error)
+        flash(f"Error interno del servidor (500): {str(original_exception)}", "danger")
+        return render_template('index.html'), 500
+
     return app

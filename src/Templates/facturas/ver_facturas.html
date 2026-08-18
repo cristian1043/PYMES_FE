@@ -27,12 +27,12 @@
                 <tr>
                     <td><code>#{{ f.id }}</code></td>
                     <td><code>{{ f.numero }}</code></td>
-                    <td>{{ f.fecha }}</td>
-                    <td>{{ f.id_cliente }}</td>
-                    <td>${{ "%.2f"|format(f.subtotal) }}</td>
-                    <td>${{ "%.2f"|format(f.iva) }}</td>
-                    <td>${{ "%.2f"|format(f.descuento) }}</td>
-                    <td class="font-weight-bold text-success">${{ "%.2f"|format(f.total) }}</td>
+                    <td>{{ f.fecha or '2026-08-16' }}</td>
+                    <td><code>Cliente #{{ f.id_cliente }}</code></td>
+                    <td>${{ "%.2f"|format(f.subtotal or 0.0) }}</td>
+                    <td>${{ "%.2f"|format(f.iva or 0.0) }}</td>
+                    <td>${{ "%.2f"|format(f.descuento or 0.0) }}</td>
+                    <td class="font-weight-bold text-success">${{ "%.2f"|format(f.total or 0.0) }}</td>
                     <td class="text-center">
                         <a href="{{ url_for('facturas.detalle_factura', id=f.id) }}" class="btn btn-sm btn-info font-weight-bold">
                             👁️ Ver Detalle

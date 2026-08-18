@@ -79,8 +79,8 @@
                                 <td><strong>{{ item.nombre_producto }}</strong></td>
                                 <td class="text-center"><span class="badge badge-secondary">{{ item.unidad_medida }}</span></td>
                                 <td class="text-center"><strong>{{ item.cantidad }}</strong></td>
-                                <td class="text-right">${{ "%.2f"|format(item.precio_unitario) }}</td>
-                                <td class="text-right font-weight-bold text-dark">${{ "%.2f"|format(item.subtotal) }}</td>
+                                <td class="text-right">${{ "%.2f"|format(item.precio_unitario or 0.0) }}</td>
+                                <td class="text-right font-weight-bold text-dark">${{ "%.2f"|format(item.subtotal or 0.0) }}</td>
                             </tr>
                             {% endfor %}
                         {% else %}
@@ -99,22 +99,22 @@
                         <div class="card-body p-3">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="font-weight-bold">Subtotal Neto:</span>
-                                <span>${{ "%.2f"|format(factura.subtotal) }}</span>
+                                <span>${{ "%.2f"|format(factura.subtotal or 0.0) }}</span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="font-weight-bold">IVA (19%):</span>
-                                <span>+${{ "%.2f"|format(factura.iva) }}</span>
+                                <span>+${{ "%.2f"|format(factura.iva or 0.0) }}</span>
                             </div>
                             {% if factura.descuento and factura.descuento > 0 %}
                             <div class="d-flex justify-content-between mb-2 text-danger">
                                 <span class="font-weight-bold">Descuento Aplicado:</span>
-                                <span>-${{ "%.2f"|format(factura.descuento) }}</span>
+                                <span>-${{ "%.2f"|format(factura.descuento or 0.0) }}</span>
                             </div>
                             {% endif %}
                             <hr class="my-2">
                             <div class="d-flex justify-content-between align-items-center py-2 bg-success text-white rounded px-3">
                                 <h5 class="mb-0 font-weight-bold">TOTAL A PAGAR:</h5>
-                                <h4 class="mb-0 font-weight-bold">${{ "%.2f"|format(factura.total) }}</h4>
+                                <h4 class="mb-0 font-weight-bold">${{ "%.2f"|format(factura.total or 0.0) }}</h4>
                             </div>
                         </div>
                     </div>

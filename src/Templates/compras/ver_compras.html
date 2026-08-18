@@ -28,9 +28,9 @@
                     <td><code>{{ c.numero }}</code></td>
                     <td>{{ c.fecha or '2026-08-16' }}</td>
                     <td><code>Proveedor #{{ c.id_proveedor }}</code></td>
-                    <td>${{ "%.2f"|format(c.subtotal) }}</td>
-                    <td>${{ "%.2f"|format(c.iva) }}</td>
-                    <td class="font-weight-bold text-primary">${{ "%.2f"|format(c.total) }}</td>
+                    <td>${{ "%.2f"|format(c.subtotal or 0.0) }}</td>
+                    <td>${{ "%.2f"|format(c.iva or 0.0) }}</td>
+                    <td class="font-weight-bold text-primary">${{ "%.2f"|format(c.total or 0.0) }}</td>
                     <td class="text-center">
                         <a href="{{ url_for('compras.detalle_compra', id=c.id) }}" class="btn btn-sm btn-info font-weight-bold">
                             👁️ Ver Detalle
