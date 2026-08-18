@@ -42,3 +42,13 @@ def nueva_compra():
     prov_res = ProveedoresService.obtener_todos()
     proveedores = prov_res.get("items", []) if isinstance(prov_res, dict) else (prov_res if isinstance(prov_res, list) else [])
     return render_template('compras/nueva_compra.html', proveedores=proveedores)
+
+@compras_bp.route('/detalle/<int:id>', methods=['GET'])
+@requiere_rol(1, 3)
+def detalle_compra(id):
+    """Muestra el detalle y comprobante de una compra de inventario específica."""
+    compra = ComprasService.obtener_por_id(id)
+    if not compra:
+        flash("La compra solicitada no existe", "warning")
+        return redirect(url_for('compras.ver_compras'))
+    return render_template('compras/detalle_compra.html', compra=compra)
