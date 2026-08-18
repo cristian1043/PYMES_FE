@@ -24,6 +24,11 @@ class UsuariosService:
         return data
 
     @staticmethod
+    def actualizar(usuario_id, datos_usuario):
+        """Actualiza los datos personales, de contacto y bancarios de un usuario."""
+        return APIClient.put(f'/usuarios/{usuario_id}', data=datos_usuario)
+
+    @staticmethod
     def obtener_vinculacion_empresa(usuario_id, empresa_id):
         """Obtiene el rol_id y estado exclusivo del usuario para una empresa en la BD MySQL."""
         data, error = APIClient.get(f'/usuario_empresas/vinculacion?usuario_id={usuario_id}&empresa_id={empresa_id}')

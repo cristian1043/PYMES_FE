@@ -105,5 +105,47 @@ def cambiar_estado(id):
 
     UsuariosService.cambiar_estado_en_empresa(id, empresa_id, nuevo_estado)
     flash(f"El trabajador ha sido actualizado a estado {nuevo_estado} exclusivamente en esta empresa.", "info")
-
     return redirect(url_for('usuarios.ver_usuarios'))
+
+@usuarios_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@requiere_rol(1) # Exclusivo para Administrador
+def editar_usuario(id):
+    """Formulario y procesamiento para que el Administrador edite los datos de un usuario."""
+    usuario = UsuariosService.obtener_por_id(id)
+    if not usuario:
+        flash("El usuario especificado no existe", "warning")
+        return redirect(url_for('usuarios.ver_usuarios'))
+
+    empresa_activa = session.get('empresa_activa', {})
+    empresa_id = empresa_activa.get('id', 1)
+
+    if request.method == 'POST':
+        id_rol = int(request.form.get('id_rol', usuario.get('id_rol', 2)))
+        datos = {
+            'tipo_documento': request.form.get('tipo_documento'),
+            'documento': request.form.get('documento'),
+            'nombre': request.form.get('nombre'),
+            'apellido': request.form.get('apellido'),
+            'email': request.form.get('email'),
+            'telefono': request.form.get('telefono'),
+            'id_rol': id_rol,
+            'banco': request.form.get('banco', ''),
+            'tipo_cuenta': request.form.get('tipo_cuenta', ''),
+            'numero_cuenta': request.form.get('numero_cuenta', '')
+        }
+
+        # Actualizar datos de usuario
+        res, err = UsuariosService.actualizar(id, datos)
+        # Actualizar rol exclusivo en la empresa activa
+        UsuariosService.cambiar_rol_en_empresa(id, empresa_id, id_rol)
+
+        if err:
+            flash(f"Error al actualizar el usuario: {err}", "danger")
+        else:
+            flash(f"Usuario {datos['nombre']} {datos['apellido']} actualizado exitosamente", "success")
+            return redirect(url_for('usuarios.ver_usuarios'))
+
+    roles = UsuariosService.obtener_roles()
+    vinculacion = UsuariosService.obtener_vinculacion_empresa(id, empresa_id)
+    usuario['id_rol'] = vinculacion.get('rol_id', usuario.get('id_rol', 2))
+    return render_template('usuarios/editar_usuario.html', usuario=usuario, roles=roles)

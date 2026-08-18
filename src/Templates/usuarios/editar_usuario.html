@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card shadow border-0 rounded">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">✏️ Editar Usuario / Trabajador</h4>
+                    <a href="{{ url_for('usuarios.ver_usuarios') }}" class="btn btn-sm btn-light font-weight-bold">← Volver al Personal</a>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('usuarios.editar_usuario', id=usuario.id) }}" method="POST">
+                        <h6 class="text-primary font-weight-bold mb-3">1. Datos Personales y de Contacto</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="tipo_documento" class="font-weight-bold">Tipo Documento *</label>
+                                <select name="tipo_documento" id="tipo_documento" class="form-control" required>
+                                    <option value="CC" {% if usuario.tipo_documento == 'CC' %}selected{% endif %}>Cédula de Ciudadanía (CC)</option>
+                                    <option value="CE" {% if usuario.tipo_documento == 'CE' %}selected{% endif %}>Cédula de Extranjería (CE)</option>
+                                    <option value="NIT" {% if usuario.tipo_documento == 'NIT' %}selected{% endif %}>NIT</option>
+                                    <option value="PP" {% if usuario.tipo_documento == 'PP' %}selected{% endif %}>Pasaporte</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <label for="documento" class="font-weight-bold">Número de Documento *</label>
+                                <input type="text" name="documento" id="documento" class="form-control" value="{{ usuario.documento }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="nombre" class="font-weight-bold">Nombres *</label>
+                                <input type="text" name="nombre" id="nombre" class="form-control" value="{{ usuario.nombre }}" required minlength="2">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="apellido" class="font-weight-bold">Apellidos *</label>
+                                <input type="text" name="apellido" id="apellido" class="form-control" value="{{ usuario.apellido }}" required minlength="2">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="font-weight-bold">Correo Electrónico *</label>
+                                <input type="email" name="email" id="email" class="form-control" value="{{ usuario.email }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="telefono" class="font-weight-bold">Teléfono de Contacto *</label>
+                                <input type="text" name="telefono" id="telefono" class="form-control" value="{{ usuario.telefono }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="id_rol" class="font-weight-bold">Rol Asignado en esta Empresa *</label>
+                                <select name="id_rol" id="id_rol" class="form-control" required>
+                                    <option value="1" {% if usuario.id_rol == 1 %}selected{% endif %}>👑 Administrador</option>
+                                    <option value="2" {% if usuario.id_rol == 2 %}selected{% endif %}>🏷️ Vendedor</option>
+                                    <option value="3" {% if usuario.id_rol == 3 %}selected{% endif %}>📦 Almacenista</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h6 class="text-primary font-weight-bold mb-3">2. Información Bancaria (Nómina)</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label for="banco" class="font-weight-bold">Entidad Bancaria</label>
+                                <select name="banco" id="banco" class="form-control">
+                                    <option value="">-- Seleccionar Banco --</option>
+                                    <option value="Bancolombia" {% if usuario.banco == 'Bancolombia' %}selected{% endif %}>Bancolombia</option>
+                                    <option value="Davivienda" {% if usuario.banco == 'Davivienda' %}selected{% endif %}>Davivienda</option>
+                                    <option value="Nequi" {% if usuario.banco == 'Nequi' %}selected{% endif %}>Nequi</option>
+                                    <option value="Daviplata" {% if usuario.banco == 'Daviplata' %}selected{% endif %}>Daviplata</option>
+                                    <option value="Banco de Bogotá" {% if usuario.banco == 'Banco de Bogotá' %}selected{% endif %}>Banco de Bogotá</option>
+                                    <option value="BBVA" {% if usuario.banco == 'BBVA' %}selected{% endif %}>BBVA</option>
+                                    <option value="Banco Agrario" {% if usuario.banco == 'Banco Agrario' %}selected{% endif %}>Banco Agrario</option>
+                                    <option value="Otro" {% if usuario.banco == 'Otro' %}selected{% endif %}>Otro Banco</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="tipo_cuenta" class="font-weight-bold">Tipo de Cuenta</label>
+                                <select name="tipo_cuenta" id="tipo_cuenta" class="form-control">
+                                    <option value="Ahorros" {% if usuario.tipo_cuenta == 'Ahorros' %}selected{% endif %}>Cuenta de Ahorros</option>
+                                    <option value="Corriente" {% if usuario.tipo_cuenta == 'Corriente' %}selected{% endif %}>Cuenta Corriente</option>
+                                    <option value="Monedero" {% if usuario.tipo_cuenta == 'Monedero' %}selected{% endif %}>Monedero Digital (Nequi/Daviplata)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="numero_cuenta" class="font-weight-bold">Número de Cuenta / Celular</label>
+                                <input type="text" name="numero_cuenta" id="numero_cuenta" class="form-control" value="{{ usuario.numero_cuenta or '' }}" placeholder="Ej: 123-456789-00">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ url_for('usuarios.ver_usuarios') }}" class="btn btn-secondary mr-2">Cancelar</a>
+                            <button type="submit" class="btn btn-success font-weight-bold">💾 Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
