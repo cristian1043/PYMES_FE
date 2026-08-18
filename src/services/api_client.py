@@ -11,7 +11,8 @@ class APIClient:
     @classmethod
     def _get_base_url(cls):
         """Obtiene la URL base desde la configuración activa de Flask."""
-        return current_app.config.get('API_BASE_URL', 'http://127.0.0.1:5000/api')
+        base_url = current_app.config.get('API_BASE_URL', 'http://127.0.0.1:5000/api')
+        return base_url.rstrip('/')
 
     @classmethod
     def _get_headers(cls):
@@ -20,7 +21,8 @@ class APIClient:
         token = session.get("access_token")
         if token:
             headers["Authorization"] = f"Bearer {token}"
-        empresa_id = session.get("empresa_id")
+        empresa_activa = session.get("empresa_activa", {})
+        empresa_id = empresa_activa.get("id") if isinstance(empresa_activa, dict) else session.get("empresa_id")
         if empresa_id:
             headers["X-Empresa-ID"] = str(empresa_id)
         return headers
