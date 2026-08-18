@@ -31,8 +31,10 @@ class UsuariosService:
     @staticmethod
     def obtener_vinculacion_empresa(usuario_id, empresa_id):
         """Obtiene el rol_id y estado exclusivo del usuario para una empresa en la BD MySQL."""
+        if not usuario_id or not empresa_id:
+            return {"rol_id": 2, "estado": "Activo"}
         data, error = APIClient.get(f'/usuario_empresas/vinculacion?usuario_id={usuario_id}&empresa_id={empresa_id}')
-        if error or not data:
+        if error or not isinstance(data, dict):
             return {"rol_id": 2, "estado": "Activo"}
         return data
 

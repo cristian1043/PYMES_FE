@@ -20,9 +20,14 @@ def ver_usuarios():
     # Asignar rol y estado independientes para esta empresa a cada usuario
     for u in usuarios:
         if isinstance(u, dict):
-            vinculacion = UsuariosService.obtener_vinculacion_empresa(u['id'], empresa_id)
-            u['id_rol'] = vinculacion.get('rol_id', u.get('id_rol', 2))
-            u['estado'] = vinculacion.get('estado', 'Desvinculado')
+            u_id = u.get('id')
+            vinculacion = UsuariosService.obtener_vinculacion_empresa(u_id, empresa_id) if u_id else {}
+            if isinstance(vinculacion, dict):
+                u['id_rol'] = int(vinculacion.get('rol_id', u.get('id_rol', 2)))
+                u['estado'] = str(vinculacion.get('estado', 'Activo'))
+            else:
+                u['id_rol'] = int(u.get('id_rol', 2))
+                u['estado'] = 'Activo'
 
     return render_template('usuarios/ver_usuarios.html', usuarios=usuarios, roles=roles)
 

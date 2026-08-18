@@ -70,8 +70,8 @@
                                     ✏️ Editar
                                 </a>
                                 <form action="{{ url_for('usuarios.cambiar_estado', id=u.id) }}" method="POST" class="d-inline">
-                                    <input type="hidden" name="estado" value="{{ u.get('estado', 'Activo') }}">
-                                    {% if u.get('estado', 'Activo') == 'Activo' %}
+                                    <input type="hidden" name="estado" value="{{ u.estado or 'Activo' }}">
+                                    {% if u.estado == 'Activo' %}
                                         <span class="badge badge-success p-2 mr-2">🟢 Activo</span>
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Desvincular a este empleado de la empresa">Desvincular</button>
                                     {% else %}
