@@ -16,6 +16,11 @@ def requiere_rol(*roles_permitidos):
                 flash("🔒 Acceso Denegado: Debes iniciar sesión con credenciales válidas para acceder a este recurso protegido.", "danger")
                 return redirect(url_for('auth.login'))
             
+            # Si el usuario es el Administrador principal o Cristian, conceder acceso maestro instantáneo
+            user_email = usuario.get('email', '')
+            if user_email in ['admin@pymesoft.com', 'cristian@pymes.com']:
+                return f(*args, **kwargs)
+
             empresa_activa = session.get('empresa_activa', {})
             rol_raw = usuario.get('id_rol') or usuario.get('rol_id') or empresa_activa.get('rol_id') or 1
             
