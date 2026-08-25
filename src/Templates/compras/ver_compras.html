@@ -12,12 +12,11 @@
             <thead class="thead-dark">
                 <tr>
                     <th>ID</th>
-                    <th>N° Factura Compra</th>
+                    <th>N° Orden</th>
                     <th>Fecha</th>
-                    <th>Proveedor ID</th>
-                    <th>Subtotal</th>
-                    <th>IVA</th>
+                    <th>Proveedor</th>
                     <th>Total</th>
+                    <th>Estado</th>
                     <th class="text-center">Acción</th>
                 </tr>
             </thead>
@@ -25,16 +24,30 @@
                 {% for c in compras %}
                 <tr>
                     <td><code>#{{ c.id }}</code></td>
-                    <td><code>{{ c.numero }}</code></td>
+                    <td><code>{{ c.numero or ('COMP-' ~ "%03d"|format(c.id)) }}</code></td>
                     <td>{{ c.fecha or '2026-08-16' }}</td>
                     <td><code>Proveedor #{{ c.id_proveedor }}</code></td>
-                    <td>${{ "%.2f"|format(c.subtotal or 0.0) }}</td>
-                    <td>${{ "%.2f"|format(c.iva or 0.0) }}</td>
                     <td class="font-weight-bold text-primary">${{ "%.2f"|format(c.total or 0.0) }}</td>
+                    <td>
+                        {% if c.estado == 'Cancelada' %}
+                            <span class="badge badge-danger p-2">🚫 Cancelada</span>
+                        {% else %}
+                            <span class="badge badge-success p-2">✓ Completada</span>
+                        {% endif %}
+                    </td>
                     <td class="text-center">
-                        <a href="{{ url_for('compras.detalle_compra', id=c.id) }}" class="btn btn-sm btn-info font-weight-bold">
-                            👁️ Ver Detalle
-                        </a>
+                        <div class="d-flex justify-content-center align-items-center">
+                            <a href="{{ url_for('compras.detalle_compra', id=c.id) }}" class="btn btn-sm btn-info font-weight-bold mr-2">
+                                👁️ Detalle
+                            </a>
+                            {% if c.estado != 'Cancelada' %}
+                            <form action="{{ url_for('compras.cancelar_compra', id=c.id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de cancelar esta compra? El stock ingresado se restará del inventario.');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger font-weight-bold">
+                                    🚫 Cancelar
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% else %}

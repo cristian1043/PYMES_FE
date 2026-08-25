@@ -34,14 +34,67 @@
 
                         <div class="row">
                             <div class="col-md-6 form-group mb-3">
-                                <label for="cedula_runc">Cédula / RUNC / Documento</label>
-                                <input type="text" class="form-control" id="cedula_runc" name="cedula_runc" pattern="[0-9A-Za-z\-]{5,20}" title="Entre 5 y 20 caracteres alfanuméricos" placeholder="1098765432">
+                                <label for="documento">Cédula / Documento ID *</label>
+                                <input type="text" class="form-control" id="documento" name="documento" required pattern="[0-9A-Za-z\-]{5,20}" title="Entre 5 y 20 caracteres alfanuméricos" placeholder="1098765432">
                             </div>
-                            <div class="col-md-6 form-group mb-4">
+                            <div class="col-md-6 form-group mb-3">
                                 <label for="direccion">Dirección</label>
                                 <input type="text" class="form-control" id="direccion" name="direccion" placeholder="Carrera 10 #20-30">
                             </div>
                         </div>
+
+                        <!-- SECCIÓN FINANCIERA / TARJETAS (PRIVADO) -->
+                        <div class="card bg-light border mb-4">
+                            <div class="card-body">
+                                <h6 class="text-primary font-weight-bold mb-3">💳 Métodos de Pago y Tarjetas Asociadas</h6>
+                                <div class="form-group mb-3">
+                                    <label for="tiene_tarjeta" class="font-weight-bold">¿El cliente tiene Tarjetas / Métodos de Pago Asociados?</label>
+                                    <select class="form-control" id="tiene_tarjeta" name="tiene_tarjeta" onchange="toggleTarjetaFields()">
+                                        <option value="No" selected>No (Sin tarjetas asociadas)</option>
+                                        <option value="Sí">Sí (Registrar método de pago/tarjeta)</option>
+                                    </select>
+                                </div>
+
+                                <div id="div_tarjeta" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-6 form-group mb-3">
+                                            <label for="tipo_tarjeta" class="font-weight-bold">Tipo de Tarjeta</label>
+                                            <select class="form-control" id="tipo_tarjeta" name="tipo_tarjeta">
+                                                <option value="Crédito">Tarjeta de Crédito</option>
+                                                <option value="Débito">Tarjeta de Débito</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 form-group mb-3">
+                                            <label for="banco_tarjeta" class="font-weight-bold">Banco Emisor</label>
+                                            <input type="text" class="form-control" id="banco_tarjeta" name="banco_tarjeta" placeholder="Ej: Bancolombia">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 form-group mb-3">
+                                            <label for="franquicia_tarjeta" class="font-weight-bold">Franquicia</label>
+                                            <select class="form-control" id="franquicia_tarjeta" name="franquicia_tarjeta">
+                                                <option value="Visa">Visa</option>
+                                                <option value="Mastercard">Mastercard</option>
+                                                <option value="American Express">American Express</option>
+                                                <option value="Otra">Otra Franquicia</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 form-group mb-3">
+                                            <label for="ultimos_digitos_tarjeta" class="font-weight-bold">Últimos 4 Dígitos de Referencia</label>
+                                            <input type="text" class="form-control" id="ultimos_digitos_tarjeta" name="ultimos_digitos_tarjeta" maxlength="4" pattern="[0-9]{4}" placeholder="4321">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            function toggleTarjetaFields() {
+                                var val = document.getElementById('tiene_tarjeta').value;
+                                var div = document.getElementById('div_tarjeta');
+                                div.style.display = (val === 'Sí') ? 'block' : 'none';
+                            }
+                        </script>
 
                         <div class="d-flex justify-content-between">
                             <a href="{{ url_for('clientes.ver_clientes') }}" class="btn btn-secondary">Cancelar</a>

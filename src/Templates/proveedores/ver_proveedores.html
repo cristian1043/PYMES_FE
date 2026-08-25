@@ -15,8 +15,8 @@
                     <th>NIT</th>
                     <th>Nombre de la Empresa</th>
                     <th>Contacto</th>
-                    <th>Teléfono</th>
-                    <th>Correo Electrónico</th>
+                    <th>Teléfono / Email</th>
+                    <th>Servicios / Productos Ofrecidos</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
@@ -27,8 +27,8 @@
                     <td><code>{{ prov.nit }}</code></td>
                     <td><strong>{{ prov.nombre }}</strong></td>
                     <td>{{ prov.contacto or 'N/A' }}</td>
-                    <td>{{ prov.telefono or 'N/A' }}</td>
-                    <td>{{ prov.email or 'N/A' }}</td>
+                    <td>{{ prov.telefono }}<br><small class="text-muted">{{ prov.email }}</small></td>
+                    <td><small>{{ prov.detalle_servicios or 'Sin descripción registrada' }}</small></td>
                     <td class="text-center">
                         <a href="{{ url_for('proveedores.editar_proveedor', id=prov.id) }}" class="btn btn-sm btn-outline-warning font-weight-bold">
                             ✏️ Editar

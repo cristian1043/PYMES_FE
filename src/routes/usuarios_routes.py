@@ -34,51 +34,44 @@ def ver_usuarios():
 @usuarios_bp.route('/afiliar', methods=['POST'])
 @requiere_rol(1) # Exclusivo para Administrador
 def afiliar_usuario():
-    """Afilia a un trabajador guardando su rol y estado Activo exclusivamente en la empresa activa."""
+    """Afilia a un trabajador existente verificando que su cuenta ya esté registrada previamente en el sistema."""
     empresa_activa = session.get('empresa_activa', {})
     empresa_id = empresa_activa.get('id', 1)
 
-    email = request.form.get('email')
-    documento = request.form.get('documento')
-    nombre = request.form.get('nombre')
-    apellido = request.form.get('apellido')
-    telefono = request.form.get('telefono', '')
+    documento = request.form.get('documento', '').strip()
     id_rol = int(request.form.get('id_rol', 2))
-    password = request.form.get('password', '123456')
-    tipo_doc = request.form.get('tipo_documento', 'CC')
+    banco = request.form.get('banco', '').strip()
+    tipo_cuenta = request.form.get('tipo_cuenta', '').strip()
+    numero_cuenta = request.form.get('numero_cuenta', '').strip()
 
-    banco = request.form.get('banco', '')
-    tipo_cuenta = request.form.get('tipo_cuenta', '')
-    numero_cuenta = request.form.get('numero_cuenta', '')
+    if not documento:
+        flash("Debes ingresar un número de documento válido para buscar al trabajador.", "warning")
+        return redirect(url_for('usuarios.ver_usuarios'))
 
-    datos = {
-        'tipo_documento': tipo_doc,
-        'documento': documento,
-        'nombre': nombre,
-        'apellido': apellido,
-        'telefono': telefono,
-        'email': email,
-        'username': email.split('@')[0],
-        'password_hash': password,
-        'id_rol': id_rol,
-        'estado': 'Activo',
-        'banco': banco,
-        'tipo_cuenta': tipo_cuenta,
-        'numero_cuenta': numero_cuenta
-    }
+    # Buscar si la persona ya existe en la base de datos global de usuarios
+    usuario_existente = UsuariosService.obtener_por_documento(documento)
 
-    res, err = AuthService.registrar(datos)
-    
-    # Vincular rol y estado exclusivamente a esta empresa en la BD MySQL
-    if res and 'id' in res:
-        UsuariosService.cambiar_rol_en_empresa(res['id'], empresa_id, id_rol)
-        UsuariosService.cambiar_estado_en_empresa(res['id'], empresa_id, 'Activo')
+    if not usuario_existente or 'id' not in usuario_existente:
+        flash(f"El número de documento N° {documento} no corresponde a ninguna cuenta registrada en el sistema. El trabajador debe crear su cuenta previamente.", "danger")
+        return redirect(url_for('usuarios.ver_usuarios'))
 
-    if err:
-        flash(f"Información: {err}. Se ha vinculado al empleado a esta empresa.", "info")
-    else:
-        flash(f"¡Trabajador {nombre} {apellido} afiliado exitosamente a esta empresa!", "success")
+    u_id = usuario_existente['id']
+    u_nombre = f"{usuario_existente.get('nombre', '')} {usuario_existente.get('apellido', '')}".strip()
 
+    # Actualizar datos bancarios del perfil si fueron diligenciados
+    if banco or numero_cuenta:
+        datos_bancarios = {
+            'banco': banco or usuario_existente.get('banco', ''),
+            'tipo_cuenta': tipo_cuenta or usuario_existente.get('tipo_cuenta', 'Ahorros'),
+            'numero_cuenta': numero_cuenta or usuario_existente.get('numero_cuenta', '')
+        }
+        UsuariosService.actualizar(u_id, datos_bancarios)
+
+    # Afiliar y activar exclusivamente en la empresa activa con el rol seleccionado
+    UsuariosService.cambiar_rol_en_empresa(u_id, empresa_id, id_rol)
+    UsuariosService.cambiar_estado_en_empresa(u_id, empresa_id, 'Activo')
+
+    flash(f"¡Trabajador {u_nombre} (Doc: {documento}) afiliado exitosamente a esta empresa!", "success")
     return redirect(url_for('usuarios.ver_usuarios'))
 
 @usuarios_bp.route('/cambiar_rol/<int:id>', methods=['POST'])

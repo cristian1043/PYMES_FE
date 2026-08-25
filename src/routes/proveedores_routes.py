@@ -26,7 +26,8 @@ def nuevo_proveedor():
             'contacto': request.form.get('contacto'),
             'telefono': request.form.get('telefono'),
             'email': request.form.get('email'),
-            'direccion': request.form.get('direccion')
+            'direccion': request.form.get('direccion'),
+            'detalle_servicios': request.form.get('detalle_servicios', '')
         }
         res, err = ProveedoresService.crear(data)
         if err:
@@ -53,7 +54,8 @@ def editar_proveedor(id):
             'contacto': request.form.get('contacto'),
             'telefono': request.form.get('telefono'),
             'email': request.form.get('email'),
-            'direccion': request.form.get('direccion')
+            'direccion': request.form.get('direccion'),
+            'detalle_servicios': request.form.get('detalle_servicios', '')
         }
         res, err = ProveedoresService.actualizar(id, data)
         if err:

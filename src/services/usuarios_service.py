@@ -24,6 +24,14 @@ class UsuariosService:
         return data
 
     @staticmethod
+    def obtener_por_documento(documento):
+        """Obtiene un usuario por su documento."""
+        data, error = APIClient.get(f'/usuarios/documento/{documento}')
+        if error or not isinstance(data, dict):
+            return None
+        return data
+
+    @staticmethod
     def actualizar(usuario_id, datos_usuario):
         """Actualiza los datos personales, de contacto y bancarios de un usuario."""
         return APIClient.put(f'/usuarios/{usuario_id}', data=datos_usuario)

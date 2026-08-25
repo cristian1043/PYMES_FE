@@ -33,6 +33,19 @@ class ComprasService:
         return APIClient.post('/compras/', data=datos_compra)
 
     @staticmethod
+    def obtener_siguiente_numero():
+        """Obtiene el siguiente código consecutivo de orden de compra (COMP-XXX)."""
+        data, error = APIClient.get('/compras/siguiente_numero')
+        if error or not isinstance(data, dict):
+            return "COMP-001"
+        return data.get("siguiente_numero", "COMP-001")
+
+    @staticmethod
+    def cancelar(compra_id):
+        """Cancela una orden de compra y revierte el stock acumulado."""
+        return APIClient.post(f'/compras/{compra_id}/cancelar', data={})
+
+    @staticmethod
     def actualizar(compra_id, datos_compra):
         """Actualiza una compra existente."""
         return APIClient.put(f'/compras/{compra_id}', data=datos_compra)

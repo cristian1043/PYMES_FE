@@ -1,13 +1,166 @@
 {% extends "layout.html" %}
 
 {% block content %}
-
-    <h1 style="color: blue;">Tu APP de confiaza para su Facturación</h1>
-        <div class="container mt-5">
-
-         <h1>Bienvenido a PYMESOFT</h1>
-
-         <p>Sistema de Gestion de Recursos y servicios</p>
-
+<div class="container mt-4 mb-5">
+    <!-- ENCABEZADO PRINCIPAL -->
+    <div class="jumbotron bg-white shadow-sm border rounded p-4 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 font-weight-bold text-primary mb-2">Bienvenido a PYMES.SOFT</h1>
+                <p class="lead text-dark mb-1">
+                    Sistema de Gestión Multitenant | 🏢 Empresa Activa: <strong>{{ session['empresa_activa']['nombre'] if session.get('empresa_activa') else 'Empresa Seleccionada' }}</strong>
+                </p>
+                <p class="text-muted small mb-0">Panel de Control Operativo y Notificaciones en Tiempo Real</p>
+            </div>
+            <div class="col-md-4 text-md-right mt-3 mt-md-0">
+                <a href="{{ url_for('facturas.nueva_factura') }}" class="btn btn-success font-weight-bold shadow-sm mr-2 mb-2">
+                    🧾 Nueva Factura
+                </a>
+                <a href="{{ url_for('compras.nueva_compra') }}" class="btn btn-primary font-weight-bold shadow-sm mb-2">
+                    📦 Nueva Compra
+                </a>
+            </div>
+        </div>
     </div>
+
+    <!-- TARJETAS DE INDICADORES CLAVE (KPIs) -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 py-2 bg-primary text-white">
+                <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Ventas Realizadas</div>
+                            <div class="h4 mb-0 font-weight-bold">${{ "%.2f"|format(total_ventas or 0.0) }}</div>
+                            <small>{{ total_facturas or 0 }} Facturas Emitidas</small>
+                        </div>
+                        <div class="col-auto h2 mb-0">💰</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 py-2 bg-success text-white">
+                <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Catálogo de Productos</div>
+                            <div class="h4 mb-0 font-weight-bold">{{ total_productos or 0 }}</div>
+                            <small>{{ optimos|length }} con Stock Óptimo</small>
+                        </div>
+                        <div class="col-auto h2 mb-0">🏷️</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 py-2 bg-warning text-dark">
+                <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Alertas Stock Bajo</div>
+                            <div class="h4 mb-0 font-weight-bold">{{ bajos|length }}</div>
+                            <small class="font-weight-bold">≤ 2.500 Unidades</small>
+                        </div>
+                        <div class="col-auto h2 mb-0">⚠️</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 py-2 bg-info text-white">
+                <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Alertas Sobre-stock</div>
+                            <div class="h4 mb-0 font-weight-bold">{{ sobrestock|length }}</div>
+                            <small>> 10.000 Unidades</small>
+                        </div>
+                        <div class="col-auto h2 mb-0">📦⚡</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DE NOTIFICACIONES Y ALERTAS DEL SISTEMA -->
+    <h4 class="text-dark font-weight-bold mb-3">🔔 Centro de Notificaciones Operativas del Sistema</h4>
+    
+    <div class="row">
+        <!-- ALERTAS DE STOCK BAJO -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-warning">
+                <div class="card-header bg-warning text-dark font-weight-bold d-flex justify-content-between align-items-center">
+                    <span>⚠️ Alerta de Stock Bajo (≤ 2.500 Unidades)</span>
+                    <span class="badge badge-dark">{{ bajos|length }} Críticos</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if bajos %}
+                        <div class="list-group list-group-flush">
+                            {% for p in bajos[:5] %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ p.nombre }}</strong> <code class="ml-1">{{ p.codigo }}</code><br>
+                                    <small class="text-muted">Precio: ${{ "%.2f"|format(p.precio) }}</small>
+                                </div>
+                                <span class="badge badge-warning p-2">
+                                    {{ p.stock }} unidades disponibles
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if bajos|length > 5 %}
+                        <div class="card-footer text-center bg-white">
+                            <a href="{{ url_for('productos.ver_productos') }}" class="btn btn-sm btn-outline-warning">Ver todos los {{ bajos|length }} productos en stock bajo →</a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="p-4 text-center text-muted">
+                            ✅ Excelente: Todos los productos tienen niveles de inventario por encima de 2.500 unidades.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ALERTAS DE SOBRE-STOCK -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-info">
+                <div class="card-header bg-info text-white font-weight-bold d-flex justify-content-between align-items-center">
+                    <span>📦⚡ Alerta de Sobre-stock Excesivo (> 10.000 Unidades)</span>
+                    <span class="badge badge-light text-dark">{{ sobrestock|length }} Acumulados</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if sobrestock %}
+                        <div class="list-group list-group-flush">
+                            {% for p in sobrestock[:5] %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ p.nombre }}</strong> <code class="ml-1">{{ p.codigo }}</code><br>
+                                    <small class="text-muted">Inventario excesivo acumulado</small>
+                                </div>
+                                <span class="badge badge-info p-2">
+                                    {{ p.stock }} unidades en almacén
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if sobrestock|length > 5 %}
+                        <div class="card-footer text-center bg-white">
+                            <a href="{{ url_for('productos.ver_productos') }}" class="btn btn-sm btn-outline-info">Ver todos los {{ sobrestock|length }} productos en sobre-stock →</a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="p-4 text-center text-muted">
+                            👍 No hay excedentes de almacenamiento por encima del límite óptimo de 10.000 unidades.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

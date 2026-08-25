@@ -53,7 +53,21 @@ def create_app(config_name='default'):
 
     @app.route('/')
     def index():
-        return render_template('index.html')
+        from src.services.productos_service import ProductosService
+        from src.services.facturas_service import FacturasService
+        
+        prods_res = ProductosService.obtener_todos(per_page=1000)
+        items = prods_res.get("items", []) if isinstance(prods_res, dict) else (prods_res if isinstance(prods_res, list) else [])
+        
+        bajos = [p for p in items if p.get('stock', 0) <= 2500]
+        sobrestock = [p for p in items if p.get('stock', 0) > 10000]
+        optimos = [p for p in items if 2500 < p.get('stock', 0) <= 10000]
+        
+        facturas = FacturasService.obtener_todas()
+        emitidas = [f for f in facturas if f.get('estado', 'Emitida') == 'Emitida'] if isinstance(facturas, list) else []
+        total_ventas = sum(float(f.get('total', 0.0)) for f in emitidas)
+        
+        return render_template('index.html', bajos=bajos, sobrestock=sobrestock, optimos=optimos, total_productos=len(items), total_ventas=total_ventas, total_facturas=len(emitidas))
 
     @app.errorhandler(500)
     def internal_error(error):

@@ -9,9 +9,15 @@
         </div>
         <div class="card-body">
             <form method="POST">
-                <div class="form-group mb-3">
-                    <label class="font-weight-bold">Nombre del Producto</label>
-                    <input type="text" name="nombre" class="form-control" value="{{ producto.nombre }}" required>
+                <div class="row">
+                    <div class="col-md-4 form-group mb-3">
+                        <label class="font-weight-bold">Código de Producto</label>
+                        <input type="text" name="codigo" class="form-control bg-light font-weight-bold" value="{{ producto.codigo or ('PROD-' ~ '%03d'|format(producto.id)) }}" readonly>
+                    </div>
+                    <div class="col-md-8 form-group mb-3">
+                        <label class="font-weight-bold">Nombre del Producto</label>
+                        <input type="text" name="nombre" class="form-control" value="{{ producto.nombre }}" required>
+                    </div>
                 </div>
 
                 <div class="form-group mb-3">

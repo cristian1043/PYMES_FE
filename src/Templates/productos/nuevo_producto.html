@@ -10,9 +10,15 @@
                 </div>
                 <div class="card-body">
                     <form action="{{ url_for('productos.nuevo_producto') }}" method="POST">
-                        <div class="form-group mb-3">
-                            <label for="nombre">Nombre del Producto *</label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" required minlength="3" maxlength="100" placeholder="Ej: Laptop HP 15">
+                        <div class="row">
+                            <div class="col-md-4 form-group mb-3">
+                                <label for="codigo" class="font-weight-bold">Código de Producto</label>
+                                <input type="text" class="form-control bg-light font-weight-bold" id="codigo" name="codigo" value="{{ siguiente_codigo }}" readonly>
+                            </div>
+                            <div class="col-md-8 form-group mb-3">
+                                <label for="nombre" class="font-weight-bold">Nombre del Producto *</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" required minlength="3" maxlength="100" placeholder="Ej: Laptop HP 15">
+                            </div>
                         </div>
 
                         <div class="form-group mb-3">

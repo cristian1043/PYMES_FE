@@ -25,14 +25,14 @@
                     {% for cli in clientes %}
                     <tr>
                         <td>
-                            {% if loop.index == 1 %}
+                            {% if loop.index == 1 and paginacion.page == 1 %}
                                 <span class="badge badge-warning p-2">🥇 Top #1</span>
-                            {% elif loop.index == 2 %}
+                            {% elif loop.index == 2 and paginacion.page == 1 %}
                                 <span class="badge badge-secondary p-2">🥈 Top #2</span>
-                            {% elif loop.index == 3 %}
+                            {% elif loop.index == 3 and paginacion.page == 1 %}
                                 <span class="badge badge-danger p-2">🥉 Top #3</span>
                             {% else %}
-                                #{{ loop.index }}
+                                #{{ (paginacion.page - 1) * paginacion.per_page + loop.index }}
                             {% endif %}
                         </td>
                         <td><strong>{{ cli.nombre }}</strong></td>
@@ -49,5 +49,23 @@
             </table>
         </div>
     </div>
+
+    {% if paginacion and paginacion.total_pages and paginacion.total_pages > 1 %}
+    <nav aria-label="Navegación de clientes" class="mt-4 mb-5">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if paginacion.page <= 1 %}disabled{% endif %}">
+                <a class="page-link" href="?page={{ paginacion.page - 1 }}">Anterior</a>
+            </li>
+            {% for p in range(1, paginacion.total_pages + 1) %}
+            <li class="page-item {% if p == paginacion.page %}active{% endif %}">
+                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+            </li>
+            {% endfor %}
+            <li class="page-item {% if paginacion.page >= paginacion.total_pages %}disabled{% endif %}">
+                <a class="page-link" href="?page={{ paginacion.page + 1 }}">Siguiente</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}

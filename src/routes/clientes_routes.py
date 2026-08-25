@@ -27,7 +27,12 @@ def nuevo_cliente():
             'apellido': request.form.get('apellido'),
             'email': request.form.get('email'),
             'telefono': request.form.get('telefono'),
-            'direccion': request.form.get('direccion')
+            'direccion': request.form.get('direccion'),
+            'tiene_tarjeta': request.form.get('tiene_tarjeta', 'No'),
+            'tipo_tarjeta': request.form.get('tipo_tarjeta'),
+            'banco_tarjeta': request.form.get('banco_tarjeta'),
+            'franquicia_tarjeta': request.form.get('franquicia_tarjeta'),
+            'ultimos_digitos_tarjeta': request.form.get('ultimos_digitos_tarjeta')
         }
         res, err = ClientesService.crear(data)
         if err:
@@ -55,7 +60,12 @@ def editar_cliente(id):
             'apellido': request.form.get('apellido'),
             'email': request.form.get('email'),
             'telefono': request.form.get('telefono'),
-            'direccion': request.form.get('direccion')
+            'direccion': request.form.get('direccion'),
+            'tiene_tarjeta': request.form.get('tiene_tarjeta', 'No'),
+            'tipo_tarjeta': request.form.get('tipo_tarjeta'),
+            'banco_tarjeta': request.form.get('banco_tarjeta'),
+            'franquicia_tarjeta': request.form.get('franquicia_tarjeta'),
+            'ultimos_digitos_tarjeta': request.form.get('ultimos_digitos_tarjeta')
         }
         res, err = ClientesService.actualizar(id, data)
         if err:

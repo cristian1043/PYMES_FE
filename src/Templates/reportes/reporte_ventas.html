@@ -60,7 +60,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for f in resumen.facturas %}
+                    {% for f in facturas %}
                     <tr>
                         <td><code>{{ f.numero }}</code></td>
                         <td>{{ f.fecha }}</td>
@@ -78,5 +78,23 @@
             </table>
         </div>
     </div>
+
+    {% if paginacion and paginacion.total_pages and paginacion.total_pages > 1 %}
+    <nav aria-label="Navegación de ventas" class="mt-4 mb-5">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if paginacion.page <= 1 %}disabled{% endif %}">
+                <a class="page-link" href="?page={{ paginacion.page - 1 }}">Anterior</a>
+            </li>
+            {% for p in range(1, paginacion.total_pages + 1) %}
+            <li class="page-item {% if p == paginacion.page %}active{% endif %}">
+                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+            </li>
+            {% endfor %}
+            <li class="page-item {% if paginacion.page >= paginacion.total_pages %}disabled{% endif %}">
+                <a class="page-link" href="?page={{ paginacion.page + 1 }}">Siguiente</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}

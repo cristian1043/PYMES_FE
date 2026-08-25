@@ -19,19 +19,19 @@
             <table class="table table-striped table-hover mb-0 align-middle">
                 <thead class="thead-dark">
                     <tr>
-                        <th>ID</th>
-                        <th>Documento</th>
+                        <th style="width: 70px;" class="text-center">ID</th>
+                        <th style="width: 140px;">Documento</th>
                         <th>Nombre y Rol</th>
                         <th>Contacto</th>
                         <th>Datos Bancarios (Nómina)</th>
-                        <th>Cambiar Rol</th>
-                        <th>Acción / Estado</th>
+                        <th style="width: 180px;">Cambiar Rol</th>
+                        <th style="width: 180px;">Acción / Estado</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for u in usuarios %}
                     <tr>
-                        <td><code>#{{ u.id }}</code></td>
+                        <td class="text-center font-weight-bold"><code>#{{ u.id }}</code></td>
                         <td><code>{{ u.tipo_documento }} {{ u.documento }}</code></td>
                         <td>
                             <strong>{{ u.nombre }} {{ u.apellido }}</strong><br>
@@ -95,104 +95,69 @@
 
 <!-- MODAL AFILIAR NUEVO TRABAJADOR -->
 <div class="modal fade" id="modalAfiliarUsuario" tabindex="-1" role="dialog" aria-labelledby="modalAfiliarTitle" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+  <div class="modal-dialog modal-md modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title" id="modalAfiliarTitle">👤 Afiliar Trabajador e Información Bancaria</h5>
+        <h5 class="modal-title" id="modalAfiliarTitle">👤 Afiliar Trabajador Registrado</h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <form action="{{ url_for('usuarios.afiliar_usuario') }}" method="POST">
         <div class="modal-body">
-            <h6 class="text-primary font-weight-bold mb-3">1. Datos Personales del Trabajador</h6>
-            <div class="row">
-                <div class="col-md-4 form-group mb-3">
-                    <label for="tipo_documento" class="font-weight-bold">Tipo Doc. *</label>
-                    <select name="tipo_documento" id="tipo_documento" class="form-control" required>
-                        <option value="CC">Cédula de Ciudadanía (CC)</option>
-                        <option value="CE">Cédula de Extranjería (CE)</option>
-                        <option value="NIT">NIT</option>
-                        <option value="PP">Pasaporte</option>
-                    </select>
-                </div>
-                <div class="col-md-8 form-group mb-3">
-                    <label for="documento" class="font-weight-bold">Número de Documento *</label>
-                    <input type="text" name="documento" id="documento" class="form-control" placeholder="Ej: 1043302995" required pattern="[0-9]{5,20}">
-                </div>
+            <div class="alert alert-info py-2 small">
+                ℹ️ <strong>Requisito:</strong> El trabajador ya debe tener su cuenta personal creada en el sistema con su número de documento.
             </div>
 
-            <div class="row">
-                <div class="col-md-6 form-group mb-3">
-                    <label for="nombre" class="font-weight-bold">Nombres *</label>
-                    <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Ej: Carlos" required minlength="2">
-                </div>
-                <div class="col-md-6 form-group mb-3">
-                    <label for="apellido" class="font-weight-bold">Apellidos *</label>
-                    <input type="text" name="apellido" id="apellido" class="form-control" placeholder="Ej: Pérez" required minlength="2">
-                </div>
+            <div class="form-group mb-3">
+                <label for="documento" class="font-weight-bold">Número de Documento del Trabajador *</label>
+                <input type="text" name="documento" id="documento" class="form-control form-control-lg" placeholder="Ej: 1043302995" required pattern="[0-9A-Za-z\-]{5,20}">
+                <small class="form-text text-muted">Ingresa el documento para verificar su existencia en el sistema.</small>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 form-group mb-3">
-                    <label for="email" class="font-weight-bold">Correo Electrónico *</label>
-                    <input type="email" name="email" id="email" class="form-control" placeholder="carlos@gmail.com" required>
-                </div>
-                <div class="col-md-6 form-group mb-3">
-                    <label for="telefono" class="font-weight-bold">Teléfono de Contacto *</label>
-                    <input type="tel" name="telefono" id="telefono" class="form-control" placeholder="3001234567" required pattern="[0-9]{7,15}">
-                </div>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-md-6 form-group mb-3">
-                    <label for="id_rol" class="font-weight-bold">Rol Asignado en la Empresa *</label>
-                    <select name="id_rol" id="id_rol" class="form-control" required>
-                        <option value="2">🏷️ Vendedor</option>
-                        <option value="3">📦 Almacenista</option>
-                        <option value="1">👑 Administrador</option>
-                    </select>
-                </div>
-                <div class="col-md-6 form-group mb-3">
-                    <label for="password" class="font-weight-bold">Contraseña Inicial de Acceso *</label>
-                    <input type="password" name="password" id="password" class="form-control" required minlength="6" value="123456">
-                </div>
+            <div class="form-group mb-3">
+                <label for="id_rol" class="font-weight-bold">Rol Asignado en esta Empresa *</label>
+                <select name="id_rol" id="id_rol" class="form-control" required>
+                    <option value="2">🏷️ Vendedor</option>
+                    <option value="3">📦 Almacenista</option>
+                    <option value="1">👑 Administrador</option>
+                </select>
             </div>
 
             <hr>
-            <h6 class="text-primary font-weight-bold mb-3">2. Información Bancaria para Día de Pago / Nómina</h6>
+            <h6 class="text-primary font-weight-bold mb-3">Información Bancaria para Nómina (Opcional)</h6>
+            <div class="form-group mb-3">
+                <label for="banco" class="font-weight-bold">Entidad Bancaria</label>
+                <select name="banco" id="banco" class="form-control">
+                    <option value="">-- Seleccionar Banco --</option>
+                    <option value="Bancolombia">Bancolombia</option>
+                    <option value="Davivienda">Davivienda</option>
+                    <option value="Nequi">Nequi</option>
+                    <option value="Daviplata">Daviplata</option>
+                    <option value="Banco de Bogotá">Banco de Bogotá</option>
+                    <option value="BBVA">BBVA</option>
+                    <option value="Banco Agrario">Banco Agrario</option>
+                    <option value="Otro">Otro Banco</option>
+                </select>
+            </div>
             <div class="row">
-                <div class="col-md-4 form-group mb-3">
-                    <label for="banco" class="font-weight-bold">Entidad Bancaria</label>
-                    <select name="banco" id="banco" class="form-control">
-                        <option value="">-- Seleccionar Banco --</option>
-                        <option value="Bancolombia">Bancolombia</option>
-                        <option value="Davivienda">Davivienda</option>
-                        <option value="Nequi">Nequi</option>
-                        <option value="Daviplata">Daviplata</option>
-                        <option value="Banco de Bogotá">Banco de Bogotá</option>
-                        <option value="BBVA">BBVA</option>
-                        <option value="Banco Agrario">Banco Agrario</option>
-                        <option value="Otro">Otro Banco</option>
-                    </select>
-                </div>
-                <div class="col-md-4 form-group mb-3">
+                <div class="col-md-6 form-group mb-3">
                     <label for="tipo_cuenta" class="font-weight-bold">Tipo de Cuenta</label>
                     <select name="tipo_cuenta" id="tipo_cuenta" class="form-control">
                         <option value="Ahorros">Cuenta de Ahorros</option>
                         <option value="Corriente">Cuenta Corriente</option>
-                        <option value="Monedero">Monedero Digital (Nequi/Daviplata)</option>
+                        <option value="Monedero">Monedero (Nequi/Daviplata)</option>
                     </select>
                 </div>
-                <div class="col-md-4 form-group mb-3">
-                    <label for="numero_cuenta" class="font-weight-bold">Número de Cuenta / Celular</label>
-                    <input type="text" name="numero_cuenta" id="numero_cuenta" class="form-control" placeholder="Ej: 123-456789-00">
+                <div class="col-md-6 form-group mb-3">
+                    <label for="numero_cuenta" class="font-weight-bold">N° Cuenta / Celular</label>
+                    <input type="text" name="numero_cuenta" id="numero_cuenta" class="form-control" placeholder="123-456789-00">
                 </div>
             </div>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-success font-weight-bold">Afiliar Trabajador con Datos Bancarios</button>
+            <button type="submit" class="btn btn-success font-weight-bold">🔍 Verificar y Afiliar Trabajador</button>
         </div>
       </form>
     </div>

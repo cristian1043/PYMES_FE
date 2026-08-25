@@ -16,7 +16,7 @@
                     <th>Nombre Completo</th>
                     <th>Correo Electrónico</th>
                     <th>Teléfono</th>
-                    <th>Dirección</th>
+                    <th>Método de Pago (Privado)</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
@@ -28,7 +28,22 @@
                     <td><strong>{{ cliente.nombre }} {{ cliente.apellido or '' }}</strong></td>
                     <td>{{ cliente.email or 'N/A' }}</td>
                     <td>{{ cliente.telefono or 'N/A' }}</td>
-                    <td>{{ cliente.direccion or 'N/A' }}</td>
+                    <td>
+                        {% if cliente.tiene_tarjeta == 'Sí' %}
+                            {% if session.get('usuario', {}).get('rol_id') == 1 %}
+                                <span class="badge badge-light border text-dark p-2" title="Datos visibles solo por el Administrador">
+                                    💳 <strong>{{ cliente.franquicia_tarjeta or 'Tarjeta' }}</strong> ({{ cliente.tipo_tarjeta or 'Crédito' }})<br>
+                                    <small>{{ cliente.banco_tarjeta or 'Banco' }} - **** {{ cliente.ultimos_digitos_tarjeta or '****' }}</small>
+                                </span>
+                            {% else %}
+                                <span class="badge badge-secondary p-2" title="Información bancaria reservada para Administradores">
+                                    🔒 Registrado (Protegido por Admin)
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted small">Sin tarjeta</span>
+                        {% endif %}
+                    </td>
                     <td class="text-center">
                         <a href="{{ url_for('clientes.editar_cliente', id=cliente.id) }}" class="btn btn-sm btn-outline-warning font-weight-bold">
                             ✏️ Editar

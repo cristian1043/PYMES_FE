@@ -20,8 +20,10 @@ def ver_productos():
 @requiere_rol(1, 3) # Admin y Almacenista pueden crear/modificar productos e inventario
 def nuevo_producto():
     """Formulario y registro de un nuevo producto (Admin y Almacenista)."""
+    siguiente_codigo = ProductosService.obtener_siguiente_codigo()
     if request.method == 'POST':
         data = {
+            'codigo': request.form.get('codigo') or siguiente_codigo,
             'nombre': request.form.get('nombre'),
             'descripcion': request.form.get('descripcion'),
             'precio': float(request.form.get('precio', 0)),
@@ -33,13 +35,13 @@ def nuevo_producto():
         if err:
             flash(f"Error al crear el producto: {err}", "danger")
         else:
-            flash("Producto creado exitosamente", "success")
+            flash(f"Producto {data['codigo']} creado exitosamente", "success")
             return redirect(url_for('productos.ver_productos'))
 
     categorias = ProductosService.obtener_categorias()
-    prov_res = ProveedoresService.obtener_todos()
+    prov_res = ProveedoresService.obtener_todos(per_page=1000)
     proveedores = prov_res.get("items", []) if isinstance(prov_res, dict) else (prov_res if isinstance(prov_res, list) else [])
-    return render_template('productos/nuevo_producto.html', categorias=categorias, proveedores=proveedores)
+    return render_template('productos/nuevo_producto.html', categorias=categorias, proveedores=proveedores, siguiente_codigo=siguiente_codigo)
 
 @productos_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @requiere_rol(1, 3) # Admin y Almacenista pueden editar productos
@@ -52,6 +54,7 @@ def editar_producto(id):
 
     if request.method == 'POST':
         data = {
+            'codigo': request.form.get('codigo', producto.get('codigo')),
             'nombre': request.form.get('nombre'),
             'descripcion': request.form.get('descripcion'),
             'precio': float(request.form.get('precio', 0)),
@@ -67,6 +70,6 @@ def editar_producto(id):
             return redirect(url_for('productos.ver_productos'))
 
     categorias = ProductosService.obtener_categorias()
-    prov_res = ProveedoresService.obtener_todos()
+    prov_res = ProveedoresService.obtener_todos(per_page=1000)
     proveedores = prov_res.get("items", []) if isinstance(prov_res, dict) else (prov_res if isinstance(prov_res, list) else [])
     return render_template('productos/editar_producto.html', producto=producto, categorias=categorias, proveedores=proveedores)

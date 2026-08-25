@@ -29,6 +29,13 @@
                     <div class="bg-light p-3 rounded border display-inline-block">
                         <h5 class="text-dark font-weight-bold mb-2">COMPRA N° {{ compra.numero }}</h5>
                         <p class="mb-1"><strong>Fecha de Registro:</strong> {{ compra.fecha or '2026-08-16' }}</p>
+                        <p class="mb-1"><strong>Estado:</strong> 
+                            {% if compra.estado == 'Cancelada' %}
+                                <span class="badge badge-danger p-2">🚫 Cancelada</span>
+                            {% else %}
+                                <span class="badge badge-success p-2">✓ Completada</span>
+                            {% endif %}
+                        </p>
                         <p class="mb-0"><strong>Registrado por:</strong> {{ compra.usuario.nombre if compra.usuario else 'Carlos' }} {{ compra.usuario.apellido if compra.usuario and compra.usuario.apellido else 'Rodríguez' }}</p>
                     </div>
                 </div>

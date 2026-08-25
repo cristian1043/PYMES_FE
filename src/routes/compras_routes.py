@@ -19,29 +19,57 @@ def ver_compras():
 @compras_bp.route('/nueva', methods=['GET', 'POST'])
 @requiere_rol(1, 3)
 def nueva_compra():
-    """Formulario y registro de una nueva compra delegando el cálculo matemático al Backend (Admin y Almacenista)."""
+    """Formulario interactivo y registro de orden de compra con actualización de inventario."""
+    from src.services.productos_service import ProductosService
+    import json
+
+    siguiente_numero = ComprasService.obtener_siguiente_numero()
+
     if request.method == 'POST':
         usuario_id = session.get('usuario', {}).get('id', 1)
+        detalles_json = request.form.get('detalles_json', '[]')
+        
+        try:
+            detalles_items = json.loads(detalles_json)
+        except Exception:
+            detalles_items = []
 
         data = {
-            'numero': request.form.get('numero'),
+            'numero': request.form.get('numero') or siguiente_numero,
             'subtotal': float(request.form.get('subtotal', 0)),
             'iva': float(request.form.get('iva', 0)),
             'descuento': float(request.form.get('descuento', 0)),
-            'id_proveedor': int(request.form.get('id_proveedor')),
-            'id_usuario': usuario_id
+            'total': float(request.form.get('total', 0)),
+            'id_proveedor': int(request.form.get('id_proveedor', 1)),
+            'id_usuario': usuario_id,
+            'detalles': detalles_items
         }
 
         res, err = ComprasService.crear(data)
         if err:
             flash(f"Error al registrar la compra: {err}", "danger")
         else:
-            flash("Compra registrada exitosamente", "success")
+            flash(f"Orden de compra {data['numero']} registrada exitosamente y stock actualizado.", "success")
             return redirect(url_for('compras.ver_compras'))
 
-    prov_res = ProveedoresService.obtener_todos()
+    prov_res = ProveedoresService.obtener_todos(per_page=1000)
     proveedores = prov_res.get("items", []) if isinstance(prov_res, dict) else (prov_res if isinstance(prov_res, list) else [])
-    return render_template('compras/nueva_compra.html', proveedores=proveedores)
+    
+    prods_res = ProductosService.obtener_todos(per_page=1000)
+    productos = prods_res.get("items", []) if isinstance(prods_res, dict) else (prods_res if isinstance(prods_res, list) else [])
+
+    return render_template('compras/nueva_compra.html', proveedores=proveedores, productos=productos, siguiente_numero=siguiente_numero)
+
+@compras_bp.route('/cancelar/<int:id>', methods=['POST'])
+@requiere_rol(1, 3)
+def cancelar_compra(id):
+    """Cancela una compra y revierte el stock acumulado."""
+    res, err = ComprasService.cancelar(id)
+    if err:
+        flash(f"Error al cancelar la compra: {err}", "danger")
+    else:
+        flash("La orden de compra ha sido cancelada y el stock fue restituido.", "info")
+    return redirect(url_for('compras.ver_compras'))
 
 @compras_bp.route('/detalle/<int:id>', methods=['GET'])
 @requiere_rol(1, 3)

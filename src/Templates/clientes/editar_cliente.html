@@ -52,6 +52,61 @@
                     <input type="text" name="direccion" class="form-control" value="{{ cliente.direccion or '' }}">
                 </div>
 
+                <!-- SECCIÓN FINANCIERA / TARJETAS (PRIVADO ADMIN) -->
+                {% if session.get('usuario', {}).get('rol_id') == 1 %}
+                <div class="card bg-light border mb-4">
+                    <div class="card-body">
+                        <h6 class="text-primary font-weight-bold mb-3">💳 Métodos de Pago y Tarjetas Asociadas (Admin)</h6>
+                        <div class="form-group mb-3">
+                            <label for="tiene_tarjeta" class="font-weight-bold">¿El cliente tiene Tarjetas / Métodos de Pago Asociados?</label>
+                            <select class="form-control" id="tiene_tarjeta" name="tiene_tarjeta" onchange="toggleTarjetaFields()">
+                                <option value="No" {% if cliente.tiene_tarjeta != 'Sí' %}selected{% endif %}>No (Sin tarjetas asociadas)</option>
+                                <option value="Sí" {% if cliente.tiene_tarjeta == 'Sí' %}selected{% endif %}>Sí (Registrar método de pago/tarjeta)</option>
+                            </select>
+                        </div>
+
+                        <div id="div_tarjeta" style="display: {% if cliente.tiene_tarjeta == 'Sí' %}block{% else %}none{% endif %};">
+                            <div class="row">
+                                <div class="col-md-6 form-group mb-3">
+                                    <label for="tipo_tarjeta" class="font-weight-bold">Tipo de Tarjeta</label>
+                                    <select class="form-control" id="tipo_tarjeta" name="tipo_tarjeta">
+                                        <option value="Crédito" {% if cliente.tipo_tarjeta == 'Crédito' %}selected{% endif %}>Tarjeta de Crédito</option>
+                                        <option value="Débito" {% if cliente.tipo_tarjeta == 'Débito' %}selected{% endif %}>Tarjeta de Débito</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 form-group mb-3">
+                                    <label for="banco_tarjeta" class="font-weight-bold">Banco Emisor</label>
+                                    <input type="text" class="form-control" id="banco_tarjeta" name="banco_tarjeta" value="{{ cliente.banco_tarjeta or '' }}" placeholder="Ej: Bancolombia">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 form-group mb-3">
+                                    <label for="franquicia_tarjeta" class="font-weight-bold">Franquicia</label>
+                                    <select class="form-control" id="franquicia_tarjeta" name="franquicia_tarjeta">
+                                        <option value="Visa" {% if cliente.franquicia_tarjeta == 'Visa' %}selected{% endif %}>Visa</option>
+                                        <option value="Mastercard" {% if cliente.franquicia_tarjeta == 'Mastercard' %}selected{% endif %}>Mastercard</option>
+                                        <option value="American Express" {% if cliente.franquicia_tarjeta == 'American Express' %}selected{% endif %}>American Express</option>
+                                        <option value="Otra" {% if cliente.franquicia_tarjeta == 'Otra' %}selected{% endif %}>Otra Franquicia</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 form-group mb-3">
+                                    <label for="ultimos_digitos_tarjeta" class="font-weight-bold">Últimos 4 Dígitos de Referencia</label>
+                                    <input type="text" class="form-control" id="ultimos_digitos_tarjeta" name="ultimos_digitos_tarjeta" value="{{ cliente.ultimos_digitos_tarjeta or '' }}" maxlength="4" pattern="[0-9]{4}" placeholder="4321">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function toggleTarjetaFields() {
+                        var val = document.getElementById('tiene_tarjeta').value;
+                        var div = document.getElementById('div_tarjeta');
+                        div.style.display = (val === 'Sí') ? 'block' : 'none';
+                    }
+                </script>
+                {% endif %}
+
                 <div class="d-flex justify-content-end">
                     <a href="{{ url_for('clientes.ver_clientes') }}" class="btn btn-secondary mr-2">Cancelar</a>
                     <button type="submit" class="btn btn-warning font-weight-bold">💾 Guardar Cambios</button>

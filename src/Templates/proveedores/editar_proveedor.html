@@ -42,6 +42,11 @@
                     </div>
                 </div>
 
+                <div class="form-group mb-4">
+                    <label class="font-weight-bold">Descripción de Productos / Servicios Ofrecidos</label>
+                    <textarea name="detalle_servicios" class="form-control" rows="3" placeholder="Detalles de lo que ofrece el proveedor...">{{ proveedor.detalle_servicios or '' }}</textarea>
+                </div>
+
                 <div class="d-flex justify-content-end">
                     <a href="{{ url_for('proveedores.ver_proveedores') }}" class="btn btn-secondary mr-2">Cancelar</a>
                     <button type="submit" class="btn btn-warning font-weight-bold">💾 Guardar Cambios</button>

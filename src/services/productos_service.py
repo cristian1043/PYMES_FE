@@ -19,6 +19,14 @@ class ProductosService:
         return {"items": [], "total": 0, "page": page, "per_page": per_page, "total_pages": 0}
 
     @staticmethod
+    def obtener_siguiente_codigo():
+        """Obtiene el siguiente código consecutivo de producto."""
+        data, error = APIClient.get('/productos/siguiente_codigo')
+        if error or not isinstance(data, dict):
+            return "PROD-001"
+        return data.get("siguiente_codigo", "PROD-001")
+
+    @staticmethod
     def obtener_por_id(producto_id):
         """Obtiene un producto por su ID."""
         data, error = APIClient.get(f'/productos/{producto_id}')
