@@ -136,13 +136,12 @@ def editar_usuario(id):
             'apellido': request.form.get('apellido'),
             'email': request.form.get('email'),
             'telefono': request.form.get('telefono'),
-            'id_rol': id_rol,
             'banco': request.form.get('banco', ''),
             'tipo_cuenta': request.form.get('tipo_cuenta', ''),
             'numero_cuenta': request.form.get('numero_cuenta', '')
         }
 
-        # Actualizar datos de usuario
+        # Actualizar datos de perfil de usuario
         res, err = UsuariosService.actualizar(id, datos)
         # Actualizar rol exclusivo en la empresa activa
         UsuariosService.cambiar_rol_en_empresa(id, empresa_id, id_rol)

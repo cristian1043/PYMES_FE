@@ -1,65 +1,171 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4 mb-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white">
-                    <h4 class="mb-0">Emitir Nueva Factura de Venta</h4>
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0 font-weight-bold">🧾 Emitir Nueva Factura de Venta</h4>
+                    <span class="badge badge-light text-dark font-weight-bold">Estado: Borrador en Proceso</span>
                 </div>
-                <div class="card-body">
-                    <form action="{{ url_for('facturas.nueva_factura') }}" method="POST">
-                        <div class="row">
-                            <div class="col-md-6 form-group mb-3">
-                                <label for="numero" class="font-weight-bold">Número de Factura *</label>
-                                <input type="text" class="form-control" id="numero" name="numero" required minlength="3" placeholder="FAC-001">
-                            </div>
-                            <div class="col-md-6 form-group mb-3">
-                                <label for="cliente_search" class="font-weight-bold">Buscar Cliente (por Cédula / NIT / Nombre) *</label>
-                                <input type="text" list="lista_clientes" class="form-control" id="cliente_search" placeholder="Escribe documento o nombre..." autocomplete="off" required>
-                                <input type="hidden" name="id_cliente" id="id_cliente" required>
-                                <datalist id="lista_clientes">
-                                    {% for cli in clientes %}
-                                        <option data-id="{{ cli.id }}" value="{{ cli.tipo_documento }} {{ cli.documento }} - {{ cli.nombre }} {{ cli.apellido }}"></option>
-                                    {% endfor %}
-                                </datalist>
-                                <small class="form-text text-muted">A medida que escribas la cédula o el nombre, se filtrarán los clientes al instante.</small>
+                <div class="card-body p-4">
+                    <form id="form_factura" action="{{ url_for('facturas.nueva_factura') }}" method="POST">
+                        <input type="hidden" name="detalles_json" id="detalles_json" value="[]">
+
+                        <!-- SECCIÓN 1: CABECERA Y DATOS DE FACTURA -->
+                        <div class="card mb-4 border-light bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title text-secondary font-weight-bold mb-3">1. Datos Generales de la Venta</h5>
+                                <div class="row">
+                                    <div class="col-md-4 form-group mb-3">
+                                        <label for="numero" class="font-weight-bold">N° Factura (Automático) *</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control font-weight-bold text-success bg-white" id="numero" name="numero" value="{{ siguiente_numero }}" required minlength="3">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('numero').readOnly = !document.getElementById('numero').readOnly;" title="Modificar número">✏️</button>
+                                            </div>
+                                        </div>
+                                        <small class="form-text text-muted">Generado automáticamente en secuencia.</small>
+                                    </div>
+                                    <div class="col-md-5 form-group mb-3">
+                                        <label for="cliente_search" class="font-weight-bold">Buscar Cliente *</label>
+                                        <input type="text" list="lista_clientes" class="form-control" id="cliente_search" placeholder="Escriba documento o nombre..." autocomplete="off" required>
+                                        <input type="hidden" name="id_cliente" id="id_cliente" required>
+                                        <datalist id="lista_clientes">
+                                            {% for cli in clientes %}
+                                                <option data-id="{{ cli.id }}" value="{{ cli.tipo_documento }} {{ cli.documento }} - {{ cli.nombre }} {{ cli.apellido }}"></option>
+                                            {% endfor %}
+                                        </datalist>
+                                        <small class="form-text text-muted">Filtra por cédula o nombre del cliente.</small>
+                                    </div>
+                                    <div class="col-md-3 form-group mb-3">
+                                        <label for="id_metodo_pago" class="font-weight-bold">Método de Pago *</label>
+                                        <select class="form-control" id="id_metodo_pago" name="id_metodo_pago" required>
+                                            <option value="">-- Seleccionar --</option>
+                                            {% for m in metodos_pago %}
+                                                <option value="{{ m.id }}">{{ m.nombre }}</option>
+                                            {% else %}
+                                                <option value="1">Efectivo</option>
+                                                <option value="2">Tarjeta de Crédito / Débito</option>
+                                                <option value="3">Transferencia Bancaria</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label for="id_metodo_pago" class="font-weight-bold">Método de Pago *</label>
-                            <select class="form-control" id="id_metodo_pago" name="id_metodo_pago" required>
-                                <option value="">-- Seleccionar Método de Pago --</option>
-                                {% for m in metodos_pago %}
-                                    <option value="{{ m.id }}">{{ m.nombre }}</option>
-                                {% else %}
-                                    <option value="1">Efectivo</option>
-                                    <option value="2">Tarjeta de Crédito / Débito</option>
-                                    <option value="3">Transferencia Bancaria</option>
-                                {% endfor %}
-                            </select>
+                        <!-- SECCIÓN 2: SELECCIÓN E INSERCIÓN DINÁMICA DE PRODUCTOS -->
+                        <div class="card mb-4 border-info">
+                            <div class="card-header bg-info text-white font-weight-bold">
+                                🛒 2. Selección de Productos para la Factura
+                            </div>
+                            <div class="card-body">
+                                <div class="row align-items-end">
+                                    <div class="col-md-6 form-group mb-2">
+                                        <label for="producto_select" class="font-weight-bold">Seleccionar Producto *</label>
+                                        <select class="form-control" id="producto_select">
+                                            <option value="">-- Elegir un producto del inventario --</option>
+                                            {% for prod in productos %}
+                                                <option value="{{ prod.id }}" 
+                                                        data-codigo="{{ prod.codigo or '' }}"
+                                                        data-nombre="{{ prod.nombre }}" 
+                                                        data-precio="{{ prod.precio }}" 
+                                                        data-stock="{{ prod.stock }}">
+                                                    [{{ prod.codigo or 'PROD' }}] {{ prod.nombre }} - ${{ "%.2f"|format(prod.precio or 0.0) }} (Stock: {{ prod.stock or 0 }})
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 form-group mb-2">
+                                        <label for="producto_cantidad" class="font-weight-bold">Cantidad</label>
+                                        <input type="number" class="form-control" id="producto_cantidad" value="1" min="1">
+                                    </div>
+                                    <div class="col-md-2 form-group mb-2">
+                                        <label for="producto_precio" class="font-weight-bold">Precio Unit. ($)</label>
+                                        <input type="number" step="0.01" class="form-control" id="producto_precio" value="0.00" readonly>
+                                    </div>
+                                    <div class="col-md-2 form-group mb-2">
+                                        <button type="button" class="btn btn-primary btn-block font-weight-bold" id="btn_agregar_producto">
+                                            ➕ Agregar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-4 form-group mb-3">
-                                <label for="subtotal" class="font-weight-bold">Subtotal ($) *</label>
-                                <input type="number" step="0.01" min="0.01" class="form-control" id="subtotal" name="subtotal" required placeholder="0.00">
+                        <!-- SECCIÓN 3: TABLA DE DETALLES DE LA FACTURA (BORRADOR CON ELIMINACIÓN) -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 font-weight-bold">📦 Ítems Agregados a la Factura (Procesando)</h6>
+                                <small class="text-white-50">Puedes eliminar productos del borrador antes de emitir.</small>
                             </div>
-                            <div class="col-md-4 form-group mb-3">
-                                <label for="iva" class="font-weight-bold">IVA ($)</label>
-                                <input type="number" step="0.01" min="0" class="form-control" id="iva" name="iva" value="0.00">
-                            </div>
-                            <div class="col-md-4 form-group mb-3">
-                                <label for="descuento" class="font-weight-bold">Descuento ($)</label>
-                                <input type="number" step="0.01" min="0" class="form-control" id="descuento" name="descuento" value="0.00">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover mb-0" id="tabla_detalles">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th style="width: 50px;">#</th>
+                                            <th>Código</th>
+                                            <th>Producto</th>
+                                            <th style="width: 100px;">Cantidad</th>
+                                            <th style="width: 140px;">P. Unitario ($)</th>
+                                            <th style="width: 140px;">Subtotal ($)</th>
+                                            <th style="width: 80px;" class="text-center">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detalles_body">
+                                        <tr id="row_empty">
+                                            <td colspan="7" class="text-center text-muted py-4">
+                                                No has agregado ningún producto a la factura. Selecciona productos arriba para agregarlos.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('facturas.ver_facturas') }}" class="btn btn-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-success">Generar Factura</button>
+                        <!-- SECCIÓN 4: RESUMEN Y CÁLCULO DE TOTALES -->
+                        <div class="row justify-content-end mb-4">
+                            <div class="col-md-5">
+                                <div class="card bg-light border-dark shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="font-weight-bold">Subtotal:</span>
+                                            <span class="font-weight-bold" id="subtotal_text">$0.00</span>
+                                            <input type="hidden" id="subtotal" name="subtotal" value="0.00">
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2 align-items-center">
+                                            <label for="iva" class="mb-0 font-weight-bold">IVA (19%):</label>
+                                            <div class="input-group input-group-sm" style="width: 150px;">
+                                                <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                                                <input type="number" step="0.01" min="0" class="form-control text-right" id="iva" name="iva" value="0.00">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3 align-items-center">
+                                            <label for="descuento" class="mb-0 font-weight-bold">Descuento:</label>
+                                            <div class="input-group input-group-sm" style="width: 150px;">
+                                                <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                                                <input type="number" step="0.01" min="0" class="form-control text-right" id="descuento" name="descuento" value="0.00">
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="font-weight-bold text-dark mb-0">TOTAL A PAGAR:</h5>
+                                            <h4 class="font-weight-bold text-success mb-0" id="total_text">$0.00</h4>
+                                            <input type="hidden" id="total" name="total" value="0.00">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BOTONES DE ACCIÓN -->
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a href="{{ url_for('facturas.ver_facturas') }}" class="btn btn-secondary px-4">⬅️ Cancelar</a>
+                            <button type="submit" class="btn btn-success btn-lg px-5 font-weight-bold shadow">
+                                ✅ Emitir Factura
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -69,18 +175,194 @@
 </div>
 
 <script>
-    // JavaScript en tiempo real para enlazar el autocompletado del buscador con el ID de cliente
+    // Arreglo en memoria con los ítems agregados al borrador de la factura
+    let itemsFactura = [];
+
+    // Enlazar autocompletado de cliente
     document.getElementById('cliente_search').addEventListener('input', function() {
-        var valorIngresado = this.value;
-        var opciones = document.getElementById('lista_clientes').options;
-        var hiddenInput = document.getElementById('id_cliente');
+        const valor = this.value;
+        const opciones = document.getElementById('lista_clientes').options;
+        const hiddenInput = document.getElementById('id_cliente');
         
         hiddenInput.value = "";
-        for (var i = 0; i < opciones.length; i++) {
-            if (opciones[i].value === valorIngresado) {
+        for (let i = 0; i < opciones.length; i++) {
+            if (opciones[i].value === valor) {
                 hiddenInput.value = opciones[i].getAttribute('data-id');
                 break;
             }
+        }
+    });
+
+    // Actualizar el precio al seleccionar un producto
+    document.getElementById('producto_select').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const precio = selectedOption.getAttribute('data-precio') || "0.00";
+        document.getElementById('producto_precio').value = parseFloat(precio).toFixed(2);
+    });
+
+    // Agregar producto a la factura
+    document.getElementById('btn_agregar_producto').addEventListener('click', function() {
+        const select = document.getElementById('producto_select');
+        const idProd = select.value;
+        if (!idProd) {
+            alert('Por favor seleccione un producto del catálogo.');
+            return;
+        }
+
+        const option = select.options[select.selectedIndex];
+        const codigo = option.getAttribute('data-codigo') || 'PROD';
+        const nombre = option.getAttribute('data-nombre');
+        const precio = parseFloat(document.getElementById('producto_precio').value || option.getAttribute('data-precio') || 0);
+        const cantidad = intVal(document.getElementById('producto_cantidad').value, 1);
+        const stock = intVal(option.getAttribute('data-stock'), 9999);
+
+        if (cantidad <= 0) {
+            alert('La cantidad debe ser mayor a 0.');
+            return;
+        }
+
+        // Verificar si el producto ya fue agregado al borrador
+        const existeIndex = itemsFactura.findIndex(i => i.id_producto == idProd);
+        if (existeIndex !== -1) {
+            itemsFactura[existeIndex].cantidad += cantidad;
+            itemsFactura[existeIndex].subtotal = itemsFactura[existeIndex].cantidad * itemsFactura[existeIndex].precio_unitario;
+        } else {
+            itemsFactura.push({
+                id_producto: parseInt(idProd),
+                codigo: codigo,
+                nombre: nombre,
+                cantidad: cantidad,
+                precio_unitario: precio,
+                subtotal: cantidad * precio
+            });
+        }
+
+        // Resetear campos de entrada
+        select.value = "";
+        document.getElementById('producto_cantidad').value = 1;
+        document.getElementById('producto_precio').value = "0.00";
+
+        renderizarDetalles();
+    });
+
+    // Función para eliminar un producto del borrador
+    function eliminarProducto(index) {
+        itemsFactura.splice(index, 1);
+        renderizarDetalles();
+    }
+
+    // Auxiliar para enteros
+    function intVal(v, fallback) {
+        const val = parseInt(v);
+        return isNaN(val) ? fallback : val;
+    }
+
+    // Renderizar la tabla de ítems y recalcular totales
+    function renderizarDetalles() {
+        const tbody = document.getElementById('detalles_body');
+        tbody.innerHTML = "";
+
+        if (itemsFactura.length === 0) {
+            tbody.innerHTML = `
+                <tr id="row_empty">
+                    <td colspan="7" class="text-center text-muted py-4">
+                        No has agregado ningún producto a la factura. Selecciona productos arriba para agregarlos.
+                    </td>
+                </tr>`;
+        } else {
+            itemsFactura.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><code>${item.codigo}</code></td>
+                    <td class="font-weight-bold">${item.nombre}</td>
+                    <td>
+                        <input type="number" min="1" class="form-control form-control-sm text-center" value="${item.cantidad}" onchange="actualizarCantidad(${index}, this.value)">
+                    </td>
+                    <td>$${item.precio_unitario.toFixed(2)}</td>
+                    <td class="font-weight-bold text-dark">$${item.subtotal.toFixed(2)}</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarProducto(${index})" title="Eliminar del borrador">
+                            🗑️
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        recalcularTotales();
+    }
+
+    // Actualizar cantidad desde el input de la tabla
+    function actualizarCantidad(index, nuevaCantidad) {
+        const cant = parseInt(nuevaCantidad);
+        if (isNaN(cant) || cant <= 0) {
+            eliminarProducto(index);
+            return;
+        }
+        itemsFactura[index].cantidad = cant;
+        itemsFactura[index].subtotal = cant * itemsFactura[index].precio_unitario;
+        renderizarDetalles();
+    }
+
+    // Recalcular Subtotal, IVA y Total
+    function recalcularTotales() {
+        let subtotal = 0;
+        itemsFactura.forEach(item => {
+            subtotal += item.subtotal;
+        });
+
+        const iva = subtotal * 0.19; // 19% IVA por defecto
+        const descuento = parseFloat(document.getElementById('descuento').value || 0);
+        const total = Math.max(0, subtotal + iva - descuento);
+
+        document.getElementById('subtotal_text').innerText = `$${subtotal.toFixed(2)}`;
+        document.getElementById('subtotal').value = subtotal.toFixed(2);
+
+        document.getElementById('iva').value = iva.toFixed(2);
+        
+        document.getElementById('total_text').innerText = `$${total.toFixed(2)}`;
+        document.getElementById('total').value = total.toFixed(2);
+
+        // Guardar JSON serializado para enviar en el formulario
+        document.getElementById('detalles_json').value = JSON.stringify(itemsFactura);
+    }
+
+    // Escuchar cambios en IVA y Descuento
+    document.getElementById('iva').addEventListener('input', function() {
+        const subtotal = parseFloat(document.getElementById('subtotal').value || 0);
+        const iva = parseFloat(this.value || 0);
+        const descuento = parseFloat(document.getElementById('descuento').value || 0);
+        const total = Math.max(0, subtotal + iva - descuento);
+
+        document.getElementById('total_text').innerText = `$${total.toFixed(2)}`;
+        document.getElementById('total').value = total.toFixed(2);
+    });
+
+    document.getElementById('descuento').addEventListener('input', function() {
+        const subtotal = parseFloat(document.getElementById('subtotal').value || 0);
+        const iva = parseFloat(document.getElementById('iva').value || 0);
+        const descuento = parseFloat(this.value || 0);
+        const total = Math.max(0, subtotal + iva - descuento);
+
+        document.getElementById('total_text').innerText = `$${total.toFixed(2)}`;
+        document.getElementById('total').value = total.toFixed(2);
+    });
+
+    // Validar antes de enviar el formulario
+    document.getElementById('form_factura').addEventListener('submit', function(e) {
+        const idCliente = document.getElementById('id_cliente').value;
+        if (!idCliente) {
+            alert('Por favor selecciona un cliente válido de la lista desplegable.');
+            e.preventDefault();
+            return false;
+        }
+
+        if (itemsFactura.length === 0) {
+            alert('Debe agregar al menos un producto a la factura antes de emitirla.');
+            e.preventDefault();
+            return false;
         }
     });
 </script>

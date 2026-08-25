@@ -29,6 +29,13 @@
                     <div class="bg-light p-3 rounded border display-inline-block">
                         <h5 class="text-dark font-weight-bold mb-2">FACTURA N° {{ factura.numero }}</h5>
                         <p class="mb-1"><strong>Fecha de Emisión:</strong> {{ factura.fecha }}</p>
+                        <p class="mb-1"><strong>Estado:</strong> 
+                            {% if factura.estado == 'Cancelada' %}
+                                <span class="badge badge-danger p-2">🚫 Cancelada</span>
+                            {% else %}
+                                <span class="badge badge-success p-2">✓ Emitida</span>
+                            {% endif %}
+                        </p>
                         <p class="mb-1"><strong>Forma de Pago:</strong> <span class="badge badge-info p-2">{{ factura.metodo_pago.nombre if factura.metodo_pago else 'Efectivo' }}</span></p>
                         <p class="mb-0"><strong>Vendedor Atendió:</strong> {{ factura.usuario.nombre if factura.usuario else 'Vendedor' }} {{ factura.usuario.apellido if factura.usuario and factura.usuario.apellido else '' }}</p>
                     </div>

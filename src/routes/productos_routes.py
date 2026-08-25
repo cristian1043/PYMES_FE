@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from src.services.productos_service import ProductosService
+from src.services.proveedores_service import ProveedoresService
 from src.utils.decorators import requiere_rol
 
 productos_bp = Blueprint('productos', __name__, url_prefix='/productos')
 
 @productos_bp.route('/', methods=['GET'])
-@requiere_rol(1, 2, 3)
+@requiere_rol(1, 3)
 def ver_productos():
     """Muestra el catálogo / tabla de productos con soporte para paginación."""
     page = request.args.get('page', 1, type=int)
@@ -25,7 +26,8 @@ def nuevo_producto():
             'descripcion': request.form.get('descripcion'),
             'precio': float(request.form.get('precio', 0)),
             'stock': int(request.form.get('stock', 0)),
-            'id_categoria': int(request.form.get('id_categoria')) if request.form.get('id_categoria') else None
+            'id_categoria': int(request.form.get('id_categoria')) if request.form.get('id_categoria') else None,
+            'id_proveedor': int(request.form.get('id_proveedor')) if request.form.get('id_proveedor') else None
         }
         res, err = ProductosService.crear(data)
         if err:
@@ -35,7 +37,9 @@ def nuevo_producto():
             return redirect(url_for('productos.ver_productos'))
 
     categorias = ProductosService.obtener_categorias()
-    return render_template('productos/nuevo_producto.html', categorias=categorias)
+    prov_res = ProveedoresService.obtener_todos()
+    proveedores = prov_res.get("items", []) if isinstance(prov_res, dict) else (prov_res if isinstance(prov_res, list) else [])
+    return render_template('productos/nuevo_producto.html', categorias=categorias, proveedores=proveedores)
 
 @productos_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @requiere_rol(1, 3) # Admin y Almacenista pueden editar productos
@@ -52,7 +56,8 @@ def editar_producto(id):
             'descripcion': request.form.get('descripcion'),
             'precio': float(request.form.get('precio', 0)),
             'stock': int(request.form.get('stock', 0)),
-            'id_categoria': int(request.form.get('id_categoria')) if request.form.get('id_categoria') else None
+            'id_categoria': int(request.form.get('id_categoria')) if request.form.get('id_categoria') else None,
+            'id_proveedor': int(request.form.get('id_proveedor')) if request.form.get('id_proveedor') else None
         }
         res, err = ProductosService.actualizar(id, data)
         if err:
@@ -62,4 +67,6 @@ def editar_producto(id):
             return redirect(url_for('productos.ver_productos'))
 
     categorias = ProductosService.obtener_categorias()
-    return render_template('productos/editar_producto.html', producto=producto, categorias=categorias)
+    prov_res = ProveedoresService.obtener_todos()
+    proveedores = prov_res.get("items", []) if isinstance(prov_res, dict) else (prov_res if isinstance(prov_res, list) else [])
+    return render_template('productos/editar_producto.html', producto=producto, categorias=categorias, proveedores=proveedores)

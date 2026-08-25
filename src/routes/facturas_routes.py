@@ -1,6 +1,8 @@
+import json
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from src.services.facturas_service import FacturasService
 from src.services.clientes_service import ClientesService
+from src.services.productos_service import ProductosService
 from src.utils.decorators import requiere_rol
 
 facturas_bp = Blueprint('facturas', __name__, url_prefix='/facturas')
@@ -19,18 +21,28 @@ def ver_facturas():
 @facturas_bp.route('/nueva', methods=['GET', 'POST'])
 @requiere_rol(1, 2) # Admin y Vendedor
 def nueva_factura():
-    """Formulario y procesamiento de una nueva factura delegando el cálculo de totales al Backend."""
+    """Formulario y procesamiento de una nueva factura con detalles dinámicos y correlativo automático."""
     if request.method == 'POST':
         usuario_id = session.get('usuario', {}).get('id', 1)
+
+        detalles = []
+        raw_detalles = request.form.get('detalles_json')
+        if raw_detalles:
+            try:
+                detalles = json.loads(raw_detalles)
+            except Exception as e:
+                print(f"Error al decodificar detalles_json: {e}")
 
         data = {
             'numero': request.form.get('numero'),
             'subtotal': float(request.form.get('subtotal', 0)),
             'iva': float(request.form.get('iva', 0)),
             'descuento': float(request.form.get('descuento', 0)),
+            'total': float(request.form.get('total', 0)),
             'id_cliente': int(request.form.get('id_cliente')),
             'id_metodo_pago': int(request.form.get('id_metodo_pago')),
-            'id_usuario': usuario_id
+            'id_usuario': usuario_id,
+            'detalles': detalles
         }
 
         res, err = FacturasService.crear(data)
@@ -42,8 +54,31 @@ def nueva_factura():
 
     clientes_res = ClientesService.obtener_todos()
     clientes = clientes_res.get("items", []) if isinstance(clientes_res, dict) else (clientes_res if isinstance(clientes_res, list) else [])
+    
+    productos_res = ProductosService.obtener_todos(page=1, per_page=200)
+    productos = productos_res.get("items", []) if isinstance(productos_res, dict) else (productos_res if isinstance(productos_res, list) else [])
+    
     metodos_pago = FacturasService.obtener_metodos_pago()
-    return render_template('facturas/nueva_factura.html', clientes=clientes, metodos_pago=metodos_pago)
+    siguiente_numero = FacturasService.obtener_siguiente_numero()
+
+    return render_template(
+        'facturas/nueva_factura.html',
+        clientes=clientes,
+        metodos_pago=metodos_pago,
+        productos=productos,
+        siguiente_numero=siguiente_numero
+    )
+
+@facturas_bp.route('/cancelar/<int:id>', methods=['POST'])
+@requiere_rol(1, 2)
+def cancelar_factura(id):
+    """Cancela una factura emitida y restablece el stock de inventario."""
+    res, err = FacturasService.cancelar(id)
+    if err:
+        flash(f"Error al cancelar la factura: {err}", "danger")
+    else:
+        flash("Factura cancelada correctamente y stock restablecido", "success")
+    return redirect(url_for('facturas.ver_facturas'))
 
 @facturas_bp.route('/detalle/<int:id>', methods=['GET'])
 @requiere_rol(1, 2)

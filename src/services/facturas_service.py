@@ -38,9 +38,22 @@ class FacturasService:
         return APIClient.put(f'/facturas/{factura_id}', data=datos_factura)
 
     @staticmethod
+    def obtener_siguiente_numero():
+        """Obtiene el número consecutivo automático recomendado para la nueva factura."""
+        data, error = APIClient.get('/facturas/siguiente_numero')
+        if error or not data:
+            return "FAC-001"
+        return data.get("siguiente_numero", "FAC-001")
+
+    @staticmethod
     def eliminar(factura_id):
         """Elimina una factura por su ID."""
         return APIClient.delete(f'/facturas/{factura_id}')
+
+    @staticmethod
+    def cancelar(factura_id):
+        """Cancela una factura emitida."""
+        return APIClient.post(f'/facturas/{factura_id}/cancelar')
 
     @staticmethod
     def obtener_metodos_pago():

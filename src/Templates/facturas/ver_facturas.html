@@ -15,10 +15,8 @@
                     <th>N° Factura</th>
                     <th>Fecha</th>
                     <th>Cliente ID</th>
-                    <th>Subtotal</th>
-                    <th>IVA</th>
-                    <th>Descuento</th>
                     <th>Total</th>
+                    <th>Estado</th>
                     <th class="text-center">Acción</th>
                 </tr>
             </thead>
@@ -29,14 +27,25 @@
                     <td><code>{{ f.numero }}</code></td>
                     <td>{{ f.fecha or '2026-08-16' }}</td>
                     <td><code>Cliente #{{ f.id_cliente }}</code></td>
-                    <td>${{ "%.2f"|format(f.subtotal or 0.0) }}</td>
-                    <td>${{ "%.2f"|format(f.iva or 0.0) }}</td>
-                    <td>${{ "%.2f"|format(f.descuento or 0.0) }}</td>
                     <td class="font-weight-bold text-success">${{ "%.2f"|format(f.total or 0.0) }}</td>
+                    <td>
+                        {% if f.estado == 'Cancelada' %}
+                            <span class="badge badge-danger">🚫 Cancelada</span>
+                        {% else %}
+                            <span class="badge badge-success">✓ Emitida</span>
+                        {% endif %}
+                    </td>
                     <td class="text-center">
-                        <a href="{{ url_for('facturas.detalle_factura', id=f.id) }}" class="btn btn-sm btn-info font-weight-bold">
+                        <a href="{{ url_for('facturas.detalle_factura', id=f.id) }}" class="btn btn-sm btn-info font-weight-bold mr-1">
                             👁️ Ver Detalle
                         </a>
+                        {% if f.estado != 'Cancelada' %}
+                        <form action="{{ url_for('facturas.cancelar_factura', id=f.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de cancelar esta factura emitada? Se restablecerá el stock de los productos.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger font-weight-bold">
+                                🚫 Cancelar
+                            </button>
+                        </form>
+                        {% endif %}
                     </td>
                 </tr>
                 {% else %}
