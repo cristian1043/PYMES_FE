@@ -49,21 +49,29 @@
                         <th>IVA</th>
                         <th>Descuento</th>
                         <th>Total</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for f in facturas %}
-                    <tr>
+                    <tr class="{% if f.estado == 'Cancelada' %}table-danger text-muted{% endif %}">
                         <td><code>{{ f.numero }}</code></td>
                         <td>{{ f.fecha }}</td>
                         <td>${{ "%.2f"|format(f.subtotal) }}</td>
                         <td>${{ "%.2f"|format(f.iva) }}</td>
                         <td>${{ "%.2f"|format(f.descuento) }}</td>
                         <td><strong>${{ "%.2f"|format(f.total) }}</strong></td>
+                        <td>
+                            {% if f.estado == 'Cancelada' %}
+                                <span class="badge badge-danger p-1">🚫 Cancelada</span>
+                            {% else %}
+                                <span class="badge badge-success p-1">✅ Emitida</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center text-muted p-4">No hay datos de ventas registrados.</td>
+                        <td colspan="7" class="text-center text-muted p-4">No hay datos de ventas registrados.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
