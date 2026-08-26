@@ -27,6 +27,7 @@ def nuevo_producto():
             'nombre': request.form.get('nombre'),
             'descripcion': request.form.get('descripcion'),
             'precio': float(request.form.get('precio', 0)),
+            'costo': float(request.form.get('costo')) if request.form.get('costo') else None,
             'stock': int(request.form.get('stock', 0)),
             'id_categoria': int(request.form.get('id_categoria')) if request.form.get('id_categoria') else None,
             'id_proveedor': int(request.form.get('id_proveedor')) if request.form.get('id_proveedor') else None
@@ -58,6 +59,7 @@ def editar_producto(id):
             'nombre': request.form.get('nombre'),
             'descripcion': request.form.get('descripcion'),
             'precio': float(request.form.get('precio', 0)),
+            'costo': float(request.form.get('costo')) if request.form.get('costo') else None,
             'stock': int(request.form.get('stock', 0)),
             'id_categoria': int(request.form.get('id_categoria')) if request.form.get('id_categoria') else None,
             'id_proveedor': int(request.form.get('id_proveedor')) if request.form.get('id_proveedor') else None

@@ -106,9 +106,52 @@
                                     <strong>{{ p.nombre }}</strong> <code class="ml-1">{{ p.codigo }}</code><br>
                                     <small class="text-muted">Precio: ${{ "%.2f"|format(p.precio) }}</small>
                                 </div>
-                                <span class="badge badge-warning p-2">
-                                    {{ p.stock }} unidades disponibles
-                                </span>
+                                <div class="text-right">
+                                    <span class="badge badge-warning p-2 mb-1 d-inline-block">
+                                        {{ p.stock }} unidades disponibles
+                                    </span><br>
+                                    {% if p.proveedor %}
+                                    <button type="button" class="btn btn-xs btn-outline-dark font-weight-bold" data-toggle="modal" data-target="#modalProv{{ p.id }}">
+                                        📞 Contactar Proveedor
+                                    </button>
+
+                                    <!-- MODAL DETALLE PROVEEDOR -->
+                                    <div class="modal fade text-left" id="modalProv{{ p.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                            <div class="modal-content shadow border-0">
+                                                <div class="modal-header bg-dark text-white">
+                                                    <h5 class="modal-header-title font-weight-bold mb-0">🏭 Información de Contacto del Proveedor</h5>
+                                                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <h5 class="text-primary font-weight-bold mb-1">{{ p.proveedor.nombre }}</h5>
+                                                    <p class="text-muted small mb-3">NIT: <code>{{ p.proveedor.nit }}</code></p>
+                                                    <div class="card bg-light p-3 border-0 mb-3">
+                                                        <p class="mb-1"><strong>👤 Contacto:</strong> {{ p.proveedor.contacto or 'No registrado' }}</p>
+                                                        <p class="mb-1"><strong>📞 Teléfono:</strong> {{ p.proveedor.telefono }}</p>
+                                                        <p class="mb-1"><strong>✉️ Email:</strong> {{ p.proveedor.email }}</p>
+                                                        <p class="mb-0"><strong>📍 Dirección:</strong> {{ p.proveedor.direccion }}</p>
+                                                    </div>
+                                                    {% if p.proveedor.detalle_servicios %}
+                                                    <div class="border-top pt-2">
+                                                        <small class="font-weight-bold text-dark">Catálogo / Servicios Suministrados:</small>
+                                                        <p class="small text-muted mb-0">{{ p.proveedor.detalle_servicios }}</p>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="modal-footer bg-light py-2">
+                                                    <a href="tel:{{ p.proveedor.telefono }}" class="btn btn-success btn-sm font-weight-bold">📞 Llama Ya</a>
+                                                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cerrar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="badge badge-light text-muted">Sin Proveedor Asignado</span>
+                                    {% endif %}
+                                </div>
                             </div>
                             {% endfor %}
                         </div>

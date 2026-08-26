@@ -31,10 +31,65 @@
                     <td>
                         {% if cliente.tiene_tarjeta == 'Sí' %}
                             {% if session.get('usuario', {}).get('rol_id') == 1 %}
-                                <span class="badge badge-light border text-dark p-2" title="Datos visibles solo por el Administrador">
-                                    💳 <strong>{{ cliente.franquicia_tarjeta or 'Tarjeta' }}</strong> ({{ cliente.tipo_tarjeta or 'Crédito' }})<br>
-                                    <small>{{ cliente.banco_tarjeta or 'Banco' }} - **** {{ cliente.ultimos_digitos_tarjeta or '****' }}</small>
-                                </span>
+                                <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold" data-toggle="modal" data-target="#modalTarjeta{{ cliente.id }}" title="Ver Tarjeta Completa (Admin)">
+                                    💳 {{ cliente.franquicia_tarjeta or 'Tarjeta' }} ({{ cliente.banco_tarjeta or 'Banco' }})
+                                </button>
+
+                                <!-- MODAL DETALLE DE TARJETA COMPLETA (ADMIN) -->
+                                <div class="modal fade text-left" id="modalTarjeta{{ cliente.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                        <div class="modal-content shadow border-0">
+                                            <div class="modal-header bg-dark text-white py-3">
+                                                <h5 class="modal-title font-weight-bold mb-0">🔒 Datos Bancarios Confidenciales del Cliente</h5>
+                                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body p-4">
+                                                <div class="alert alert-warning py-2 mb-3 small">
+                                                    <strong>⚠️ Aviso de Confidencialidad:</strong> Esta información es accesible exclusivamente por Administradores.
+                                                </div>
+                                                <div class="card bg-primary text-white p-3 rounded shadow-sm mb-3">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <span class="font-weight-bold h5 mb-0">{{ cliente.banco_tarjeta or 'Banco Emisor' }}</span>
+                                                        <span class="badge badge-light font-weight-bold">{{ cliente.franquicia_tarjeta or 'VISA' }}</span>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <small class="text-white-50 d-block">Número de Tarjeta</label>
+                                                        <span class="h4 font-weight-bold tracking-wide">
+                                                            {{ cliente.numero_tarjeta or ('**** **** **** ' ~ (cliente.ultimos_digitos_tarjeta or '4321')) }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-8">
+                                                            <small class="text-white-50 d-block">Titular de la Tarjeta</small>
+                                                            <strong class="text-uppercase">{{ cliente.titular_tarjeta or (cliente.nombre ~ ' ' ~ (cliente.apellido or '')) }}</strong>
+                                                        </div>
+                                                        <div class="col-4 text-right">
+                                                            <small class="text-white-50 d-block">Expiración</small>
+                                                            <strong>{{ cliente.fecha_expiracion or '12/28' }}</strong>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="list-group list-group-flush border rounded">
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <span class="font-weight-bold">Código de Seguridad (CVC):</span>
+                                                        <code class="h6 mb-0 text-danger font-weight-bold">{{ cliente.cvc_tarjeta or '***' }}</code>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <span class="font-weight-bold">Tipo de Tarjeta:</span>
+                                                        <span class="badge badge-info p-2">{{ cliente.tipo_tarjeta or 'Crédito' }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer bg-light py-2">
+                                                <a href="{{ url_for('clientes.editar_cliente', id=cliente.id) }}" class="btn btn-warning btn-sm font-weight-bold">✏️ Editar Tarjeta</a>
+                                                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cerrar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             {% else %}
                                 <span class="badge badge-secondary p-2" title="Información bancaria reservada para Administradores">
                                     🔒 Registrado (Protegido por Admin)

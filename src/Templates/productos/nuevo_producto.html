@@ -27,19 +27,36 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 form-group mb-3">
-                                <label for="precio">Precio ($) *</label>
-                                <input type="number" step="0.01" min="0.01" class="form-control" id="precio" name="precio" required placeholder="0.01">
+                            {% if session.get('usuario', {}).get('rol_id') == 1 %}
+                            <div class="col-md-4 form-group mb-3">
+                                <label for="costo" class="font-weight-bold">Costo al por Mayor ($) [Admin]</label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="costo" name="costo" placeholder="0.00">
+                                <small class="text-muted">Costo de compra para la empresa</small>
                             </div>
-                            <div class="col-md-6 form-group mb-3">
-                                <label for="stock">Cantidad en Stock *</label>
+                            <div class="col-md-4 form-group mb-3">
+                                <label for="precio" class="font-weight-bold">Precio de Venta ($) *</label>
+                                <input type="number" step="0.01" min="0.01" class="form-control" id="precio" name="precio" required placeholder="0.00">
+                                <small class="text-muted">Precio final al cliente</small>
+                            </div>
+                            <div class="col-md-4 form-group mb-3">
+                                <label for="stock" class="font-weight-bold">Cantidad en Stock *</label>
                                 <input type="number" min="0" class="form-control" id="stock" name="stock" required placeholder="10">
                             </div>
+                            {% else %}
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="precio" class="font-weight-bold">Precio de Venta ($) *</label>
+                                <input type="number" step="0.01" min="0.01" class="form-control" id="precio" name="precio" required placeholder="0.00">
+                            </div>
+                            <div class="col-md-6 form-group mb-3">
+                                <label for="stock" class="font-weight-bold">Cantidad en Stock *</label>
+                                <input type="number" min="0" class="form-control" id="stock" name="stock" required placeholder="10">
+                            </div>
+                            {% endif %}
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 form-group mb-4">
-                                <label for="id_categoria">Categoría</label>
+                                <label for="id_categoria" class="font-weight-bold">Categoría</label>
                                 <select class="form-control" id="id_categoria" name="id_categoria">
                                     <option value="">-- Seleccionar Categoría --</option>
                                     {% for cat in categorias %}
@@ -49,11 +66,11 @@
                             </div>
 
                             <div class="col-md-6 form-group mb-4">
-                                <label for="id_proveedor">Proveedor</label>
-                                <select class="form-control" id="id_proveedor" name="id_proveedor">
-                                    <option value="">-- Seleccionar Proveedor --</option>
+                                <label for="id_proveedor" class="font-weight-bold">Proveedor Distribuidor *</label>
+                                <select class="form-control" id="id_proveedor" name="id_proveedor" required>
+                                    <option value="">-- Seleccionar Proveedor Distribuidor --</option>
                                     {% for prov in proveedores %}
-                                        <option value="{{ prov.id }}">{{ prov.nombre }}</option>
+                                        <option value="{{ prov.id }}">{{ prov.nombre }} (NIT: {{ prov.nit }})</option>
                                     {% endfor %}
                                 </select>
                             </div>

@@ -20,13 +20,8 @@
                                 <div class="row">
                                     <div class="col-md-4 form-group mb-3">
                                         <label for="numero" class="font-weight-bold">N° Factura (Automático) *</label>
-                                        <div class="input-group">
-                                            <input type="text" class="form-control font-weight-bold text-success bg-white" id="numero" name="numero" value="{{ siguiente_numero }}" required minlength="3">
-                                            <div class="input-group-append">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('numero').readOnly = !document.getElementById('numero').readOnly;" title="Modificar número">✏️</button>
-                                            </div>
-                                        </div>
-                                        <small class="form-text text-muted">Generado automáticamente en secuencia.</small>
+                                        <input type="text" class="form-control font-weight-bold text-success bg-light" id="numero" name="numero" value="{{ siguiente_numero }}" readonly required>
+                                        <small class="form-text text-muted">Consecutivo inalterable asignado por el sistema.</small>
                                     </div>
                                     <div class="col-md-5 form-group mb-3">
                                         <label for="cliente_search" class="font-weight-bold">Buscar Cliente *</label>

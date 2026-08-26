@@ -35,7 +35,15 @@
                                 #{{ (paginacion.page - 1) * paginacion.per_page + loop.index }}
                             {% endif %}
                         </td>
-                        <td><strong>{{ cli.nombre }}</strong></td>
+                        <td>
+                            {% if session.get('usuario', {}).get('rol_id') == 1 %}
+                                <a href="{{ url_for('clientes.editar_cliente', id=cli.id) }}" class="text-primary font-weight-bold text-decoration-none" title="Ver / Editar Ficha Completa del Cliente (Admin)">
+                                    👤 {{ cli.nombre }}
+                                </a>
+                            {% else %}
+                                <strong>{{ cli.nombre }}</strong>
+                            {% endif %}
+                        </td>
                         <td>{{ cli.email }} ({{ cli.telefono }})</td>
                         <td><span class="badge badge-info">{{ cli.num_facturas }}</span></td>
                         <td><strong class="text-success">${{ "%.2f"|format(cli.total_comprado) }}</strong></td>

@@ -47,15 +47,15 @@
                                 <select class="form-control" id="select_producto" onchange="cargarPrecioProductoCompra()">
                                     <option value="">-- Seleccionar Producto del Inventario --</option>
                                     {% for p in productos %}
-                                        <option value="{{ p.id }}" data-codigo="{{ p.codigo or ('PROD-' ~ '%03d'|format(p.id)) }}" data-nombre="{{ p.nombre }}" data-precio="{{ p.precio }}" data-unit="{{ p.unidad_medida or 'UND' }}">
-                                            [{{ p.codigo or ('PROD-' ~ '%03d'|format(p.id)) }}] {{ p.nombre }} - Precio Ref: ${{ "%.2f"|format(p.precio) }} (Stock: {{ p.stock }})
+                                        <option value="{{ p.id }}" data-codigo="{{ p.codigo or ('PROD-' ~ '%03d'|format(p.id)) }}" data-nombre="{{ p.nombre }}" data-costo="{{ p.costo or (p.precio * 0.70) }}" data-precio="{{ p.precio }}" data-unit="{{ p.unidad_medida or 'UND' }}">
+                                            [{{ p.codigo or ('PROD-' ~ '%03d'|format(p.id)) }}] {{ p.nombre }} - Costo Mayor: ${{ "%.2f"|format(p.costo or (p.precio * 0.70)) }} (Stock: {{ p.stock }})
                                         </option>
                                     {% endfor %}
                                 </select>
                             </div>
 
                             <div class="col-md-2 form-group mb-2 mb-md-0">
-                                <label for="input_costo" class="font-weight-bold small">Costo Unit. ($)</label>
+                                <label for="input_costo" class="font-weight-bold small">Costo Mayor Unit. ($)</label>
                                 <input type="number" step="0.01" min="0.01" class="form-control" id="input_costo" placeholder="0.00">
                             </div>
 
@@ -147,8 +147,9 @@
     function cargarPrecioProductoCompra() {
         var sel = document.getElementById('select_producto');
         var opt = sel.options[sel.selectedIndex];
-        if (opt && opt.dataset.precio) {
-            document.getElementById('input_costo').value = parseFloat(opt.dataset.precio).toFixed(2);
+        if (opt && (opt.dataset.costo || opt.dataset.precio)) {
+            var costVal = opt.dataset.costo ? parseFloat(opt.dataset.costo) : (parseFloat(opt.dataset.precio) * 0.70);
+            document.getElementById('input_costo').value = costVal.toFixed(2);
         } else {
             document.getElementById('input_costo').value = '';
         }

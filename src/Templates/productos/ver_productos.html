@@ -14,7 +14,10 @@
                     <th>Código</th>
                     <th>Nombre</th>
                     <th>Descripción</th>
-                    <th>Precio</th>
+                    {% if session.get('usuario', {}).get('rol_id') == 1 %}
+                    <th>Costo (Empresa)</th>
+                    {% endif %}
+                    <th>Precio Venta</th>
                     <th>Estado de Stock</th>
                     <th class="text-center">Acciones</th>
                 </tr>
@@ -25,10 +28,13 @@
                     <td><code>{{ producto.codigo or ('PROD-' ~ "%03d"|format(producto.id)) }}</code></td>
                     <td><strong>{{ producto.nombre }}</strong></td>
                     <td>{{ producto.descripcion or 'N/A' }}</td>
+                    {% if session.get('usuario', {}).get('rol_id') == 1 %}
+                    <td class="font-weight-bold text-dark">${{ "%.2f"|format(producto.costo or (producto.precio * 0.7)) }}</td>
+                    {% endif %}
                     <td class="font-weight-bold text-success">${{ "%.2f"|format(producto.precio) }}</td>
                     <td>
                         {% if producto.stock <= 2500 %}
-                            <span class="badge badge-warning p-2" title="Stock bajo (<= 2500 unidades)">
+                            <span class="badge badge-warning p-2 mb-1" title="Stock bajo (<= 2500 unidades)">
                                 ⚠️ Stock Bajo: {{ producto.stock }} unds
                             </span>
                         {% elif producto.stock > 10000 %}

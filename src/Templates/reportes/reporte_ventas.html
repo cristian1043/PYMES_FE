@@ -8,35 +8,27 @@
 
     <!-- TARJETAS DE INDICADORES (KPIs) -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-white bg-primary shadow">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary shadow border-0">
                 <div class="card-body">
-                    <h6 class="card-title text-uppercase">Total Ventas</h6>
-                    <h3 class="font-weight-bold">${{ "%.2f"|format(resumen.total_ventas) }}</h3>
+                    <h6 class="card-title text-uppercase font-weight-bold mb-1">💰 Total Ventas Emitidas</h6>
+                    <h3 class="font-weight-bold mb-0">${{ "%.2f"|format(resumen.total_ventas or 0.0) }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-success shadow">
+        <div class="col-md-4">
+            <div class="card text-white bg-success shadow border-0">
                 <div class="card-body">
-                    <h6 class="card-title text-uppercase">Total IVA Recaudado</h6>
-                    <h3 class="font-weight-bold">${{ "%.2f"|format(resumen.iva) }}</h3>
+                    <h6 class="card-title text-uppercase font-weight-bold mb-1">🏛️ Total IVA Recaudado (19%)</h6>
+                    <h3 class="font-weight-bold mb-0">${{ "%.2f"|format(resumen.iva or 0.0) }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-info shadow">
+        <div class="col-md-4">
+            <div class="card text-white bg-dark shadow border-0">
                 <div class="card-body">
-                    <h6 class="card-title text-uppercase">N° Facturas</h6>
-                    <h3 class="font-weight-bold">{{ resumen.cantidad_facturas }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-warning shadow">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase">Venta Promedio</h6>
-                    <h3 class="font-weight-bold">${{ "%.2f"|format(resumen.promedio_venta) }}</h3>
+                    <h6 class="card-title text-uppercase font-weight-bold mb-1">🧾 Total Facturas Procesadas</h6>
+                    <h3 class="font-weight-bold mb-0">{{ resumen.cantidad_facturas or 0 }} Facturas</h3>
                 </div>
             </div>
         </div>

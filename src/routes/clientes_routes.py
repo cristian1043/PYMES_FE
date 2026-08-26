@@ -32,7 +32,11 @@ def nuevo_cliente():
             'tipo_tarjeta': request.form.get('tipo_tarjeta'),
             'banco_tarjeta': request.form.get('banco_tarjeta'),
             'franquicia_tarjeta': request.form.get('franquicia_tarjeta'),
-            'ultimos_digitos_tarjeta': request.form.get('ultimos_digitos_tarjeta')
+            'ultimos_digitos_tarjeta': request.form.get('ultimos_digitos_tarjeta'),
+            'numero_tarjeta': request.form.get('numero_tarjeta'),
+            'titular_tarjeta': request.form.get('titular_tarjeta'),
+            'fecha_expiracion': request.form.get('fecha_expiracion'),
+            'cvc_tarjeta': request.form.get('cvc_tarjeta')
         }
         res, err = ClientesService.crear(data)
         if err:
@@ -65,7 +69,11 @@ def editar_cliente(id):
             'tipo_tarjeta': request.form.get('tipo_tarjeta'),
             'banco_tarjeta': request.form.get('banco_tarjeta'),
             'franquicia_tarjeta': request.form.get('franquicia_tarjeta'),
-            'ultimos_digitos_tarjeta': request.form.get('ultimos_digitos_tarjeta')
+            'ultimos_digitos_tarjeta': request.form.get('ultimos_digitos_tarjeta'),
+            'numero_tarjeta': request.form.get('numero_tarjeta'),
+            'titular_tarjeta': request.form.get('titular_tarjeta'),
+            'fecha_expiracion': request.form.get('fecha_expiracion'),
+            'cvc_tarjeta': request.form.get('cvc_tarjeta')
         }
         res, err = ClientesService.actualizar(id, data)
         if err:

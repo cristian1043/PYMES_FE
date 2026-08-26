@@ -55,16 +55,26 @@ def create_app(config_name='default'):
     def index():
         from src.services.productos_service import ProductosService
         from src.services.facturas_service import FacturasService
+        from src.services.proveedores_service import ProveedoresService
         
+        prov_res = ProveedoresService.obtener_todos(per_page=1000)
+        prov_list = prov_res.get("items", []) if isinstance(prov_res, dict) else (prov_res if isinstance(prov_res, list) else [])
+        prov_map = {p.get('id'): p for p in prov_list if isinstance(p, dict)}
+
         prods_res = ProductosService.obtener_todos(per_page=1000)
         items = prods_res.get("items", []) if isinstance(prods_res, dict) else (prods_res if isinstance(prods_res, list) else [])
         
+        for p in items:
+            if isinstance(p, dict):
+                p['proveedor'] = prov_map.get(p.get('id_proveedor'))
+
         bajos = [p for p in items if p.get('stock', 0) <= 2500]
         sobrestock = [p for p in items if p.get('stock', 0) > 10000]
         optimos = [p for p in items if 2500 < p.get('stock', 0) <= 10000]
         
-        facturas = FacturasService.obtener_todas()
-        emitidas = [f for f in facturas if f.get('estado', 'Emitida') == 'Emitida'] if isinstance(facturas, list) else []
+        facturas_res = FacturasService.obtener_todas()
+        fact_list = facturas_res.get("items", []) if isinstance(facturas_res, dict) else (facturas_res if isinstance(facturas_res, list) else [])
+        emitidas = [f for f in fact_list if f.get('estado', 'Emitida') == 'Emitida']
         total_ventas = sum(float(f.get('total', 0.0)) for f in emitidas)
         
         return render_template('index.html', bajos=bajos, sobrestock=sobrestock, optimos=optimos, total_productos=len(items), total_ventas=total_ventas, total_facturas=len(emitidas))
