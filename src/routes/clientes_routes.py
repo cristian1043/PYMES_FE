@@ -80,6 +80,9 @@ def editar_cliente(id):
             flash(f"Error al actualizar el cliente: {err}", "danger")
         else:
             flash("Cliente actualizado exitosamente", "success")
+            ref = request.form.get('ref') or request.args.get('ref')
+            if ref == 'reporte':
+                return redirect(url_for('reportes.reporte_clientes'))
             return redirect(url_for('clientes.ver_clientes'))
 
     return render_template('clientes/editar_cliente.html', cliente=cliente)

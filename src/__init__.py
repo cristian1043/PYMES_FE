@@ -72,7 +72,7 @@ def create_app(config_name='default'):
         sobrestock = [p for p in items if p.get('stock', 0) > 10000]
         optimos = [p for p in items if 2500 < p.get('stock', 0) <= 10000]
         
-        facturas_res = FacturasService.obtener_todas()
+        facturas_res = FacturasService.obtener_todas(per_page=1000)
         fact_list = facturas_res.get("items", []) if isinstance(facturas_res, dict) else (facturas_res if isinstance(facturas_res, list) else [])
         emitidas = [f for f in fact_list if f.get('estado', 'Emitida') == 'Emitida']
         total_ventas = sum(float(f.get('total', 0.0)) for f in emitidas)

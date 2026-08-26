@@ -5,10 +5,11 @@
     <div class="card shadow-sm border-0">
         <div class="card-header bg-warning text-dark font-weight-bold d-flex justify-content-between align-items-center">
             <span>✏️ Editar Cliente #{{ cliente.id }}</span>
-            <a href="{{ url_for('clientes.ver_clientes') }}" class="btn btn-sm btn-outline-dark">Volver</a>
+            <a href="{{ url_for('reportes.reporte_clientes') if request.args.get('ref') == 'reporte' else url_for('clientes.ver_clientes') }}" class="btn btn-sm btn-outline-dark">Volver</a>
         </div>
         <div class="card-body">
             <form method="POST">
+                <input type="hidden" name="ref" value="{{ request.args.get('ref', '') }}">
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="font-weight-bold">Tipo Doc.</label>
@@ -142,7 +143,7 @@
                 {% endif %}
 
                 <div class="d-flex justify-content-end">
-                    <a href="{{ url_for('clientes.ver_clientes') }}" class="btn btn-secondary mr-2">Cancelar</a>
+                    <a href="{{ url_for('reportes.reporte_clientes') if request.args.get('ref') == 'reporte' else url_for('clientes.ver_clientes') }}" class="btn btn-secondary mr-2">Cancelar</a>
                     <button type="submit" class="btn btn-warning font-weight-bold">💾 Guardar Cambios</button>
                 </div>
             </form>

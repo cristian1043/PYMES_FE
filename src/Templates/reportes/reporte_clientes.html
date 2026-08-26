@@ -37,7 +37,7 @@
                         </td>
                         <td>
                             {% if session.get('usuario', {}).get('rol_id') == 1 %}
-                                <a href="{{ url_for('clientes.editar_cliente', id=cli.id) }}" class="text-primary font-weight-bold text-decoration-none" title="Ver / Editar Ficha Completa del Cliente (Admin)">
+                                <a href="{{ url_for('clientes.editar_cliente', id=cli.id, ref='reporte') }}" class="text-primary font-weight-bold text-decoration-none" title="Ver / Editar Ficha Completa del Cliente (Admin)">
                                     👤 {{ cli.nombre }}
                                 </a>
                             {% else %}
