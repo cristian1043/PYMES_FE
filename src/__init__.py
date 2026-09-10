@@ -32,7 +32,14 @@ def create_app(config_name='default'):
     @app.before_request
     def proteger_rutas():
         # Rutas accesibles sin iniciar sesión
-        rutas_sin_login = ['auth.login', 'auth.register', 'auth.logout', 'static']
+        rutas_sin_login = [
+            'auth.login',
+            'auth.register',
+            'auth.logout',
+            'auth.recuperar_password',
+            'auth.recuperar_password_confirmar',
+            'static'
+        ]
         # Rutas accesibles tras iniciar sesión pero sin haber seleccionado empresa activa aún
         rutas_sin_empresa = ['auth.seleccionar_empresa', 'auth.activar_empresa', 'empresas.nueva_empresa']
 

@@ -153,3 +153,59 @@ def logout():
     session.clear()
     flash("Has cerrado sesión correctamente.", "info")
     return redirect(url_for('auth.login'))
+
+@auth_bp.route('/recuperar_password', methods=['GET', 'POST'])
+def recuperar_password():
+    """Flujo de solicitud de recuperación de contraseña vía correo o código OTP."""
+    token = request.args.get('token')
+    if token:
+        return render_template('recuperar_password.html', token=token, paso_codigo=True)
+
+    if request.method == 'POST':
+        identificador = request.form.get('identificador', '').strip()
+        if not identificador:
+            flash("Por favor ingresa tu correo, usuario o documento.", "warning")
+            return render_template('recuperar_password.html')
+
+        res, err = AuthService.solicitar_recuperacion(identificador)
+        if err:
+            flash(f"No se pudo generar la solicitud: {err}", "danger")
+            return render_template('recuperar_password.html')
+
+        token_generado = res.get('token') if res else ''
+        codigo_generado = res.get('codigo') if res else ''
+        email_enmascarado = res.get('email_enmascarado', '') if res else ''
+        link_directo = res.get('link_directo', '') if res else ''
+
+        flash(f"Hemos enviado el enlace y código de verificación a {email_enmascarado}. Por favor revisa tu bandeja de entrada.", "success")
+        return render_template('recuperar_password.html', token=token_generado, codigo=codigo_generado, paso_codigo=True, link_directo=link_directo)
+
+    return render_template('recuperar_password.html')
+
+@auth_bp.route('/recuperar_password_confirmar', methods=['POST'])
+def recuperar_password_confirmar():
+    """Aplica la nueva contraseña utilizando el token temporal o código OTP recibido."""
+    token_o_codigo = request.form.get('token_o_codigo', '').strip()
+    password_nueva = request.form.get('password_nueva', '').strip()
+    password_confirmar = request.form.get('password_confirmar', '').strip()
+
+    if not token_o_codigo:
+        flash("El token o código de verificación es obligatorio.", "danger")
+        return redirect(url_for('auth.recuperar_password'))
+
+    if not password_nueva or len(password_nueva) < 6:
+        flash("La nueva contraseña debe tener al menos 6 caracteres.", "warning")
+        return render_template('recuperar_password.html', token=token_o_codigo, paso_codigo=True)
+
+    if password_nueva != password_confirmar:
+        flash("Las contraseñas no coinciden. Por favor verifica.", "danger")
+        return render_template('recuperar_password.html', token=token_o_codigo, paso_codigo=True)
+
+    res, err = AuthService.confirmar_recuperacion(token_o_codigo, password_nueva)
+    if err:
+        flash(f"Error al restablecer contraseña: {err}", "danger")
+        return render_template('recuperar_password.html', token=token_o_codigo, paso_codigo=True)
+
+    flash("¡Tu contraseña ha sido restablecida con éxito! Ya puedes iniciar sesión.", "success")
+    return redirect(url_for('auth.login'))
+

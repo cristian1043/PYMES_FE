@@ -149,3 +149,79 @@ def editar_usuario(id):
     vinculacion = UsuariosService.obtener_vinculacion_empresa(id, empresa_id)
     usuario['id_rol'] = vinculacion.get('rol_id', usuario.get('id_rol', 2))
     return render_template('usuarios/editar_usuario.html', usuario=usuario, roles=roles)
+
+@usuarios_bp.route('/perfil', methods=['GET', 'POST'])
+def perfil():
+    """Muestra y permite actualizar la información personal y contraseña del usuario activo."""
+    usuario_sesion = session.get('usuario')
+    if not usuario_sesion or not usuario_sesion.get('id'):
+        flash("Debes iniciar sesión para acceder a tu perfil.", "warning")
+        return redirect(url_for('auth.login'))
+
+    user_id = usuario_sesion.get('id')
+    empresa_activa = session.get('empresa_activa', {})
+    empresa_id = empresa_activa.get('id', 1)
+
+    if request.method == 'POST':
+        # 1. Gestión de Contraseña con validación de clave actual
+        password_actual = request.form.get('password_actual', '').strip()
+        password_nueva = request.form.get('password_nueva', '').strip()
+        password_confirmar = request.form.get('password_confirmar', '').strip()
+
+        if password_actual or password_nueva:
+            if not password_actual:
+                flash("Debes ingresar tu contraseña actual para autorizar el cambio.", "danger")
+                return redirect(url_for('usuarios.perfil'))
+            if not password_nueva:
+                flash("Debes ingresar la nueva contraseña deseada.", "danger")
+                return redirect(url_for('usuarios.perfil'))
+            if len(password_nueva) < 6:
+                flash("La nueva contraseña debe tener al menos 6 caracteres.", "warning")
+                return redirect(url_for('usuarios.perfil'))
+            if password_nueva != password_confirmar:
+                flash("La confirmación de la nueva contraseña no coincide.", "danger")
+                return redirect(url_for('usuarios.perfil'))
+
+            res_pass, err_pass = AuthService.cambiar_password(user_id, password_actual, password_nueva)
+            if err_pass:
+                flash(f"No se pudo cambiar la contraseña: {err_pass}", "danger")
+                return redirect(url_for('usuarios.perfil'))
+            else:
+                flash("¡Contraseña actualizada exitosamente con validación de seguridad!", "success")
+
+        # 2. Actualización de Datos Personales y Bancarios
+        nombre = request.form.get('nombre', '').strip()
+        apellido = request.form.get('apellido', '').strip()
+        email = request.form.get('email', '').strip()
+        telefono = request.form.get('telefono', '').strip()
+        banco = request.form.get('banco', '').strip()
+        tipo_cuenta = request.form.get('tipo_cuenta', '').strip()
+        numero_cuenta = request.form.get('numero_cuenta', '').strip()
+
+        datos_actualizar = {
+            "nombre": nombre,
+            "apellido": apellido,
+            "email": email,
+            "telefono": telefono,
+            "banco": banco,
+            "tipo_cuenta": tipo_cuenta,
+            "numero_cuenta": numero_cuenta
+        }
+
+        res_u, err_u = UsuariosService.actualizar(user_id, datos_actualizar)
+        if err_u:
+            flash(f"Error al actualizar la información personal: {err_u}", "danger")
+        else:
+            flash("¡Información personal actualizada correctamente!", "success")
+            usuario_sesion['nombre'] = f"{nombre} {apellido}".strip()
+            usuario_sesion['email'] = email
+            session['usuario'] = usuario_sesion
+
+        return redirect(url_for('usuarios.perfil'))
+
+    usuario = UsuariosService.obtener_por_id(user_id) or usuario_sesion
+    vinculacion = UsuariosService.obtener_vinculacion_empresa(user_id, empresa_id)
+    rol_nombre = vinculacion.get('rol_nombre') if (vinculacion and isinstance(vinculacion, dict)) else usuario_sesion.get('rol', 'Usuario')
+
+    return render_template('usuarios/perfil.html', usuario=usuario, rol_nombre=rol_nombre, empresa_activa=empresa_activa)
+

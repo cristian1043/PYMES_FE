@@ -42,3 +42,34 @@ class AuthService:
         Envía la solicitud de creación de un nuevo usuario a la API del Backend (/api/usuarios/).
         """
         return APIClient.post('/usuarios/', data=datos_usuario)
+
+    @staticmethod
+    def cambiar_password(usuario_id, password_actual, password_nueva):
+        """
+        Solicita al backend cambiar la contraseña validando la clave actual.
+        """
+        return APIClient.post('/auth/cambiar-password', data={
+            "usuario_id": usuario_id,
+            "password_actual": password_actual,
+            "password_nueva": password_nueva
+        })
+
+    @staticmethod
+    def solicitar_recuperacion(identificador):
+        """
+        Solicita al backend generar el token y código OTP para recuperar contraseña.
+        """
+        return APIClient.post('/auth/recuperar-password-solicitar', data={
+            "identificador": identificador
+        })
+
+    @staticmethod
+    def confirmar_recuperacion(token_o_codigo, password_nueva):
+        """
+        Envía al backend el token o código OTP con la nueva contraseña.
+        """
+        return APIClient.post('/auth/recuperar-password-confirmar', data={
+            "token": token_o_codigo,
+            "password_nueva": password_nueva
+        })
+

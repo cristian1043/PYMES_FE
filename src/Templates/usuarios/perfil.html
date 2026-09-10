@@ -1,0 +1,205 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Cabecera de Perfil de Usuario -->
+    <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
+        <div class="bg-primary text-white p-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+            <div class="d-flex align-items-center mb-3 mb-md-0">
+                <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center shadow-sm mr-4" style="width: 76px; height: 76px; font-size: 2.2rem; font-weight: bold;">
+                    {{ usuario.nombre[:1] | upper if usuario.nombre else 'U' }}
+                </div>
+                <div>
+                    <h3 class="mb-1 font-weight-bold text-white">{{ usuario.nombre }} {{ usuario.apellido }}</h3>
+                    <p class="mb-1 text-light opacity-75">
+                        <i class="fas fa-user-circle"></i> @{{ usuario.username if usuario.username else usuario.documento }} &bull; {{ usuario.email }}
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 mt-1">
+                        <span class="badge badge-warning text-dark font-weight-bold px-2 py-1 mr-2">
+                            <i class="fas fa-shield-alt"></i> {{ rol_nombre or 'Usuario' }}
+                        </span>
+                        {% if empresa_activa %}
+                        <span class="badge badge-light text-primary font-weight-bold px-2 py-1">
+                            <i class="fas fa-building"></i> {{ empresa_activa.nombre }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div>
+                <a href="{{ url_for('inicio') }}" class="btn btn-outline-light font-weight-bold">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de Información Personal y Seguridad -->
+    <form action="{{ url_for('usuarios.perfil') }}" method="POST">
+        <div class="row">
+            <!-- Columna Izquierda: Datos Personales e Identificación -->
+            <div class="col-lg-7 mb-4">
+                <div class="card shadow-sm border-0 rounded-lg h-100">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 text-primary font-weight-bold">
+                            <i class="fas fa-id-card mr-2"></i> Información Personal y Contacto
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="nombre" class="font-weight-bold text-secondary">Nombres *</label>
+                                <input type="text" name="nombre" id="nombre" class="form-control" value="{{ usuario.nombre }}" required minlength="2">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="apellido" class="font-weight-bold text-secondary">Apellidos *</label>
+                                <input type="text" name="apellido" id="apellido" class="form-control" value="{{ usuario.apellido }}" required minlength="2">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="font-weight-bold text-secondary">Correo Electrónico *</label>
+                                <input type="email" name="email" id="email" class="form-control" value="{{ usuario.email }}" required>
+                                <small class="text-muted">Utilizado para notificaciones y recuperación de acceso.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="telefono" class="font-weight-bold text-secondary">Teléfono de Contacto *</label>
+                                <input type="tel" name="telefono" id="telefono" class="form-control" value="{{ usuario.telefono }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="font-weight-bold text-secondary">Tipo Documento</label>
+                                <input type="text" class="form-control bg-light" value="{{ usuario.tipo_documento }}" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold text-secondary">N° Documento</label>
+                                <input type="text" class="form-control bg-light" value="{{ usuario.documento }}" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold text-secondary">Usuario (@)</label>
+                                <input type="text" class="form-control bg-light" value="{{ usuario.username or 'No asignado' }}" readonly>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="text-primary font-weight-bold mb-3">
+                            <i class="fas fa-university mr-2"></i> Dispersión y Cuenta Bancaria
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="banco" class="font-weight-bold text-secondary">Entidad Bancaria</label>
+                                <input type="text" name="banco" id="banco" class="form-control" placeholder="Ej: Bancolombia, Davivienda" value="{{ usuario.banco or '' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="tipo_cuenta" class="font-weight-bold text-secondary">Tipo de Cuenta</label>
+                                <select name="tipo_cuenta" id="tipo_cuenta" class="form-control">
+                                    <option value="">Seleccionar tipo...</option>
+                                    <option value="Ahorros" {% if usuario.tipo_cuenta == 'Ahorros' %}selected{% endif %}>Cuenta de Ahorros</option>
+                                    <option value="Corriente" {% if usuario.tipo_cuenta == 'Corriente' %}selected{% endif %}>Cuenta Corriente</option>
+                                    <option value="Nequi" {% if usuario.tipo_cuenta == 'Nequi' %}selected{% endif %}>Nequi</option>
+                                    <option value="Daviplata" {% if usuario.tipo_cuenta == 'Daviplata' %}selected{% endif %}>Daviplata</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="numero_cuenta" class="font-weight-bold text-secondary">Número de Cuenta</label>
+                                <input type="text" name="numero_cuenta" id="numero_cuenta" class="form-control" placeholder="Ej: 123-456789-01" value="{{ usuario.numero_cuenta or '' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Seguridad y Cambio de Clave -->
+            <div class="col-lg-5 mb-4">
+                <div class="card shadow-sm border-0 rounded-lg h-100">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 text-danger font-weight-bold">
+                            <i class="fas fa-lock mr-2"></i> Seguridad y Cambio de Clave
+                        </h5>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="alert alert-info border-0 rounded p-3 mb-4">
+                                <div class="d-flex">
+                                    <i class="fas fa-shield-alt fa-2x mr-3 text-info"></i>
+                                    <div>
+                                        <h6 class="font-weight-bold mb-1">Protección de Cuenta</h6>
+                                        <small class="text-muted">Si deseas cambiar tu contraseña, debes ingresar tu <strong>contraseña actual</strong> por motivos de seguridad.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="password_actual" class="font-weight-bold text-secondary">Contraseña Actual *</label>
+                                <div class="input-group">
+                                    <input type="password" name="password_actual" id="password_actual" class="form-control" placeholder="Ingresa tu contraseña actual">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('password_actual')">
+                                            <i class="fas fa-eye" id="eye_password_actual"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="password_nueva" class="font-weight-bold text-secondary">Nueva Contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" name="password_nueva" id="password_nueva" class="form-control" placeholder="Mínimo 6 caracteres" minlength="6">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('password_nueva')">
+                                            <i class="fas fa-eye" id="eye_password_nueva"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <label for="password_confirmar" class="font-weight-bold text-secondary">Confirmar Nueva Contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" name="password_confirmar" id="password_confirmar" class="form-control" placeholder="Repite la nueva contraseña">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('password_confirmar')">
+                                            <i class="fas fa-eye" id="eye_password_confirmar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-top">
+                            <button type="submit" class="btn btn-primary btn-block btn-lg font-weight-bold shadow-sm py-3">
+                                <i class="fas fa-save mr-2"></i> Guardar Cambios del Perfil
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+function togglePasswordVisibility(fieldId) {
+    const field = document.getElementById(fieldId);
+    const eyeIcon = document.getElementById('eye_' + fieldId);
+    if (!field) return;
+    if (field.type === 'password') {
+        field.type = 'text';
+        if (eyeIcon) {
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        }
+    } else {
+        field.type = 'password';
+        if (eyeIcon) {
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+        }
+    }
+}
+</script>
+{% endblock %}
