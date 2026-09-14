@@ -60,6 +60,12 @@ def create_app(config_name='default'):
 
     @app.route('/')
     def index():
+        if 'usuario' not in session:
+            return redirect(url_for('auth.login'))
+
+        if not session.get('empresa_activa'):
+            return render_template('index.html', bajos=[], sobrestock=[], optimos=[], total_productos=0, total_ventas=0, total_facturas=0)
+
         from src.services.productos_service import ProductosService
         from src.services.facturas_service import FacturasService
         from src.services.proveedores_service import ProveedoresService

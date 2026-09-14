@@ -20,9 +20,9 @@
   
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
-       
-       
-        {% if session.get('usuario') and session['usuario'].get('rol_id') in [1, 2] %}
+        {% if session.get('usuario') and session.get('empresa_activa') %}
+        
+        {% if session['usuario'].get('rol_id') in [1, 2] %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarFacturas" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Facturas
@@ -34,7 +34,7 @@
         </li>
         {% endif %}
 
-        {% if session.get('usuario') and session['usuario'].get('rol_id') in [1, 3] %}
+        {% if session['usuario'].get('rol_id') in [1, 3] %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarProductos" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Productos
@@ -46,7 +46,7 @@
         </li>
         {% endif %}
 
-        {% if session.get('usuario') and session['usuario'].get('rol_id') in [1, 2] %}
+        {% if session['usuario'].get('rol_id') in [1, 2] %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarClientes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Clientes
@@ -58,7 +58,7 @@
         </li>
         {% endif %}
 
-        {% if session.get('usuario') and session['usuario'].get('rol_id') in [1, 3] %}
+        {% if session['usuario'].get('rol_id') in [1, 3] %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarProveedores" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Proveedores
@@ -70,7 +70,7 @@
         </li>
         {% endif %}
 
-        {% if session.get('usuario') and session['usuario'].get('rol_id') in [1, 3] %}
+        {% if session['usuario'].get('rol_id') in [1, 3] %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarCompras" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Compras
@@ -82,7 +82,7 @@
         </li>
         {% endif %}
 
-        {% if session.get('usuario') and session['usuario'].get('rol_id') in [1, 3] %}
+        {% if session['usuario'].get('rol_id') in [1, 3] %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarReportes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Reportes
@@ -97,10 +97,12 @@
         </li>
         {% endif %}
 
-        {% if session.get('usuario') and session['usuario'].get('rol_id') == 1 %}
+        {% if session['usuario'].get('rol_id') == 1 %}
         <li class="nav-item">
           <a class="nav-link font-weight-bold text-primary" href="{{ url_for('usuarios.ver_usuarios') }}">👥 Usuarios</a>
         </li>
+        {% endif %}
+
         {% endif %}
       </ul>
       {% if session.get('usuario') %}
@@ -133,12 +135,14 @@
         <div class="dropdown mr-2">
           <button class="btn btn-sm btn-outline-secondary dropdown-toggle font-weight-bold" type="button" id="userMenuDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             👤 {{ session['usuario']['nombre'] }}
-            {% if session['usuario'].get('rol_id') == 1 %}
-                <span class="badge badge-primary ml-1">👑 Admin</span>
-            {% elif session['usuario'].get('rol_id') == 3 %}
-                <span class="badge badge-warning ml-1">📦 Almacenista</span>
-            {% else %}
-                <span class="badge badge-info ml-1">🏷️ Vendedor</span>
+            {% if session.get('empresa_activa') %}
+                {% if session['usuario'].get('rol_id') == 1 %}
+                    <span class="badge badge-primary ml-1">👑 Admin</span>
+                {% elif session['usuario'].get('rol_id') == 3 %}
+                    <span class="badge badge-warning ml-1">📦 Almacenista</span>
+                {% else %}
+                    <span class="badge badge-info ml-1">🏷️ Vendedor</span>
+                {% endif %}
             {% endif %}
           </button>
           <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="userMenuDropdown">
@@ -153,7 +157,7 @@
           </div>
         </div>
         <a href="{{ url_for('usuarios.perfil') }}" class="btn btn-sm btn-primary mr-2 font-weight-bold shadow-sm" title="Ver Información Personal">
-          <i class="fas fa-user-cog mr-1"></i> Información Personal
+          👤 Información Personal
         </a>
         <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Cerrar Sesión</a>
       </div>

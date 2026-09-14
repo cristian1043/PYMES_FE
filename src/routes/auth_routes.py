@@ -132,17 +132,26 @@ def register():
             'apellido': request.form.get('apellido'),
             'telefono': request.form.get('telefono'),
             'email': request.form.get('email'),
-            'username': request.form.get('username') or request.form.get('email').split('@')[0],
+            'username': request.form.get('username') or '',
             'password_hash': request.form.get('password'),
             'id_rol': int(request.form.get('id_rol', 2)),
-            'estado': 'Activo'
+            'estado': 'Activo',
+            'fecha_nacimiento': request.form.get('fecha_nacimiento') or '',
+            'lugar_residencia': request.form.get('lugar_residencia') or '',
+            'estado_civil': request.form.get('estado_civil') or '',
+            'numero_hijos': request.form.get('numero_hijos') or 0,
+            'banco': request.form.get('banco') or '',
+            'tipo_cuenta': request.form.get('tipo_cuenta') or '',
+            'numero_cuenta': request.form.get('numero_cuenta') or ''
         }
 
         res, err = AuthService.registrar(datos)
         if err:
             flash(f"Error al registrar la cuenta: {err}", "danger")
         else:
-            flash("¡Cuenta creada exitosamente! Ya puedes iniciar sesión.", "success")
+            uname = res.get('username') if isinstance(res, dict) and res.get('username') else ''
+            msg_usuario = f" Tu identificador asignado es @{uname}." if uname else ""
+            flash(f"¡Cuenta creada exitosamente!{msg_usuario} Ya puedes iniciar sesión con tu correo o @{uname}.", "success")
             return redirect(url_for('auth.login'))
 
     return render_template('register.html')

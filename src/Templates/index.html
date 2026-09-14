@@ -2,13 +2,46 @@
 
 {% block content %}
 <div class="container mt-4 mb-5">
-    <!-- ENCABEZADO PRINCIPAL -->
+    {% if not session.get('empresa_activa') %}
+    <!-- VISTA PARA USUARIO INDEPENDIENTE (SIN EMPRESA VINCULADA) -->
+    <div class="jumbotron bg-white shadow-sm border rounded p-4 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 font-weight-bold text-primary mb-2">Bienvenido, {{ session['usuario']['nombre'] }}</h1>
+                <p class="lead text-dark mb-2">
+                    Estado: <span class="badge badge-secondary px-3 py-2">👤 Usuario Independiente</span>
+                </p>
+                <p class="text-muted mb-0">
+                    Actualmente no estás asociado a ninguna empresa. Por tanto, no tienes asignado ningún rol empresarial.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-right mt-3 mt-md-0">
+                <a href="{{ url_for('usuarios.perfil') }}" class="btn btn-primary btn-lg font-weight-bold shadow-sm">
+                    👤 Mi Información Personal
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4 text-center">
+            <h4 class="font-weight-bold text-dark mb-3">💼 Vinculación a una Empresa</h4>
+            <p class="text-muted mx-auto mb-3" style="max-width: 600px;">
+                Para unirte al equipo de trabajo de una empresa y obtener un rol operativo (Vendedor, Almacenista o Administrador), comparte tu identificador único <strong>@{{ session['usuario'].get('username') or session['usuario']['email'].split('@')[0] }}</strong> con el administrador de la empresa.
+            </p>
+            <a href="{{ url_for('auth.seleccionar_empresa') }}" class="btn btn-outline-primary font-weight-bold">
+                🏢 Ver Empresas del Sistema
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <!-- ENCABEZADO PRINCIPAL PARA EMPRESA ACTIVA -->
     <div class="jumbotron bg-white shadow-sm border rounded p-4 mb-4">
         <div class="row align-items-center">
             <div class="col-md-8">
                 <h1 class="display-5 font-weight-bold text-primary mb-2">Bienvenido a PYMES.SOFT</h1>
                 <p class="lead text-dark mb-1">
-                    Sistema de Gestión Multitenant | 🏢 Empresa Activa: <strong>{{ session['empresa_activa']['nombre'] if session.get('empresa_activa') else 'Empresa Seleccionada' }}</strong>
+                    Sistema de Gestión Multitenant | 🏢 Empresa Activa: <strong>{{ session['empresa_activa']['nombre'] }}</strong>
                 </p>
                 <p class="text-muted small mb-0">Panel de Control Operativo y Notificaciones en Tiempo Real</p>
             </div>
@@ -210,5 +243,6 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -69,6 +69,10 @@
         {% endwith %}
 
         <form action="{{ url_for('auth.register') }}" method="POST">
+            <h6 class="text-uppercase text-primary font-weight-bold mb-3" style="letter-spacing: 0.5px; font-size: 0.85rem;">
+                👤 Información Personal
+            </h6>
+
             <div class="row">
                 <div class="col-md-6 form-group mb-3">
                     <label for="nombre" class="font-weight-bold">Nombre *</label>
@@ -98,6 +102,40 @@
 
             <div class="row">
                 <div class="col-md-6 form-group mb-3">
+                    <label for="fecha_nacimiento" class="font-weight-bold">Fecha de Nacimiento *</label>
+                    <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" required onchange="calcularEdad(this.value)">
+                    <small id="edadBadge" class="form-text text-info font-weight-bold mt-1"></small>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                    <label for="lugar_residencia" class="font-weight-bold">Lugar de Residencia *</label>
+                    <input type="text" class="form-control" id="lugar_residencia" name="lugar_residencia" required placeholder="Ciudad, Barrio o Dirección">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                    <label for="estado_civil" class="font-weight-bold">Estado Civil *</label>
+                    <select class="form-control" id="estado_civil" name="estado_civil" required>
+                        <option value="" disabled selected>Seleccione estado civil</option>
+                        <option value="Soltero(a)">Soltero(a)</option>
+                        <option value="Casado(a)">Casado(a)</option>
+                        <option value="Unión Libre">Unión Libre</option>
+                        <option value="Divorciado(a)">Divorciado(a)</option>
+                        <option value="Viudo(a)">Viudo(a)</option>
+                    </select>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                    <label for="numero_hijos" class="font-weight-bold">N° de Hijos</label>
+                    <input type="number" class="form-control" id="numero_hijos" name="numero_hijos" min="0" max="20" value="0">
+                </div>
+            </div>
+
+            <h6 class="text-uppercase text-primary font-weight-bold mb-3 mt-3" style="letter-spacing: 0.5px; font-size: 0.85rem;">
+                📞 Contacto y Acceso
+            </h6>
+
+            <div class="row">
+                <div class="col-md-6 form-group mb-3">
                     <label for="telefono" class="font-weight-bold">Teléfono *</label>
                     <input type="tel" class="form-control" id="telefono" name="telefono" required pattern="[0-9+\s\-]{7,15}" title="Solo números y signos +" placeholder="+57 300 1234567">
                 </div>
@@ -107,9 +145,36 @@
                 </div>
             </div>
 
-            <div class="form-group mb-4">
+            <div class="form-group mb-3">
                 <label for="password" class="font-weight-bold">Contraseña *</label>
                 <input type="password" class="form-control" id="password" name="password" required minlength="4" placeholder="••••••••">
+            </div>
+
+            <h6 class="text-uppercase text-muted font-weight-bold mb-2 mt-3" style="letter-spacing: 0.5px; font-size: 0.85rem;">
+                🏦 Datos Bancarios (Opcional)
+            </h6>
+
+            <div class="row">
+                <div class="col-md-4 form-group mb-3">
+                    <label for="banco">Banco</label>
+                    <input type="text" class="form-control form-control-sm" id="banco" name="banco" placeholder="Bancolombia, Davivienda...">
+                </div>
+                <div class="col-md-4 form-group mb-3">
+                    <label for="tipo_cuenta">Tipo Cuenta</label>
+                    <select class="form-control form-control-sm" id="tipo_cuenta" name="tipo_cuenta">
+                        <option value="">Seleccione</option>
+                        <option value="Ahorros">Ahorros</option>
+                        <option value="Corriente">Corriente</option>
+                    </select>
+                </div>
+                <div class="col-md-4 form-group mb-3">
+                    <label for="numero_cuenta">N° Cuenta</label>
+                    <input type="text" class="form-control form-control-sm" id="numero_cuenta" name="numero_cuenta" placeholder="123456789">
+                </div>
+            </div>
+
+            <div class="alert alert-light border small text-muted my-3">
+                ℹ️ <strong>Nota:</strong> El sistema le asignará automáticamente un <strong>@username</strong> único basado en su nombre. Con este identificador las empresas podrán encontrarlo y vincularlo a su equipo.
             </div>
 
             <button type="submit" class="btn btn-custom btn-block mb-3">Crear Cuenta</button>
@@ -122,5 +187,21 @@
     </div>
 </div>
 
+<script>
+function calcularEdad(fecha) {
+    if (!fecha) return;
+    const hoy = new Date();
+    const cumple = new Date(fecha);
+    let edad = hoy.getFullYear() - cumple.getFullYear();
+    const m = hoy.getMonth() - cumple.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) {
+        edad--;
+    }
+    const badge = document.getElementById('edadBadge');
+    if (badge) {
+        badge.innerText = `Edad calculada: ${edad} años`;
+    }
+}
+</script>
 </body>
 </html>

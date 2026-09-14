@@ -15,19 +15,23 @@
                         <i class="fas fa-user-circle"></i> @{{ usuario.username if usuario.username else usuario.documento }} &bull; {{ usuario.email }}
                     </p>
                     <div class="d-flex flex-wrap gap-2 mt-1">
+                        {% if empresa_activa and rol_nombre %}
                         <span class="badge badge-warning text-dark font-weight-bold px-2 py-1 mr-2">
-                            <i class="fas fa-shield-alt"></i> {{ rol_nombre or 'Usuario' }}
+                            <i class="fas fa-shield-alt"></i> {{ rol_nombre }}
                         </span>
-                        {% if empresa_activa %}
                         <span class="badge badge-light text-primary font-weight-bold px-2 py-1">
                             <i class="fas fa-building"></i> {{ empresa_activa.nombre }}
+                        </span>
+                        {% else %}
+                        <span class="badge badge-secondary font-weight-bold px-2 py-1">
+                            👤 Usuario Independiente (Sin Empresa Asignada)
                         </span>
                         {% endif %}
                     </div>
                 </div>
             </div>
             <div>
-                <a href="{{ url_for('inicio') }}" class="btn btn-outline-light font-weight-bold">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-light font-weight-bold">
                     <i class="fas fa-arrow-left mr-1"></i> Volver al Inicio
                 </a>
             </div>
@@ -69,18 +73,49 @@
                             </div>
                         </div>
 
+                        <!-- CAMPOS PERSONALES ADICIONALES -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="fecha_nacimiento" class="font-weight-bold text-secondary">Fecha de Nacimiento</label>
+                                <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control" value="{{ usuario.fecha_nacimiento or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lugar_residencia" class="font-weight-bold text-secondary">Lugar de Residencia</label>
+                                <input type="text" name="lugar_residencia" id="lugar_residencia" class="form-control" placeholder="Ciudad, Barrio o Dirección" value="{{ usuario.lugar_residencia or '' }}">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="estado_civil" class="font-weight-bold text-secondary">Estado Civil</label>
+                                <select name="estado_civil" id="estado_civil" class="form-control">
+                                    <option value="">Seleccione estado civil...</option>
+                                    <option value="Soltero(a)" {% if usuario.estado_civil == 'Soltero(a)' %}selected{% endif %}>Soltero(a)</option>
+                                    <option value="Casado(a)" {% if usuario.estado_civil == 'Casado(a)' %}selected{% endif %}>Casado(a)</option>
+                                    <option value="Unión Libre" {% if usuario.estado_civil == 'Unión Libre' %}selected{% endif %}>Unión Libre</option>
+                                    <option value="Divorciado(a)" {% if usuario.estado_civil == 'Divorciado(a)' %}selected{% endif %}>Divorciado(a)</option>
+                                    <option value="Viudo(a)" {% if usuario.estado_civil == 'Viudo(a)' %}selected{% endif %}>Viudo(a)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="numero_hijos" class="font-weight-bold text-secondary">Número de Hijos</label>
+                                <input type="number" name="numero_hijos" id="numero_hijos" min="0" max="20" class="form-control" value="{{ usuario.numero_hijos or 0 }}">
+                            </div>
+                        </div>
+
+                        <!-- CAMPOS INMUTABLES DE IDENTIDAD -->
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label class="font-weight-bold text-secondary">Tipo Documento</label>
-                                <input type="text" class="form-control bg-light" value="{{ usuario.tipo_documento }}" readonly>
+                                <input type="text" class="form-control bg-light" value="{{ usuario.tipo_documento }}" readonly title="Campo no modificable">
                             </div>
                             <div class="col-md-4">
                                 <label class="font-weight-bold text-secondary">N° Documento</label>
-                                <input type="text" class="form-control bg-light" value="{{ usuario.documento }}" readonly>
+                                <input type="text" class="form-control bg-light" value="{{ usuario.documento }}" readonly title="Campo no modificable">
                             </div>
                             <div class="col-md-4">
-                                <label class="font-weight-bold text-secondary">Usuario (@)</label>
-                                <input type="text" class="form-control bg-light" value="{{ usuario.username or 'No asignado' }}" readonly>
+                                <label class="font-weight-bold text-secondary">Usuario Asignado (@)</label>
+                                <input type="text" class="form-control bg-light text-primary font-weight-bold" value="@{{ usuario.username or 'No asignado' }}" readonly title="Campo no modificable">
                             </div>
                         </div>
 

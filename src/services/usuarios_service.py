@@ -6,9 +6,15 @@ class UsuariosService:
     """
 
     @staticmethod
-    def obtener_todos():
-        """Obtiene la lista completa de usuarios registrados."""
-        data, error = APIClient.get('/usuarios/')
+    def obtener_todos(page=1, per_page=50, q=None, filtro=None):
+        """Obtiene la lista de usuarios registrados con soporte para búsqueda y filtros."""
+        params = [f"page={page}", f"per_page={per_page}"]
+        if q:
+            params.append(f"q={q}")
+        if filtro:
+            params.append(f"filtro={filtro}")
+        query_str = f"/usuarios/?{'&'.join(params)}"
+        data, error = APIClient.get(query_str)
         if error:
             print(f"Error al obtener usuarios: {error}")
             return []
@@ -20,6 +26,17 @@ class UsuariosService:
         data, error = APIClient.get(f'/usuarios/{usuario_id}')
         if error:
             print(f"Error al obtener usuario {usuario_id}: {error}")
+            return None
+        return data
+
+    @staticmethod
+    def obtener_por_username(username):
+        """Obtiene un usuario por su @username."""
+        if not username:
+            return None
+        clean_u = str(username).strip().lstrip("@")
+        data, error = APIClient.get(f'/usuarios/username/{clean_u}')
+        if error or not isinstance(data, dict) or 'id' not in data:
             return None
         return data
 
