@@ -1,7 +1,11 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 def create_app(config_name='default'):
-    app = Flask(__name__)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    templates_dir = os.path.join(current_dir, 'templates')
+    static_dir = os.path.join(current_dir, 'static')
+    app = Flask(__name__, template_folder=templates_dir, static_folder=static_dir)
     
     # Carga de la configuración
     from src.config.config import config
