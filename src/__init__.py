@@ -2,10 +2,9 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 def create_app(config_name='default'):
-    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    templates_dir = os.path.join(root_dir, 'src', 'templates')
-    static_dir = os.path.join(root_dir, 'src', 'static')
-    app = Flask('src', root_path=root_dir, template_folder=templates_dir, static_folder=static_dir)
+    templates_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
+    static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'static'))
+    app = Flask(__name__, template_folder=templates_dir, static_folder=static_dir)
     
     # Carga de la configuración
     from src.config.config import config
@@ -101,7 +100,6 @@ def create_app(config_name='default'):
         import traceback
         traceback.print_exc()
         original_exception = getattr(error, 'original_exception', error)
-        flash(f"Error interno del servidor (500): {str(original_exception)}", "danger")
-        return render_template('index.html'), 500
+        return f"<h3>Error interno del servidor (500)</h3><p>{str(original_exception)}</p>", 500
 
     return app
