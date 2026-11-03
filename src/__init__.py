@@ -2,9 +2,13 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 def create_app(config_name='default'):
-    templates_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
-    static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'static'))
-    app = Flask(__name__, template_folder=templates_dir, static_folder=static_dir)
+    current_file = os.path.abspath(__file__)
+    templates_dir = os.path.join(os.path.dirname(current_file), 'templates')
+    static_dir = os.path.join(os.path.dirname(current_file), 'static')
+    print(f"DEBUG: templates_dir={templates_dir}, existe={os.path.exists(templates_dir)}")
+    if os.path.exists(templates_dir):
+        print(f"DEBUG: archivos en templates={os.listdir(templates_dir)}")
+    app = Flask('src', template_folder=templates_dir, static_folder=static_dir)
     
     # Carga de la configuración
     from src.config.config import config

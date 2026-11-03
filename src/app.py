@@ -15,6 +15,6 @@ app = create_app('development')
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
-    print(f"Frontend corriendo en http://localhost:{port}")
+    print(f"Frontend corriendo en puerto {port}")
     app.run(host='0.0.0.0', debug=False, port=port)
 
