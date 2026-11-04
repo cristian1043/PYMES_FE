@@ -1,14 +1,19 @@
 import os
+from jinja2 import ChoiceLoader, FileSystemLoader
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 def create_app(config_name='default'):
     current_file = os.path.abspath(__file__)
-    templates_dir = os.path.join(os.path.dirname(current_file), 'templates')
-    static_dir = os.path.join(os.path.dirname(current_file), 'static')
-    print(f"DEBUG: templates_dir={templates_dir}, existe={os.path.exists(templates_dir)}")
-    if os.path.exists(templates_dir):
-        print(f"DEBUG: archivos en templates={os.listdir(templates_dir)}")
+    src_dir = os.path.dirname(current_file)
+    templates_dir = os.path.join(src_dir, 'templates')
+    static_dir = os.path.join(src_dir, 'static')
+    
     app = Flask('src', template_folder=templates_dir, static_folder=static_dir)
+    app.jinja_loader = ChoiceLoader([
+        FileSystemLoader(templates_dir),
+        FileSystemLoader(os.path.join(os.getcwd(), 'src', 'templates')),
+        FileSystemLoader(os.path.join(os.getcwd(), 'templates')),
+    ])
     
     # Carga de la configuración
     from src.config.config import config
