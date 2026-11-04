@@ -1,9 +1,12 @@
+import os
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from src.services.auth_service import AuthService
 from src.services.empresas_service import EmpresasService
 from src.services.usuarios_service import UsuariosService
 
-auth_bp = Blueprint('auth', __name__)
+templates_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
+static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static'))
+auth_bp = Blueprint('auth', __name__, template_folder=templates_dir, static_folder=static_dir)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
