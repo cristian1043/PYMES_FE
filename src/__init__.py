@@ -1,19 +1,31 @@
 import os
-from jinja2 import ChoiceLoader, FileSystemLoader
+from jinja2 import FunctionLoader
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 def create_app(config_name='default'):
-    current_file = os.path.abspath(__file__)
-    src_dir = os.path.dirname(current_file)
+    src_dir = os.path.dirname(os.path.abspath(__file__))
     templates_dir = os.path.join(src_dir, 'templates')
     static_dir = os.path.join(src_dir, 'static')
-    
-    app = Flask('src', template_folder=templates_dir, static_folder=static_dir)
-    app.jinja_loader = ChoiceLoader([
-        FileSystemLoader(templates_dir),
-        FileSystemLoader(os.path.join(os.getcwd(), 'src', 'templates')),
-        FileSystemLoader(os.path.join(os.getcwd(), 'templates')),
-    ])
+
+    def _load_template(name):
+        target = name.replace('\\', '/').lstrip('/').lower()
+        for root, _, files in os.walk(src_dir):
+            for f in files:
+                if f.lower().endswith('.html'):
+                    full_path = os.path.join(root, f)
+                    rel = os.path.relpath(full_path, src_dir).replace('\\', '/').lower()
+                    if rel.startswith('templates/'):
+                        rel = rel[len('templates/'):]
+                    if rel == target or f.lower() == target:
+                        with open(full_path, 'r', encoding='utf-8') as fp:
+                            return fp.read(), full_path, lambda: True
+        print(f"DEBUG_TEMPLATES: No se encontro '{name}' en {src_dir}. Contenido de src_dir: {os.listdir(src_dir)}", flush=True)
+        return None
+
+    app = Flask(__name__, template_folder=templates_dir, static_folder=static_dir)
+    loader = FunctionLoader(_load_template)
+    app.jinja_loader = loader
+    app.jinja_env.loader = loader
     
     # Carga de la configuración
     from src.config.config import config
