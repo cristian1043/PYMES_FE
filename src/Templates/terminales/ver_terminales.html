@@ -1,0 +1,295 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="font-weight-bold text-primary mb-1">💳 Terminales de Pago y Pasarelas (Bold + Wompi)</h2>
+            <p class="text-muted mb-0">Gestiona tus datáfonos físicos, links de pago digitales y el modo simulado de pruebas sin llaves reales.</p>
+        </div>
+        <button type="button" class="btn btn-success font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalNuevaTerminal">
+            ➕ Nueva Terminal / Datáfono
+        </button>
+    </div>
+
+    <div class="alert alert-info shadow-sm border-0 mb-4">
+        <strong>🧪 Modo Simulado (Sandbox) Activo:</strong> Si aún no cuentas con llaves reales de <strong>Bold</strong> o <strong>Wompi</strong>, mantén el proveedor en <code>simulado</code>. Podrás enviar cobros desde cualquier factura de venta y aprobarlos o rechazarlos con un clic.
+    </div>
+
+    <!-- SECCIÓN 1: TERMINALES DE PAGO (DATÁFONOS) -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 font-weight-bold">📟 Terminales / Datáfonos en Punto de Venta</h5>
+            <span class="badge badge-light text-dark">{{ terminales|length }} Registradas</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre de Terminal</th>
+                        <th>Serial / Código</th>
+                        <th>Ubicación</th>
+                        <th>Proveedor</th>
+                        <th>Modo</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in terminales %}
+                    <tr>
+                        <td><code>#{{ t.id }}</code></td>
+                        <td class="font-weight-bold">{{ t.nombre }}</td>
+                        <td><code>{{ t.codigo_terminal }}</code></td>
+                        <td>{{ t.ubicacion or 'Caja Principal' }}</td>
+                        <td>
+                            {% if t.proveedor == 'bold' %}
+                                <span class="badge badge-primary p-2">Bold Smart POS</span>
+                            {% else %}
+                                <span class="badge badge-warning text-dark p-2">🧪 Simulado (Pruebas)</span>
+                            {% endif %}
+                        </td>
+                        <td><code>{{ t.modo }}</code></td>
+                        <td>
+                            {% if t.estado == 'Activo' %}
+                                <span class="badge badge-success">🟢 Activa</span>
+                            {% else %}
+                                <span class="badge badge-secondary">🔴 Inactiva</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold" data-toggle="modal" data-target="#modalEditTerminal{{ t.id }}">
+                                ✏️ Configurar
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No hay terminales registradas aún.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% for t in terminales %}
+    <div class="modal fade" id="modalEditTerminal{{ t.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content shadow border-0">
+                <form action="{{ url_for('terminales.editar_terminal', id=t.id) }}" method="POST">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title font-weight-bold">✏️ Configurar Terminal: {{ t.nombre }}</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Nombre de la Terminal *</label>
+                            <input type="text" name="nombre" class="form-control" value="{{ t.nombre }}" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="font-weight-bold">Serial / Código *</label>
+                                <input type="text" name="codigo_terminal" class="form-control" value="{{ t.codigo_terminal }}" required>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="font-weight-bold">Ubicación</label>
+                                <input type="text" name="ubicacion" class="form-control" value="{{ t.ubicacion or '' }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label class="font-weight-bold">Proveedor</label>
+                                <select name="proveedor" class="form-control">
+                                    <option value="simulado" {% if t.proveedor == 'simulado' %}selected{% endif %}>Simulado (Pruebas)</option>
+                                    <option value="bold" {% if t.proveedor == 'bold' %}selected{% endif %}>Bold Datáfono</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label class="font-weight-bold">Modo</label>
+                                <select name="modo" class="form-control">
+                                    <option value="sandbox" {% if t.modo == 'sandbox' %}selected{% endif %}>Sandbox (Pruebas)</option>
+                                    <option value="produccion" {% if t.modo == 'produccion' %}selected{% endif %}>Producción</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label class="font-weight-bold">Estado</label>
+                                <select name="estado" class="form-control">
+                                    <option value="Activo" {% if t.estado == 'Activo' %}selected{% endif %}>Activo</option>
+                                    <option value="Inactivo" {% if t.estado != 'Activo' %}selected{% endif %}>Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary font-weight-bold">💾 Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- SECCIÓN 2: MÉTODOS DE PAGO Y PASARELAS (BOLD / WOMPI / SIMULADO) -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0 font-weight-bold">🌐 Métodos de Pago y Pasarelas Digitales</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Método de Pago</th>
+                        <th>Tipo</th>
+                        <th>Pasarela Activa</th>
+                        <th>Modo</th>
+                        <th>Llaves Configuradas</th>
+                        <th class="text-center">Configurar Llaves</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in metodos_pago %}
+                    <tr>
+                        <td class="font-weight-bold">{{ m.nombre }}</td>
+                        <td><span class="badge badge-secondary">{{ m.tipo }}</span></td>
+                        <td>
+                            {% if m.pasarela == 'wompi' %}
+                                <span class="badge badge-info p-2">Wompi (PSE / Nequi / Tarjetas)</span>
+                            {% elif m.pasarela == 'bold' %}
+                                <span class="badge badge-primary p-2">Bold (Datáfono Integrado)</span>
+                            {% elif m.pasarela == 'simulado' %}
+                                <span class="badge badge-warning text-dark p-2">🧪 Simulado (Sandbox)</span>
+                            {% else %}
+                                <span class="badge badge-light text-muted border">Manual / Caja Directa</span>
+                            {% endif %}
+                        </td>
+                        <td><code>{{ m.modo }}</code></td>
+                        <td>
+                            {% if m.tiene_llave_privada %}
+                                <span class="badge badge-success">🔒 Llave Privada Cifrada</span>
+                            {% else %}
+                                <span class="text-muted small">Sin llave privada (usa modo Simulado)</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-dark font-weight-bold" data-toggle="modal" data-target="#modalPasarela{{ m.id }}">
+                                🔑 Llaves / Modo
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% for m in metodos_pago %}
+    <div class="modal fade" id="modalPasarela{{ m.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content shadow border-0">
+                <form action="{{ url_for('terminales.configurar_pasarela', id=m.id) }}" method="POST">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title font-weight-bold">🔑 Configurar Pasarela: {{ m.nombre }}</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="font-weight-bold">Pasarela</label>
+                                <select name="pasarela" class="form-control">
+                                    <option value="ninguna" {% if m.pasarela == 'ninguna' %}selected{% endif %}>Manual / Sin pasarela</option>
+                                    <option value="simulado" {% if m.pasarela == 'simulado' %}selected{% endif %}>🧪 Simulado (Pruebas sin llaves)</option>
+                                    <option value="bold" {% if m.pasarela == 'bold' %}selected{% endif %}>Bold (Datáfono Integrado)</option>
+                                    <option value="wompi" {% if m.pasarela == 'wompi' %}selected{% endif %}>Wompi (Link PSE/Nequi/Tarjetas)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="font-weight-bold">Entorno</label>
+                                <select name="modo" class="form-control">
+                                    <option value="sandbox" {% if m.modo == 'sandbox' %}selected{% endif %}>Sandbox (Pruebas)</option>
+                                    <option value="produccion" {% if m.modo == 'produccion' %}selected{% endif %}>Producción</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Llave Pública (Public Key / API Key)</label>
+                            <input type="text" name="api_key_publica" class="form-control" value="{{ m.api_key_publica or '' }}" placeholder="pub_test_... (opcional en modo simulado)">
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Llave Privada (Private Key / Secret)</label>
+                            <input type="password" name="api_key_privada" class="form-control" placeholder="Dejar en blanco para conservar actual">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="font-weight-bold">Integrity Secret (Wompi)</label>
+                                <input type="password" name="integrity_secret" class="form-control" placeholder="Opcional">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="font-weight-bold">Webhook Secret</label>
+                                <input type="password" name="webhook_secret" class="form-control" placeholder="Opcional">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success font-weight-bold">💾 Guardar Pasarela</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- MODAL NUEVA TERMINAL -->
+<div class="modal fade" id="modalNuevaTerminal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content shadow border-0">
+            <form action="{{ url_for('terminales.nueva_terminal') }}" method="POST">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title font-weight-bold">➕ Agregar Nueva Terminal de Pago</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Nombre de la Terminal *</label>
+                        <input type="text" name="nombre" class="form-control" placeholder="Ej: Caja 3 - Datáfono Mostrador" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-bold">Serial / Código *</label>
+                            <input type="text" name="codigo_terminal" class="form-control" placeholder="Ej: BOLD-POS-003" required>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-bold">Ubicación</label>
+                            <input type="text" name="ubicacion" class="form-control" placeholder="Ej: Piso 1 - Caja 3">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-bold">Proveedor</label>
+                            <select name="proveedor" class="form-control">
+                                <option value="simulado" selected>🧪 Simulado (Modo Pruebas)</option>
+                                <option value="bold">Bold Smart POS</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-bold">Modo</label>
+                            <select name="modo" class="form-control">
+                                <option value="sandbox" selected>Sandbox (Pruebas)</option>
+                                <option value="produccion">Producción</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success font-weight-bold">✅ Crear Terminal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

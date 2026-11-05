@@ -1,3 +1,4 @@
+from flask import session
 from src.services.api_client import APIClient
 
 class ComprasService:
@@ -6,9 +7,17 @@ class ComprasService:
     """
 
     @staticmethod
+    def _empresa_activa_id():
+        emp = session.get("empresa_activa")
+        if isinstance(emp, dict) and emp.get("id"):
+            return emp.get("id")
+        return session.get("empresa_id") or 1
+
+    @staticmethod
     def obtener_todas(page=1, per_page=10):
         """Obtiene la lista paginada de compras."""
-        data, error = APIClient.get('/compras/', params={"page": page, "per_page": per_page})
+        emp_id = ComprasService._empresa_activa_id()
+        data, error = APIClient.get('/compras/', params={"page": page, "per_page": per_page, "empresa_id": emp_id})
         if error:
             print(f"Error al obtener compras: {error}")
             return {"items": [], "total": 0, "page": page, "per_page": per_page, "total_pages": 0}
@@ -30,12 +39,15 @@ class ComprasService:
     @staticmethod
     def crear(datos_compra):
         """Registra una nueva compra enviando los datos JSON al backend."""
+        if isinstance(datos_compra, dict) and not datos_compra.get("id_empresa"):
+            datos_compra["id_empresa"] = ComprasService._empresa_activa_id()
         return APIClient.post('/compras/', data=datos_compra)
 
     @staticmethod
     def obtener_siguiente_numero():
         """Obtiene el siguiente código consecutivo de orden de compra (COMP-XXX)."""
-        data, error = APIClient.get('/compras/siguiente_numero')
+        emp_id = ComprasService._empresa_activa_id()
+        data, error = APIClient.get('/compras/siguiente_numero', params={"empresa_id": emp_id})
         if error or not isinstance(data, dict):
             return "COMP-001"
         return data.get("siguiente_numero", "COMP-001")

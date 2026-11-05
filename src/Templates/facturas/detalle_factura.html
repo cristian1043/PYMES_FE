@@ -2,6 +2,170 @@
 
 {% block content %}
 <div class="container mt-5 mb-5">
+    <!-- PANEL DE COBRO AUTOMATIZADO EN TERMINAL (DATÁFONO BOLD) Y PASARELA (WOMPI / SIMULADO) -->
+    {% if factura.estado != 'Cancelada' %}
+    <div class="card shadow border-primary mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+            <div>
+                <h5 class="mb-0 font-weight-bold">💳 Automatización de Cobro (Datáfono Bold / Link Wompi / Simulado)</h5>
+                <small class="text-white-50">Envía el cobro al datáfono de caja o genera un link de pago sin almacenar datos de tarjeta</small>
+            </div>
+            <div>
+                {% if factura.estado == 'Pagada' %}
+                    <span class="badge badge-light text-success p-2 font-weight-bold">✅ FACTURA PAGADA ({{ factura.pasarela|upper if factura.pasarela else 'LIQUIDADA' }})</span>
+                {% else %}
+                    <span class="badge badge-warning text-dark p-2 font-weight-bold">⏳ PENDIENTE DE COBRO: ${{ "%.2f"|format(factura.total or 0.0) }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            {% if factura.estado != 'Pagada' %}
+            <div class="row">
+                <!-- OPCIÓN 1: COBRAR EN TERMINAL / DATÁFONO (BOLD / SIMULADO) -->
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-info">
+                        <div class="card-body">
+                            <h6 class="font-weight-bold text-info mb-2">📟 1. Enviar a Terminal / Datáfono</h6>
+                            <p class="small text-muted mb-2">Envía el monto automáticamente al datáfono en punto de venta (Bold o modo Simulado).</p>
+                            <form action="{{ url_for('facturas.cobrar_factura', id=factura.id) }}" method="POST">
+                                <input type="hidden" name="modo_cobro" value="terminal">
+                                <div class="form-group mb-2">
+                                    <select name="id_terminal" class="form-control form-control-sm" required>
+                                        {% for t in terminales %}
+                                            <option value="{{ t.id }}">📟 {{ t.nombre }} ({{ t.proveedor|upper }} - {{ t.codigo_terminal }})</option>
+                                        {% else %}
+                                            <option value="">-- No hay terminales activas --</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-info btn-sm btn-block font-weight-bold" {% if not terminales %}disabled{% endif %}>
+                                    📡 Enviar Cobro al Datáfono
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OPCIÓN 2: GENERAR LINK DE PAGO (WOMPI / SIMULADO) -->
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-success">
+                        <div class="card-body">
+                            <h6 class="font-weight-bold text-success mb-2">🌐 2. Link de Pago (Wompi / PSE / Nequi)</h6>
+                            <p class="small text-muted mb-2">Genera un link de checkout digital (PSE, Nequi, tarjetas) o link de prueba en Sandbox.</p>
+                            <form action="{{ url_for('facturas.cobrar_factura', id=factura.id) }}" method="POST">
+                                <input type="hidden" name="modo_cobro" value="link">
+                                <div class="form-group mb-2">
+                                    <select name="id_metodo_pago" class="form-control form-control-sm">
+                                        {% for m in metodos_pago %}
+                                            {% if m.pasarela in ['wompi', 'simulado'] %}
+                                                <option value="{{ m.id }}">🌐 {{ m.nombre }} ({{ m.pasarela|upper }})</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-sm btn-block font-weight-bold">
+                                    🔗 Generar Link de Cobro
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OPCIÓN 3: REGISTRO MANUAL EN CAJA (EFECTIVO / TRANSFERENCIA) -->
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-secondary">
+                        <div class="card-body">
+                            <h6 class="font-weight-bold text-dark mb-2">💵 3. Pago Directo en Caja (Efectivo)</h6>
+                            <p class="small text-muted mb-2">Liquida inmediatamente cuando recibes efectivo o transferencia bancaria verificada.</p>
+                            <form action="{{ url_for('facturas.cobrar_factura', id=factura.id) }}" method="POST">
+                                <input type="hidden" name="modo_cobro" value="manual">
+                                <div class="form-group mb-2">
+                                    <input type="text" name="referencia_pago" class="form-control form-control-sm" placeholder="Comprobante / Recibo (opcional)">
+                                </div>
+                                <button type="submit" class="btn btn-dark btn-sm btn-block font-weight-bold">
+                                    ✅ Confirmar Pago en Caja
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- HISTORIAL DE TRANSACCIONES DE COBRO Y SIMULADOR SANDBOX -->
+            {% if cobros %}
+            <hr class="my-3">
+            <h6 class="font-weight-bold text-dark mb-2">📋 Intentos y Transacciones de Cobro de esta Factura</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered align-middle mb-0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Referencia</th>
+                            <th>Pasarela / Canal</th>
+                            <th>Terminal</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th class="text-center">Acciones / Simulador Sandbox</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in cobros %}
+                        <tr>
+                            <td><code>{{ c.referencia_interna }}</code></td>
+                            <td>
+                                <span class="badge badge-info">{{ c.pasarela|upper }}</span>
+                                <small class="text-muted">{{ c.canal }}</small>
+                            </td>
+                            <td>{{ c.terminal_nombre or 'Checkout Web' }}</td>
+                            <td class="font-weight-bold">${{ "%.2f"|format(c.monto or 0.0) }} {{ c.moneda }}</td>
+                            <td>
+                                {% if c.estado == 'APROBADA' %}
+                                    <span class="badge badge-success">✅ APROBADA</span>
+                                {% elif c.estado in ['PENDIENTE', 'EN_PROCESO'] %}
+                                    <span class="badge badge-warning text-dark">⏳ {{ c.estado }}</span>
+                                {% else %}
+                                    <span class="badge badge-danger">❌ {{ c.estado }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if c.url_checkout %}
+                                    <a href="{{ c.url_checkout }}" target="_blank" class="btn btn-xs btn-outline-primary font-weight-bold mr-1">
+                                        🔗 Abrir Checkout
+                                    </a>
+                                {% endif %}
+                                {% if c.estado in ['PENDIENTE', 'EN_PROCESO'] %}
+                                    <form action="{{ url_for('facturas.simular_cobro', cobro_id=c.id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="id_factura" value="{{ factura.id }}">
+                                        <input type="hidden" name="resultado" value="APPROVED">
+                                        <button type="submit" class="btn btn-sm btn-success font-weight-bold mr-1" title="Simular pago aprobado en datáfono o pasarela">
+                                            ✅ Simular Aprobado
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('facturas.simular_cobro', cobro_id=c.id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="id_factura" value="{{ factura.id }}">
+                                        <input type="hidden" name="resultado" value="DECLINED">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger font-weight-bold mr-1" title="Simular rechazo de tarjeta">
+                                            ❌ Simular Rechazo
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('facturas.sincronizar_cobro', cobro_id=c.id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="id_factura" value="{{ factura.id }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary font-weight-bold">
+                                            🔄 Consultar
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
     <div class="card shadow border-0 rounded">
         <!-- HEADER DE ACCIONES / VOLVER E IMPRIMIR -->
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
@@ -11,7 +175,7 @@
                     🖨️ Imprimir Factura / PDF
                 </button>
                 <a href="{{ url_for('facturas.ver_facturas') }}" class="btn btn-sm btn-primary font-weight-bold">
-                    ← Volver a Facturas
+                    ← Volver a Ventas y Facturas
                 </a>
             </div>
         </div>
@@ -20,10 +184,10 @@
             <!-- ENCABEZADO DE LA EMPRESA Y METADATOS -->
             <div class="row mb-4 pb-3 border-bottom">
                 <div class="col-md-6">
-                    <h3 class="text-primary font-weight-bold">Comercializadora PYMES S.A.S.</h3>
-                    <p class="text-muted mb-1">NIT: 901234567-1 | Régimen Común</p>
-                    <p class="text-muted mb-1">Calle 100 # 15-45, Bogotá, Colombia</p>
-                    <p class="text-muted mb-0">Contacto: 6015551234 | contacto@pymes.com.co</p>
+                    <h3 class="text-primary font-weight-bold">{{ session.get('empresa_activa', {}).get('nombre', 'Comercializadora PYMES S.A.S.') }}</h3>
+                    <p class="text-muted mb-1">NIT: {{ session.get('empresa_activa', {}).get('nit', '901234567-1') }} | Régimen Común</p>
+                    <p class="text-muted mb-1">{{ session.get('empresa_activa', {}).get('direccion', 'Calle 100 # 15-45, Bogotá, Colombia') }}</p>
+                    <p class="text-muted mb-0">Contacto: {{ session.get('empresa_activa', {}).get('telefono', '6015551234') }} | {{ session.get('empresa_activa', {}).get('email', 'contacto@pymes.com.co') }}</p>
                 </div>
                 <div class="col-md-6 text-md-right mt-3 mt-md-0">
                     <div class="bg-light p-3 rounded border display-inline-block">
@@ -32,11 +196,16 @@
                         <p class="mb-1"><strong>Estado:</strong> 
                             {% if factura.estado == 'Cancelada' %}
                                 <span class="badge badge-danger p-2">🚫 Cancelada</span>
+                            {% elif factura.estado == 'Pagada' %}
+                                <span class="badge badge-success p-2">✅ Pagada</span>
                             {% else %}
-                                <span class="badge badge-success p-2">✓ Emitida</span>
+                                <span class="badge badge-warning text-dark p-2">⏳ Emitida</span>
                             {% endif %}
                         </p>
                         <p class="mb-1"><strong>Forma de Pago:</strong> <span class="badge badge-info p-2">{{ factura.metodo_pago.nombre if factura.metodo_pago else 'Efectivo' }}</span></p>
+                        {% if factura.referencia_pago %}
+                        <p class="mb-1"><strong>Referencia de Pago:</strong> <code>{{ factura.referencia_pago }}</code></p>
+                        {% endif %}
                         <p class="mb-0"><strong>Vendedor Atendió:</strong> {{ factura.usuario.nombre if factura.usuario else 'Vendedor' }} {{ factura.usuario.apellido if factura.usuario and factura.usuario.apellido else '' }}</p>
                     </div>
                 </div>
@@ -65,7 +234,7 @@
             </div>
 
             <!-- TABLA DE PRODUCTOS / ÍTEMS COMPRADOS -->
-            <h5 class="text-dark font-weight-bold mb-3">🛍️ Detalle de Productos Comprados</h5>
+            <h5 class="text-dark font-weight-bold mb-3">🛍️ Detalle de Productos Vendidos</h5>
             <div class="table-responsive shadow-sm rounded mb-4">
                 <table class="table table-striped table-hover align-middle mb-0">
                     <thead class="thead-dark">

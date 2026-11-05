@@ -5,7 +5,7 @@ from src.utils.decorators import requiere_rol
 proveedores_bp = Blueprint('proveedores', __name__, url_prefix='/proveedores')
 
 @proveedores_bp.route('/', methods=['GET'])
-@requiere_rol(1, 3) # Admin y Almacenista
+@requiere_rol(1, 2, 3) # Admin y Almacenista
 def ver_proveedores():
     """Lista de proveedores con soporte para paginación (Admin y Almacenista)."""
     page = request.args.get('page', 1, type=int)
@@ -16,7 +16,7 @@ def ver_proveedores():
     return render_template('proveedores/ver_proveedores.html', proveedores=items, paginacion=res_paginado)
 
 @proveedores_bp.route('/nuevo', methods=['GET', 'POST'])
-@requiere_rol(1, 3) # Admin y Almacenista
+@requiere_rol(1, 2, 3) # Admin y Almacenista
 def nuevo_proveedor():
     """Formulario para agregar un nuevo proveedor (Admin y Almacenista)."""
     if request.method == 'POST':
@@ -39,7 +39,7 @@ def nuevo_proveedor():
     return render_template('proveedores/nuevo_proveedor.html')
 
 @proveedores_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
-@requiere_rol(1, 3) # Admin y Almacenista
+@requiere_rol(1, 2, 3) # Admin y Almacenista
 def editar_proveedor(id):
     """Formulario y procesamiento para actualizar la información de un proveedor."""
     proveedor = ProveedoresService.obtener_por_id(id)

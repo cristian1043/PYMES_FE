@@ -28,7 +28,8 @@ def login():
                 'id': usuario_id,
                 'nombre': f"{usuario.get('nombre', '')} {usuario.get('apellido', '')}".strip(),
                 'email': usuario.get('email'),
-                'rol_id': real_rol_id
+                'rol_id': real_rol_id,
+                'rol_id_global': real_rol_id
             }
             
             # Cargar y filtrar empresas según el estado del rol y estado operativo de la empresa
@@ -57,7 +58,7 @@ def seleccionar_empresa():
 
     usuario_actual = session['usuario']
     usuario_id = usuario_actual['id']
-    rol_id_global = usuario_actual.get('rol_id', 2)
+    rol_id_global = usuario_actual.get('rol_id_global') or usuario_actual.get('rol_id', 2)
 
     empresas_todas = EmpresasService.obtener_todas()
 
@@ -66,7 +67,7 @@ def seleccionar_empresa():
         if isinstance(emp, dict):
             vinculacion = UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id'])
             estado_vinc = vinculacion.get('estado', 'No Vinculado')
-            rol_vinc = vinculacion.get('rol_id', rol_id_global)
+            rol_vinc = 1 if int(rol_id_global) == 1 else vinculacion.get('rol_id', rol_id_global)
 
             # El Admin Global (rol_id 1) ve todas las empresas. Los demás ven solo en las que están 'Activo'
             if rol_id_global == 1 or estado_vinc == 'Activo':
@@ -87,7 +88,7 @@ def activar_empresa(empresa_id):
 
     usuario_actual = session['usuario']
     usuario_id = usuario_actual['id']
-    rol_id_global = usuario_actual['rol_id']
+    rol_id_global = usuario_actual.get('rol_id_global') or usuario_actual.get('rol_id', 2)
 
     empresas = EmpresasService.obtener_todas()
     empresa_seleccionada = next((e for e in empresas if e['id'] == empresa_id), None)
@@ -97,19 +98,20 @@ def activar_empresa(empresa_id):
         return redirect(url_for('auth.seleccionar_empresa'))
 
     # Bloqueo para trabajadores si la empresa está operativamente INACTIVA
-    if rol_id_global != 1 and empresa_seleccionada.get('estado') == 'Inactivo':
+    if int(rol_id_global) != 1 and empresa_seleccionada.get('estado') == 'Inactivo':
         flash("Acceso Denegado: Las operaciones de esta empresa han sido pausadas por el Administrador.", "danger")
         return redirect(url_for('auth.seleccionar_empresa'))
 
     # Bloqueo si la vinculación del trabajador específico está desvinculada
     vinculacion = UsuariosService.obtener_vinculacion_empresa(usuario_id, empresa_id)
-    if rol_id_global != 1 and vinculacion.get('estado') == 'Desvinculado':
+    if int(rol_id_global) != 1 and vinculacion.get('estado') == 'Desvinculado':
         flash("Acceso Denegado: Tu vinculación en esta empresa ha sido desactivada.", "danger")
         return redirect(url_for('auth.seleccionar_empresa'))
 
-    # Asignar rol exclusivo de esta empresa para el usuario
-    rol_especifico = vinculacion.get('rol_id', rol_id_global)
+    # Asignar rol exclusivo de esta empresa para el usuario (Admin Global conserva rol 1)
+    rol_especifico = 1 if int(rol_id_global) == 1 else vinculacion.get('rol_id', rol_id_global)
     session['usuario']['rol_id'] = rol_especifico
+    session['usuario']['rol_id_global'] = rol_id_global
 
     session['empresa_activa'] = empresa_seleccionada
     roles_nombres = {1: 'Administrador', 2: 'Vendedor', 3: 'Almacenista'}

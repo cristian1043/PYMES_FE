@@ -6,9 +6,9 @@ from src.utils.decorators import requiere_rol
 compras_bp = Blueprint('compras', __name__, url_prefix='/compras')
 
 @compras_bp.route('/', methods=['GET'])
-@requiere_rol(1, 3)
+@requiere_rol(1, 2, 3)
 def ver_compras():
-    """Muestra la lista de compras registradas con paginación (Admin y Almacenista)."""
+    """Muestra la lista de compras registradas con paginación."""
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     res_paginado = ComprasService.obtener_todas(page=page, per_page=per_page)
@@ -17,7 +17,7 @@ def ver_compras():
     return render_template('compras/ver_compras.html', compras=items, paginacion=res_paginado)
 
 @compras_bp.route('/nueva', methods=['GET', 'POST'])
-@requiere_rol(1, 3)
+@requiere_rol(1, 2, 3)
 def nueva_compra():
     """Formulario interactivo y registro de orden de compra con actualización de inventario."""
     from src.services.productos_service import ProductosService
@@ -27,6 +27,7 @@ def nueva_compra():
 
     if request.method == 'POST':
         usuario_id = session.get('usuario', {}).get('id', 1)
+        empresa_id = session.get('empresa_activa', {}).get('id', 1)
         detalles_json = request.form.get('detalles_json', '[]')
         
         try:
@@ -42,6 +43,7 @@ def nueva_compra():
             'total': float(request.form.get('total', 0)),
             'id_proveedor': int(request.form.get('id_proveedor', 1)),
             'id_usuario': usuario_id,
+            'id_empresa': empresa_id,
             'detalles': detalles_items
         }
 
@@ -61,7 +63,7 @@ def nueva_compra():
     return render_template('compras/nueva_compra.html', proveedores=proveedores, productos=productos, siguiente_numero=siguiente_numero)
 
 @compras_bp.route('/cancelar/<int:id>', methods=['POST'])
-@requiere_rol(1, 3)
+@requiere_rol(1, 2, 3)
 def cancelar_compra(id):
     """Cancela una compra y revierte el stock acumulado."""
     res, err = ComprasService.cancelar(id)
@@ -72,7 +74,7 @@ def cancelar_compra(id):
     return redirect(url_for('compras.ver_compras'))
 
 @compras_bp.route('/detalle/<int:id>', methods=['GET'])
-@requiere_rol(1, 3)
+@requiere_rol(1, 2, 3)
 def detalle_compra(id):
     """Muestra el detalle y comprobante de una compra de inventario específica."""
     compra = ComprasService.obtener_por_id(id)

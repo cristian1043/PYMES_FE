@@ -38,19 +38,22 @@
     <!-- ENCABEZADO PRINCIPAL PARA EMPRESA ACTIVA -->
     <div class="jumbotron bg-white shadow-sm border rounded p-4 mb-4">
         <div class="row align-items-center">
-            <div class="col-md-8">
+            <div class="col-md-7">
                 <h1 class="display-5 font-weight-bold text-primary mb-2">Bienvenido a PYMES.SOFT</h1>
                 <p class="lead text-dark mb-1">
                     Sistema de Gestión Multitenant | 🏢 Empresa Activa: <strong>{{ session['empresa_activa']['nombre'] }}</strong>
                 </p>
                 <p class="text-muted small mb-0">Panel de Control Operativo y Notificaciones en Tiempo Real</p>
             </div>
-            <div class="col-md-4 text-md-right mt-3 mt-md-0">
+            <div class="col-md-5 text-md-right mt-3 mt-md-0">
                 <a href="{{ url_for('facturas.nueva_factura') }}" class="btn btn-success font-weight-bold shadow-sm mr-2 mb-2">
-                    🧾 Nueva Factura
+                    💰 Registrar Venta (Nueva Factura)
                 </a>
-                <a href="{{ url_for('compras.nueva_compra') }}" class="btn btn-primary font-weight-bold shadow-sm mb-2">
-                    📦 Nueva Compra
+                <a href="{{ url_for('compras.nueva_compra') }}" class="btn btn-primary font-weight-bold shadow-sm mr-2 mb-2">
+                    📦 Registrar Compra
+                </a>
+                <a href="{{ url_for('terminales.ver_terminales') }}" class="btn btn-info font-weight-bold shadow-sm mb-2">
+                    💳 Terminales de Pago
                 </a>
             </div>
         </div>

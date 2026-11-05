@@ -6,8 +6,8 @@
         <div class="col-lg-10">
             <div class="card shadow-lg border-0 rounded-lg">
                 <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0 font-weight-bold">🧾 Emitir Nueva Factura de Venta</h4>
-                    <span class="badge badge-light text-dark font-weight-bold">Estado: Borrador en Proceso</span>
+                    <h4 class="mb-0 font-weight-bold">💰 Registrar Nueva Venta / Emitir Factura</h4>
+                    <span class="badge badge-light text-dark font-weight-bold">Estado: Venta en Proceso</span>
                 </div>
                 <div class="card-body p-4">
                     <form id="form_factura" action="{{ url_for('facturas.nueva_factura') }}" method="POST">
@@ -159,7 +159,7 @@
                         <div class="d-flex justify-content-between align-items-center pt-3 border-top">
                             <a href="{{ url_for('facturas.ver_facturas') }}" class="btn btn-secondary px-4">⬅️ Cancelar</a>
                             <button type="submit" class="btn btn-success btn-lg px-5 font-weight-bold shadow">
-                                ✅ Emitir Factura
+                                ✅ Registrar Venta y Continuar al Cobro
                             </button>
                         </div>
                     </form>

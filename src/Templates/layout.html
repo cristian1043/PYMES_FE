@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,8 +11,8 @@
 
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="/">PYMES.SOFT</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <a class="navbar-brand font-weight-bold text-primary" href="/">PYMES.SOFT</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -22,19 +21,26 @@
       <ul class="navbar-nav mr-auto">
         {% if session.get('usuario') and session.get('empresa_activa') %}
         
-        {% if session['usuario'].get('rol_id') in [1, 2] %}
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarFacturas" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Facturas
+          <a class="nav-link dropdown-toggle font-weight-bold text-success" href="#" id="navbarFacturas" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            💰 Ventas y Facturas
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarFacturas">
-            <a class="dropdown-item" href="{{ url_for('facturas.nueva_factura') }}">Nueva Factura</a>
-            <a class="dropdown-item" href="{{ url_for('facturas.ver_facturas') }}">Ver Facturas</a>
+            <a class="dropdown-item font-weight-bold text-success" href="{{ url_for('facturas.nueva_factura') }}">➕ Registrar Nueva Venta (Factura)</a>
+            <a class="dropdown-item" href="{{ url_for('facturas.ver_facturas') }}">📋 Historial de Ventas y Facturas</a>
           </div>
         </li>
-        {% endif %}
 
-        {% if session['usuario'].get('rol_id') in [1, 3] %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarCompras" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            📦 Compras
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarCompras">
+            <a class="dropdown-item font-weight-bold text-primary" href="{{ url_for('compras.nueva_compra') }}">➕ Registrar Nueva Compra</a>
+            <a class="dropdown-item" href="{{ url_for('compras.ver_compras') }}">📋 Ver Compras</a>
+          </div>
+        </li>
+
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarProductos" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Productos
@@ -44,9 +50,7 @@
             <a class="dropdown-item" href="{{ url_for('productos.ver_productos') }}">Ver Productos</a>
           </div>
         </li>
-        {% endif %}
 
-        {% if session['usuario'].get('rol_id') in [1, 2] %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarClientes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Clientes
@@ -56,9 +60,7 @@
             <a class="dropdown-item" href="{{ url_for('clientes.ver_clientes') }}">Ver Clientes</a>
           </div>
         </li>
-        {% endif %}
 
-        {% if session['usuario'].get('rol_id') in [1, 3] %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarProveedores" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Proveedores
@@ -68,21 +70,11 @@
             <a class="dropdown-item" href="{{ url_for('proveedores.ver_proveedores') }}">Ver Proveedores</a>
           </div>
         </li>
-        {% endif %}
 
-        {% if session['usuario'].get('rol_id') in [1, 3] %}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarCompras" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Compras
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarCompras">
-            <a class="dropdown-item" href="{{ url_for('compras.nueva_compra') }}">Nueva Compra</a>
-            <a class="dropdown-item" href="{{ url_for('compras.ver_compras') }}">Ver Compras</a>
-          </div>
+        <li class="nav-item">
+          <a class="nav-link font-weight-bold text-info" href="{{ url_for('terminales.ver_terminales') }}">💳 Terminales y Pasarelas</a>
         </li>
-        {% endif %}
 
-        {% if session['usuario'].get('rol_id') in [1, 3] %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarReportes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Reportes
@@ -95,7 +87,6 @@
             <a class="dropdown-item" href="{{ url_for('reportes.reporte_inventario') }}">Reporte de Inventario</a>
           </div>
         </li>
-        {% endif %}
 
         {% if session['usuario'].get('rol_id') == 1 %}
         <li class="nav-item">
@@ -108,6 +99,9 @@
       {% if session.get('usuario') %}
       <div class="d-flex align-items-center">
         {% if session.get('empresa_activa') %}
+        <a href="{{ url_for('facturas.nueva_factura') }}" class="btn btn-sm btn-success font-weight-bold mr-2 shadow-sm" title="Registrar una nueva venta">
+          💰 + Registrar Venta
+        </a>
         <div class="dropdown mr-3">
           <button class="btn btn-sm btn-outline-primary dropdown-toggle font-weight-bold" type="button" id="companyDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {{ session['empresa_activa']['icono'] }} {{ session['empresa_activa']['nombre'] }}
@@ -185,4 +179,3 @@
 
 </body>
 </html>
-

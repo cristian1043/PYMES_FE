@@ -3,8 +3,13 @@
 {% block content %}
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Facturación de Ventas</h2>
-        <a href="{{ url_for('facturas.nueva_factura') }}" class="btn btn-success font-weight-bold">+ Emitir Nueva Factura</a>
+        <div>
+            <h2 class="font-weight-bold mb-1">💰 Ventas y Facturación</h2>
+            <p class="text-muted mb-0">Historial de ventas emitidas, estado de pago en pasarela/terminal y comprobantes.</p>
+        </div>
+        <a href="{{ url_for('facturas.nueva_factura') }}" class="btn btn-success font-weight-bold shadow-sm">
+            ➕ Registrar Nueva Venta (Factura)
+        </a>
     </div>
 
     <div class="table-responsive shadow-sm rounded">
@@ -14,7 +19,8 @@
                     <th>ID</th>
                     <th>N° Factura</th>
                     <th>Fecha</th>
-                    <th>Cliente ID</th>
+                    <th>Cliente</th>
+                    <th>Método / Pasarela</th>
                     <th>Total</th>
                     <th>Estado</th>
                     <th class="text-center">Acción</th>
@@ -26,21 +32,29 @@
                     <td><code>#{{ f.id }}</code></td>
                     <td><code>{{ f.numero }}</code></td>
                     <td>{{ f.fecha or '2026-08-16' }}</td>
-                    <td><code>Cliente #{{ f.id_cliente }}</code></td>
+                    <td><strong>{{ f.cliente_nombre or ('Cliente #' ~ f.id_cliente) }}</strong></td>
+                    <td>
+                        <span class="badge badge-light border">{{ f.metodo_pago or 'Efectivo' }}</span>
+                        {% if f.pasarela %}
+                            <span class="badge badge-info">{{ f.pasarela|upper }}</span>
+                        {% endif %}
+                    </td>
                     <td class="font-weight-bold text-success">${{ "%.2f"|format(f.total or 0.0) }}</td>
                     <td>
                         {% if f.estado == 'Cancelada' %}
                             <span class="badge badge-danger">🚫 Cancelada</span>
+                        {% elif f.estado == 'Pagada' %}
+                            <span class="badge badge-success">✅ Pagada</span>
                         {% else %}
-                            <span class="badge badge-success">✓ Emitida</span>
+                            <span class="badge badge-warning text-dark">⏳ Emitida (Por Cobrar)</span>
                         {% endif %}
                     </td>
                     <td class="text-center">
                         <a href="{{ url_for('facturas.detalle_factura', id=f.id) }}" class="btn btn-sm btn-info font-weight-bold mr-1">
-                            👁️ Ver Detalle
+                            {% if f.estado == 'Emitida' %}💳 Cobrar / Detalle{% else %}👁️ Ver Detalle{% endif %}
                         </a>
                         {% if f.estado != 'Cancelada' %}
-                        <form action="{{ url_for('facturas.cancelar_factura', id=f.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de cancelar esta factura emitada? Se restablecerá el stock de los productos.');">
+                        <form action="{{ url_for('facturas.cancelar_factura', id=f.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de cancelar esta factura emitida? Se restablecerá el stock de los productos.');">
                             <button type="submit" class="btn btn-sm btn-outline-danger font-weight-bold">
                                 🚫 Cancelar
                             </button>
@@ -50,7 +64,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="9" class="text-center text-muted py-4">No hay facturas registradas en el sistema.</td>
+                    <td colspan="8" class="text-center text-muted py-4">No hay ventas ni facturas registradas en el sistema.</td>
                 </tr>
                 {% endfor %}
             </tbody>

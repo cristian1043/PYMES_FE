@@ -6,7 +6,7 @@ from src.utils.decorators import requiere_rol
 productos_bp = Blueprint('productos', __name__, url_prefix='/productos')
 
 @productos_bp.route('/', methods=['GET'])
-@requiere_rol(1, 3)
+@requiere_rol(1, 2, 3)
 def ver_productos():
     """Muestra el catálogo / tabla de productos con soporte para paginación."""
     page = request.args.get('page', 1, type=int)
@@ -17,7 +17,7 @@ def ver_productos():
     return render_template('productos/ver_productos.html', productos=items, paginacion=res_paginado)
 
 @productos_bp.route('/nuevo', methods=['GET', 'POST'])
-@requiere_rol(1, 3) # Admin y Almacenista pueden crear/modificar productos e inventario
+@requiere_rol(1, 2, 3) # Admin y Almacenista pueden crear/modificar productos e inventario
 def nuevo_producto():
     """Formulario y registro de un nuevo producto (Admin y Almacenista)."""
     siguiente_codigo = ProductosService.obtener_siguiente_codigo()
@@ -45,7 +45,7 @@ def nuevo_producto():
     return render_template('productos/nuevo_producto.html', categorias=categorias, proveedores=proveedores, siguiente_codigo=siguiente_codigo)
 
 @productos_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
-@requiere_rol(1, 3) # Admin y Almacenista pueden editar productos
+@requiere_rol(1, 2, 3) # Admin y Almacenista pueden editar productos
 def editar_producto(id):
     """Formulario y procesamiento para actualizar un producto existente."""
     producto = ProductosService.obtener_por_id(id)

@@ -15,14 +15,19 @@ class APIClient:
         return base_url.rstrip('/')
 
     @classmethod
+    def _get_empresa_id(cls):
+        empresa_activa = session.get("empresa_activa", {})
+        empresa_id = empresa_activa.get("id") if isinstance(empresa_activa, dict) else session.get("empresa_id")
+        return empresa_id
+
+    @classmethod
     def _get_headers(cls):
         """Obtiene encabezados HTTP con Token JWT de la sesión si está disponible."""
         headers = {}
         token = session.get("access_token")
         if token:
             headers["Authorization"] = f"Bearer {token}"
-        empresa_activa = session.get("empresa_activa", {})
-        empresa_id = empresa_activa.get("id") if isinstance(empresa_activa, dict) else session.get("empresa_id")
+        empresa_id = cls._get_empresa_id()
         if empresa_id:
             headers["X-Empresa-ID"] = str(empresa_id)
         return headers
@@ -99,6 +104,10 @@ class APIClient:
         """Realiza una petición POST enviando datos JSON al backend con auto-refresh de token."""
         url = f"{cls._get_base_url()}{endpoint}"
         headers = cls._get_headers()
+        if isinstance(data, dict) and not data.get("id_empresa") and not data.get("empresa_id"):
+            emp_id = cls._get_empresa_id()
+            if emp_id:
+                data["id_empresa"] = emp_id
         try:
             response = requests.post(url, json=data, headers=headers, timeout=5)
             if response.status_code == 401 and endpoint not in ("/auth/login", "/auth/refresh"):

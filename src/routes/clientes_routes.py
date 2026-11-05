@@ -5,9 +5,9 @@ from src.utils.decorators import requiere_rol
 clientes_bp = Blueprint('clientes', __name__, url_prefix='/clientes')
 
 @clientes_bp.route('/', methods=['GET'])
-@requiere_rol(1, 2) # Admin y Vendedor
+@requiere_rol(1, 2, 3)
 def ver_clientes():
-    """Lista los clientes registrados con paginación (Admin y Vendedor)."""
+    """Lista los clientes registrados con paginación."""
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     res_paginado = ClientesService.obtener_todos(page=page, per_page=per_page)
@@ -16,27 +16,18 @@ def ver_clientes():
     return render_template('clientes/ver_clientes.html', clientes=items, paginacion=res_paginado)
 
 @clientes_bp.route('/nuevo', methods=['GET', 'POST'])
-@requiere_rol(1, 2) # Admin y Vendedor
+@requiere_rol(1, 2, 3)
 def nuevo_cliente():
-    """Formulario para agregar un cliente (Admin y Vendedor)."""
+    """Formulario para agregar un cliente (sin almacenar datos de tarjeta por cumplimiento PCI-DSS)."""
     if request.method == 'POST':
         data = {
-            'tipo_documento': request.form.get('tipo_documento'),
+            'tipo_documento': request.form.get('tipo_documento') or 'CC',
             'documento': request.form.get('documento'),
             'nombre': request.form.get('nombre'),
             'apellido': request.form.get('apellido'),
             'email': request.form.get('email'),
             'telefono': request.form.get('telefono'),
             'direccion': request.form.get('direccion'),
-            'tiene_tarjeta': request.form.get('tiene_tarjeta', 'No'),
-            'tipo_tarjeta': request.form.get('tipo_tarjeta'),
-            'banco_tarjeta': request.form.get('banco_tarjeta'),
-            'franquicia_tarjeta': request.form.get('franquicia_tarjeta'),
-            'ultimos_digitos_tarjeta': request.form.get('ultimos_digitos_tarjeta'),
-            'numero_tarjeta': request.form.get('numero_tarjeta'),
-            'titular_tarjeta': request.form.get('titular_tarjeta'),
-            'fecha_expiracion': request.form.get('fecha_expiracion'),
-            'cvc_tarjeta': request.form.get('cvc_tarjeta')
         }
         res, err = ClientesService.crear(data)
         if err:
@@ -48,7 +39,7 @@ def nuevo_cliente():
     return render_template('clientes/nuevo_cliente.html')
 
 @clientes_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
-@requiere_rol(1, 2) # Admin y Vendedor
+@requiere_rol(1, 2, 3)
 def editar_cliente(id):
     """Formulario y procesamiento para actualizar la información de un cliente."""
     cliente = ClientesService.obtener_por_id(id)
@@ -58,22 +49,13 @@ def editar_cliente(id):
 
     if request.method == 'POST':
         data = {
-            'tipo_documento': request.form.get('tipo_documento'),
+            'tipo_documento': request.form.get('tipo_documento') or 'CC',
             'documento': request.form.get('documento'),
             'nombre': request.form.get('nombre'),
             'apellido': request.form.get('apellido'),
             'email': request.form.get('email'),
             'telefono': request.form.get('telefono'),
             'direccion': request.form.get('direccion'),
-            'tiene_tarjeta': request.form.get('tiene_tarjeta', 'No'),
-            'tipo_tarjeta': request.form.get('tipo_tarjeta'),
-            'banco_tarjeta': request.form.get('banco_tarjeta'),
-            'franquicia_tarjeta': request.form.get('franquicia_tarjeta'),
-            'ultimos_digitos_tarjeta': request.form.get('ultimos_digitos_tarjeta'),
-            'numero_tarjeta': request.form.get('numero_tarjeta'),
-            'titular_tarjeta': request.form.get('titular_tarjeta'),
-            'fecha_expiracion': request.form.get('fecha_expiracion'),
-            'cvc_tarjeta': request.form.get('cvc_tarjeta')
         }
         res, err = ClientesService.actualizar(id, data)
         if err:

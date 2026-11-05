@@ -41,7 +41,7 @@ def reporte_clientes():
     return render_template('reportes/reporte_clientes.html', clientes=clientes_paginados, paginacion=paginacion)
 
 @reportes_bp.route('/inventario', methods=['GET'])
-@requiere_rol(1, 3)
+@requiere_rol(1, 2, 3)
 def reporte_inventario():
     """Muestra la valoración de inventario y estado de stock con paginación (Admin y Almacenista)."""
     page = request.args.get('page', 1, type=int)
