@@ -15,6 +15,7 @@
                     <th>N° Orden</th>
                     <th>Fecha</th>
                     <th>Proveedor</th>
+                    <th>Método de Pago</th>
                     <th>Total</th>
                     <th>Estado</th>
                     <th class="text-center">Acción</th>
@@ -26,7 +27,13 @@
                     <td><code>#{{ c.id }}</code></td>
                     <td><code>{{ c.numero or ('COMP-' ~ "%03d"|format(c.id)) }}</code></td>
                     <td>{{ c.fecha or '2026-08-16' }}</td>
-                    <td><code>Proveedor #{{ c.id_proveedor }}</code></td>
+                    <td><strong>{{ c.proveedor_nombre or ('Proveedor #' ~ c.id_proveedor) }}</strong></td>
+                    <td>
+                        <span class="badge badge-info p-2">💳 {{ c.metodo_pago or 'Efectivo' }}</span>
+                        {% if c.referencia_pago %}
+                            <div class="small text-muted mt-1">Ref: <code>{{ c.referencia_pago }}</code></div>
+                        {% endif %}
+                    </td>
                     <td class="font-weight-bold text-primary">${{ "%.2f"|format(c.total or 0.0) }}</td>
                     <td>
                         {% if c.estado == 'Cancelada' %}

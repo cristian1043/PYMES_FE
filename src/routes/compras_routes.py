@@ -21,9 +21,12 @@ def ver_compras():
 def nueva_compra():
     """Formulario interactivo y registro de orden de compra con actualización de inventario."""
     from src.services.productos_service import ProductosService
+    from src.services.facturas_service import FacturasService
     import json
 
     siguiente_numero = ComprasService.obtener_siguiente_numero()
+    metodos_res = FacturasService.obtener_metodos_pago()
+    metodos_pago = metodos_res if isinstance(metodos_res, list) else (metodos_res.get("items", []) if isinstance(metodos_res, dict) else [])
 
     if request.method == 'POST':
         usuario_id = session.get('usuario', {}).get('id', 1)
@@ -35,6 +38,23 @@ def nueva_compra():
         except Exception:
             detalles_items = []
 
+        id_mp_raw = request.form.get('id_metodo_pago') or 1
+        metodo_nombre = (request.form.get('metodo_pago') or '').strip()
+        try:
+            id_mp_int = int(id_mp_raw)
+        except ValueError:
+            id_mp_int = 1
+            if not metodo_nombre:
+                metodo_nombre = str(id_mp_raw).strip()
+
+        if not metodo_nombre:
+            for m in metodos_pago:
+                if str(m.get('id')) == str(id_mp_int):
+                    metodo_nombre = m.get('nombre', 'Efectivo')
+                    break
+        if not metodo_nombre:
+            metodo_nombre = 'Efectivo'
+
         data = {
             'numero': request.form.get('numero') or siguiente_numero,
             'subtotal': float(request.form.get('subtotal', 0)),
@@ -42,6 +62,9 @@ def nueva_compra():
             'descuento': float(request.form.get('descuento', 0)),
             'total': float(request.form.get('total', 0)),
             'id_proveedor': int(request.form.get('id_proveedor', 1)),
+            'id_metodo_pago': id_mp_int,
+            'metodo_pago': metodo_nombre,
+            'referencia_pago': (request.form.get('referencia_pago') or '').strip() or None,
             'id_usuario': usuario_id,
             'id_empresa': empresa_id,
             'detalles': detalles_items
@@ -51,7 +74,7 @@ def nueva_compra():
         if err:
             flash(f"Error al registrar la compra: {err}", "danger")
         else:
-            flash(f"Orden de compra {data['numero']} registrada exitosamente y stock actualizado.", "success")
+            flash(f"Orden de compra {data['numero']} registrada exitosamente ({metodo_nombre}) y stock actualizado.", "success")
             return redirect(url_for('compras.ver_compras'))
 
     prov_res = ProveedoresService.obtener_todos(per_page=1000)
@@ -60,7 +83,7 @@ def nueva_compra():
     prods_res = ProductosService.obtener_todos(per_page=1000)
     productos = prods_res.get("items", []) if isinstance(prods_res, dict) else (prods_res if isinstance(prods_res, list) else [])
 
-    return render_template('compras/nueva_compra.html', proveedores=proveedores, productos=productos, siguiente_numero=siguiente_numero)
+    return render_template('compras/nueva_compra.html', proveedores=proveedores, productos=productos, metodos_pago=metodos_pago, siguiente_numero=siguiente_numero)
 
 @compras_bp.route('/cancelar/<int:id>', methods=['POST'])
 @requiere_rol(1, 2, 3)

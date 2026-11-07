@@ -45,6 +45,7 @@
                     <tr>
                         <th>N° Factura</th>
                         <th>Fecha</th>
+                        <th>Método de Pago</th>
                         <th>Subtotal</th>
                         <th>IVA</th>
                         <th>Descuento</th>
@@ -57,6 +58,7 @@
                     <tr class="{% if f.estado == 'Cancelada' %}table-danger text-muted{% endif %}">
                         <td><code>{{ f.numero }}</code></td>
                         <td>{{ f.fecha }}</td>
+                        <td><span class="badge badge-info p-1">💳 {{ f.metodo_pago or 'Efectivo' }}</span></td>
                         <td>${{ "%.2f"|format(f.subtotal) }}</td>
                         <td>${{ "%.2f"|format(f.iva) }}</td>
                         <td>${{ "%.2f"|format(f.descuento) }}</td>

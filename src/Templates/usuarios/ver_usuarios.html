@@ -111,6 +111,11 @@
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
+                                {% if u.estado == 'Activo' %}
+                                    <span class="badge badge-success mr-2">🟢 Activo</span>
+                                {% else %}
+                                    <span class="badge badge-secondary mr-2">🔴 Desvinculado</span>
+                                {% endif %}
                                 <a href="{{ url_for('usuarios.editar_usuario', id=u.id) }}" class="btn btn-sm btn-warning font-weight-bold mr-2" title="Editar información personal y bancaria">
                                     ✏️
                                 </a>

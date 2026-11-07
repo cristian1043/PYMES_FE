@@ -16,36 +16,98 @@
                         <!-- SECCIÓN 1: CABECERA Y DATOS DE FACTURA -->
                         <div class="card mb-4 border-light bg-light">
                             <div class="card-body">
-                                <h5 class="card-title text-secondary font-weight-bold mb-3">1. Datos Generales de la Venta</h5>
+                                <h5 class="card-title text-secondary font-weight-bold mb-3">1. Datos Generales y Forma de Pago</h5>
                                 <div class="row">
-                                    <div class="col-md-4 form-group mb-3">
+                                    <div class="col-md-3 form-group mb-3">
                                         <label for="numero" class="font-weight-bold">N° Factura (Automático) *</label>
-                                        <input type="text" class="form-control font-weight-bold text-success bg-light" id="numero" name="numero" value="{{ siguiente_numero }}" readonly required>
-                                        <small class="form-text text-muted">Consecutivo inalterable asignado por el sistema.</small>
+                                        <input type="text" class="form-control font-weight-bold text-success bg-white" id="numero" name="numero" value="{{ siguiente_numero }}" readonly required>
+                                        <small class="form-text text-muted">Consecutivo automático.</small>
                                     </div>
                                     <div class="col-md-5 form-group mb-3">
-                                        <label for="cliente_search" class="font-weight-bold">Buscar Cliente *</label>
-                                        <input type="text" list="lista_clientes" class="form-control" id="cliente_search" placeholder="Escriba documento o nombre..." autocomplete="off" required>
-                                        <input type="hidden" name="id_cliente" id="id_cliente" required>
-                                        <datalist id="lista_clientes">
+                                        <label for="id_cliente" class="font-weight-bold">Seleccionar Cliente *</label>
+                                        <select class="form-control" id="id_cliente" name="id_cliente" onchange="onCambioClienteVenta()" required>
                                             {% for cli in clientes %}
-                                                <option data-id="{{ cli.id }}" value="{{ cli.tipo_documento }} {{ cli.documento }} - {{ cli.nombre }} {{ cli.apellido }}"></option>
+                                                <option value="{{ cli.id }}">
+                                                    👤 {{ cli.tipo_documento or 'CC' }} {{ cli.documento }} — {{ cli.nombre }} {{ cli.apellido or '' }}
+                                                </option>
                                             {% endfor %}
-                                        </datalist>
-                                        <small class="form-text text-muted">Filtra por cédula o nombre del cliente.</small>
-                                    </div>
-                                    <div class="col-md-3 form-group mb-3">
-                                        <label for="id_metodo_pago" class="font-weight-bold">Método de Pago *</label>
-                                        <select class="form-control" id="id_metodo_pago" name="id_metodo_pago" required>
-                                            <option value="">-- Seleccionar --</option>
-                                            {% for m in metodos_pago %}
-                                                <option value="{{ m.id }}">{{ m.nombre }}</option>
-                                            {% else %}
-                                                <option value="1">Efectivo</option>
-                                                <option value="2">Tarjeta de Crédito / Débito</option>
-                                                <option value="3">Transferencia Bancaria</option>
-                                            {% endfor %}
+                                            <option value="nuevo" {% if not clientes %}selected{% endif %}>
+                                                ➕ Consumidor Final / Registrar Nuevo Cliente Rápido
+                                            </option>
                                         </select>
+                                        <small class="form-text text-muted">Elige un cliente del catálogo o usa Consumidor Final.</small>
+                                    </div>
+                                    <div class="col-md-4 form-group mb-3">
+                                        <label for="id_metodo_pago" class="font-weight-bold">💳 Método de Pago *</label>
+                                        <select class="form-control font-weight-bold" id="id_metodo_pago" name="id_metodo_pago" onchange="onCambioMetodoPagoVenta()" required>
+                                            {% if metodos_pago %}
+                                                {% for m in metodos_pago %}
+                                                    <option value="{{ m.id }}"
+                                                            data-nombre="{{ m.nombre }}"
+                                                            data-tipo="{{ m.tipo or 'Efectivo' }}"
+                                                            data-pasarela="{{ m.pasarela or 'ninguna' }}"
+                                                            data-integrado="{{ '1' if m.integrado else '0' }}">
+                                                        {% if m.tipo == 'Efectivo' %}💵{% elif m.tipo == 'Transferencia' %}🏦{% elif m.tipo == 'Tarjeta' %}📟{% else %}🌐{% endif %}
+                                                        {{ m.nombre }}
+                                                    </option>
+                                                {% endfor %}
+                                            {% else %}
+                                                <option value="1" data-nombre="Efectivo" data-tipo="Efectivo" data-pasarela="ninguna" data-integrado="0">💵 Efectivo (Caja)</option>
+                                                <option value="2" data-nombre="Transferencia Bancaria / Nequi" data-tipo="Transferencia" data-pasarela="ninguna" data-integrado="0">🏦 Transferencia Bancaria / Nequi</option>
+                                                <option value="3" data-nombre="Datáfono Bold (Simulado)" data-tipo="Tarjeta" data-pasarela="simulado" data-integrado="1">📟 Datáfono Bold (Tarjeta POS)</option>
+                                                <option value="4" data-nombre="Pasarela Wompi / PSE / Nequi (Simulado)" data-tipo="Pasarela" data-pasarela="simulado" data-integrado="1">🌐 Pasarela Wompi / PSE / Nequi</option>
+                                            {% endif %}
+                                        </select>
+                                        <input type="hidden" id="metodo_pago_nombre" name="metodo_pago_nombre" value="{{ metodos_pago[0].nombre if metodos_pago else 'Efectivo' }}">
+                                    </div>
+                                </div>
+
+                                <!-- SUBPANEL SI ELIGE CONSUMIDOR FINAL / NUEVO CLIENTE RÁPIDO -->
+                                <div class="row pt-2 border-top" id="panel_cliente_nuevo" style="display: {% if not clientes %}flex{% else %}none{% endif %};">
+                                    <div class="col-md-3 form-group mb-2">
+                                        <label class="small font-weight-bold">Tipo Doc.</label>
+                                        <select class="form-control form-control-sm" name="tipo_documento">
+                                            <option value="CC">Cédula (CC)</option>
+                                            <option value="NIT">NIT</option>
+                                            <option value="CE">CE</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 form-group mb-2">
+                                        <label class="small font-weight-bold">N° Documento Cliente</label>
+                                        <input type="text" class="form-control form-control-sm" name="documento_cliente" value="222222222222" placeholder="Ej: 1043302995">
+                                    </div>
+                                    <div class="col-md-5 form-group mb-2">
+                                        <label class="small font-weight-bold">Nombre Completo / Razón Social</label>
+                                        <input type="text" class="form-control form-control-sm" name="cliente_nombre" value="Consumidor Final" placeholder="Ej: Juan Pérez">
+                                    </div>
+                                </div>
+
+                                <!-- SUBPANEL DINÁMICO DE OPCIONES DE PAGO -->
+                                <div class="row pt-2 mt-1 border-top align-items-center" id="panel_opciones_pago">
+                                    <div class="col-md-6 form-group mb-2" id="col_referencia_manual">
+                                        <label class="small font-weight-bold text-dark">🧾 N° Comprobante / Referencia de Pago (Opcional)</label>
+                                        <input type="text" class="form-control form-control-sm" name="referencia_pago" placeholder="Ej: Efectivo en Caja, Nequi #83920, Voucher...">
+                                    </div>
+                                    <div class="col-md-6 form-group mb-2" id="col_terminal_pasarela" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="small font-weight-bold text-primary">📟 Terminal / Datáfono</label>
+                                                <select class="form-control form-control-sm" name="id_terminal">
+                                                    {% for t in terminales %}
+                                                        <option value="{{ t.id }}">📟 {{ t.nombre }} ({{ t.terminal_serial or 'POS' }})</option>
+                                                    {% else %}
+                                                        <option value="1">📟 Caja Principal - Datáfono 1</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="small font-weight-bold text-success">⚡ Modo de Procesamiento</label>
+                                                <select class="form-control form-control-sm" name="accion_pasarela">
+                                                    <option value="aprobar_inmediato">✅ Aprobar y Liquidar al Instante</option>
+                                                    <option value="enviar_cobro">📡 Enviar a Simulador / Link Checkout</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -64,11 +126,11 @@
                                             <option value="">-- Elegir un producto del inventario --</option>
                                             {% for prod in productos %}
                                                 <option value="{{ prod.id }}" 
-                                                        data-codigo="{{ prod.codigo or '' }}"
+                                                        data-codigo="{{ prod.codigo or ('PROD-' ~ prod.id) }}"
                                                         data-nombre="{{ prod.nombre }}" 
                                                         data-precio="{{ prod.precio }}" 
                                                         data-stock="{{ prod.stock }}">
-                                                    [{{ prod.codigo or 'PROD' }}] {{ prod.nombre }} - ${{ "%.2f"|format(prod.precio or 0.0) }} (Stock: {{ prod.stock or 0 }})
+                                                    [{{ prod.codigo or ('PROD-' ~ prod.id) }}] {{ prod.nombre }} - ${{ "%.2f"|format(prod.precio or 0.0) }} (Stock: {{ prod.stock or 0 }})
                                                 </option>
                                             {% endfor %}
                                         </select>
@@ -79,7 +141,7 @@
                                     </div>
                                     <div class="col-md-2 form-group mb-2">
                                         <label for="producto_precio" class="font-weight-bold">Precio Unit. ($)</label>
-                                        <input type="number" step="0.01" class="form-control" id="producto_precio" value="0.00" readonly>
+                                        <input type="number" step="0.01" class="form-control" id="producto_precio" value="0.00">
                                     </div>
                                     <div class="col-md-2 form-group mb-2">
                                         <button type="button" class="btn btn-primary btn-block font-weight-bold" id="btn_agregar_producto">
@@ -159,7 +221,7 @@
                         <div class="d-flex justify-content-between align-items-center pt-3 border-top">
                             <a href="{{ url_for('facturas.ver_facturas') }}" class="btn btn-secondary px-4">⬅️ Cancelar</a>
                             <button type="submit" class="btn btn-success btn-lg px-5 font-weight-bold shadow">
-                                ✅ Registrar Venta y Continuar al Cobro
+                                ✅ Registrar Venta y Procesar Pago
                             </button>
                         </div>
                     </form>
@@ -170,22 +232,34 @@
 </div>
 
 <script>
-    // Arreglo en memoria con los ítems agregados al borrador de la factura
     let itemsFactura = [];
 
-    // Enlazar autocompletado de cliente
-    document.getElementById('cliente_search').addEventListener('input', function() {
-        const valor = this.value;
-        const opciones = document.getElementById('lista_clientes').options;
-        const hiddenInput = document.getElementById('id_cliente');
-        
-        hiddenInput.value = "";
-        for (let i = 0; i < opciones.length; i++) {
-            if (opciones[i].value === valor) {
-                hiddenInput.value = opciones[i].getAttribute('data-id');
-                break;
-            }
+    function onCambioClienteVenta() {
+        const sel = document.getElementById('id_cliente');
+        const panelNuevo = document.getElementById('panel_cliente_nuevo');
+        if (sel && panelNuevo) {
+            panelNuevo.style.display = (sel.value === 'nuevo') ? 'flex' : 'none';
         }
+    }
+
+    function onCambioMetodoPagoVenta() {
+        const sel = document.getElementById('id_metodo_pago');
+        if (!sel || sel.selectedIndex < 0) return;
+        const opt = sel.options[sel.selectedIndex];
+        const nombre = opt.getAttribute('data-nombre') || opt.text.trim();
+        const integrado = opt.getAttribute('data-integrado') === '1';
+        const pasarela = (opt.getAttribute('data-pasarela') || 'ninguna').toLowerCase();
+
+        document.getElementById('metodo_pago_nombre').value = nombre;
+        const colTerm = document.getElementById('col_terminal_pasarela');
+        if (colTerm) {
+            colTerm.style.display = (integrado || ['bold', 'wompi', 'simulado'].includes(pasarela)) ? 'block' : 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        onCambioClienteVenta();
+        onCambioMetodoPagoVenta();
     });
 
     // Actualizar el precio al seleccionar un producto
@@ -195,13 +269,11 @@
         document.getElementById('producto_precio').value = parseFloat(precio).toFixed(2);
     });
 
-    // Agregar producto a la factura
-    document.getElementById('btn_agregar_producto').addEventListener('click', function() {
+    function agregarProductoSeleccionado() {
         const select = document.getElementById('producto_select');
         const idProd = select.value;
         if (!idProd) {
-            alert('Por favor seleccione un producto del catálogo.');
-            return;
+            return false;
         }
 
         const option = select.options[select.selectedIndex];
@@ -209,14 +281,12 @@
         const nombre = option.getAttribute('data-nombre');
         const precio = parseFloat(document.getElementById('producto_precio').value || option.getAttribute('data-precio') || 0);
         const cantidad = intVal(document.getElementById('producto_cantidad').value, 1);
-        const stock = intVal(option.getAttribute('data-stock'), 9999);
 
         if (cantidad <= 0) {
             alert('La cantidad debe ser mayor a 0.');
-            return;
+            return false;
         }
 
-        // Verificar si el producto ya fue agregado al borrador
         const existeIndex = itemsFactura.findIndex(i => i.id_producto == idProd);
         if (existeIndex !== -1) {
             itemsFactura[existeIndex].cantidad += cantidad;
@@ -232,27 +302,31 @@
             });
         }
 
-        // Resetear campos de entrada
         select.value = "";
         document.getElementById('producto_cantidad').value = 1;
         document.getElementById('producto_precio').value = "0.00";
 
         renderizarDetalles();
+        return true;
+    }
+
+    // Agregar producto a la factura
+    document.getElementById('btn_agregar_producto').addEventListener('click', function() {
+        if (!agregarProductoSeleccionado()) {
+            alert('Por favor seleccione un producto del catálogo.');
+        }
     });
 
-    // Función para eliminar un producto del borrador
     function eliminarProducto(index) {
         itemsFactura.splice(index, 1);
         renderizarDetalles();
     }
 
-    // Auxiliar para enteros
     function intVal(v, fallback) {
         const val = parseInt(v);
         return isNaN(val) ? fallback : val;
     }
 
-    // Renderizar la tabla de ítems y recalcular totales
     function renderizarDetalles() {
         const tbody = document.getElementById('detalles_body');
         tbody.innerHTML = "";
@@ -289,7 +363,6 @@
         recalcularTotales();
     }
 
-    // Actualizar cantidad desde el input de la tabla
     function actualizarCantidad(index, nuevaCantidad) {
         const cant = parseInt(nuevaCantidad);
         if (isNaN(cant) || cant <= 0) {
@@ -301,14 +374,13 @@
         renderizarDetalles();
     }
 
-    // Recalcular Subtotal, IVA y Total
     function recalcularTotales() {
         let subtotal = 0;
         itemsFactura.forEach(item => {
             subtotal += item.subtotal;
         });
 
-        const iva = subtotal * 0.19; // 19% IVA por defecto
+        const iva = subtotal * 0.19;
         const descuento = parseFloat(document.getElementById('descuento').value || 0);
         const total = Math.max(0, subtotal + iva - descuento);
 
@@ -320,11 +392,9 @@
         document.getElementById('total_text').innerText = `$${total.toFixed(2)}`;
         document.getElementById('total').value = total.toFixed(2);
 
-        // Guardar JSON serializado para enviar en el formulario
         document.getElementById('detalles_json').value = JSON.stringify(itemsFactura);
     }
 
-    // Escuchar cambios en IVA y Descuento
     document.getElementById('iva').addEventListener('input', function() {
         const subtotal = parseFloat(document.getElementById('subtotal').value || 0);
         const iva = parseFloat(this.value || 0);
@@ -345,17 +415,14 @@
         document.getElementById('total').value = total.toFixed(2);
     });
 
-    // Validar antes de enviar el formulario
+    // Validar antes de enviar el formulario (y auto-agregar producto si quedó seleccionado sin darle a + Agregar)
     document.getElementById('form_factura').addEventListener('submit', function(e) {
-        const idCliente = document.getElementById('id_cliente').value;
-        if (!idCliente) {
-            alert('Por favor selecciona un cliente válido de la lista desplegable.');
-            e.preventDefault();
-            return false;
+        if (itemsFactura.length === 0 && document.getElementById('producto_select').value) {
+            agregarProductoSeleccionado();
         }
 
         if (itemsFactura.length === 0) {
-            alert('Debe agregar al menos un producto a la factura antes de emitirla.');
+            alert('Por favor selecciona al menos un producto para registrar la venta.');
             e.preventDefault();
             return false;
         }

@@ -6,9 +6,11 @@ class UsuariosService:
     """
 
     @staticmethod
-    def obtener_todos(page=1, per_page=50, q=None, filtro=None):
-        """Obtiene la lista de usuarios registrados con soporte para búsqueda y filtros."""
+    def obtener_todos(page=1, per_page=50, q=None, filtro=None, empresa_id=None):
+        """Obtiene la lista de usuarios registrados en la empresa activa con soporte para búsqueda y filtros."""
         params = [f"page={page}", f"per_page={per_page}"]
+        if empresa_id:
+            params.append(f"empresa_id={empresa_id}")
         if q:
             params.append(f"q={q}")
         if filtro:
@@ -57,10 +59,10 @@ class UsuariosService:
     def obtener_vinculacion_empresa(usuario_id, empresa_id):
         """Obtiene el rol_id y estado exclusivo del usuario para una empresa en la BD MySQL."""
         if not usuario_id or not empresa_id:
-            return {"rol_id": 2, "estado": "Activo"}
+            return {"rol_id": 2, "estado": "No Vinculado"}
         data, error = APIClient.get(f'/usuario_empresas/vinculacion?usuario_id={usuario_id}&empresa_id={empresa_id}')
         if error or not isinstance(data, dict):
-            return {"rol_id": 2, "estado": "Activo"}
+            return {"rol_id": 2, "estado": "No Vinculado"}
         return data
 
     @staticmethod

@@ -14,7 +14,7 @@
         <div class="card-body p-4">
             <form id="formNuevaCompra" action="{{ url_for('compras.nueva_compra') }}" method="POST" onsubmit="return validarEnvioCompra();">
                 <!-- ENCABEZADO DE LA ORDEN -->
-                <div class="row mb-4">
+                <div class="row mb-3">
                     <div class="col-md-4 form-group mb-3">
                         <label for="numero" class="font-weight-bold">N° Orden de Compra *</label>
                         <input type="text" class="form-control font-weight-bold bg-light" id="numero" name="numero" value="{{ siguiente_numero }}" readonly required>
@@ -31,6 +31,38 @@
                                 </option>
                             {% endfor %}
                         </select>
+                    </div>
+                </div>
+
+                <!-- MÉTODO DE PAGO Y REFERENCIA CON QUE SE CANCELÓ LA MERCANCÍA -->
+                <div class="row mb-4">
+                    <div class="col-md-6 form-group mb-3">
+                        <label for="select_metodo_pago" class="font-weight-bold">💳 Método de Pago (Con qué se canceló la mercancía) *</label>
+                        <select class="form-control" id="select_metodo_pago" onchange="actualizarMetodoPagoCompra()" required>
+                            {% if metodos_pago %}
+                                {% for m in metodos_pago %}
+                                    <option value="{{ m.nombre }}" data-id="{{ m.id }}">
+                                        💳 {{ m.nombre }} ({{ m.tipo or 'General' }}{% if m.banco %} - {{ m.banco }}{% endif %})
+                                    </option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="Efectivo" data-id="1">💵 Efectivo (Caja Principal)</option>
+                                <option value="Transferencia Bancaria / Nequi" data-id="2">🏦 Transferencia Bancaria / Nequi</option>
+                                <option value="Datáfono Bold (Tarjeta)" data-id="3">💳 Datáfono Bold (Tarjeta Débito / Crédito)</option>
+                                <option value="Pasarela Wompi / PSE" data-id="4">🌐 Pasarela Wompi / PSE</option>
+                            {% endif %}
+                            <option value="Crédito con Proveedor (30 días)" data-id="1">📝 Crédito con Proveedor (Cuenta por Pagar)</option>
+                            <option value="Consignación / Cheque Bancario" data-id="2">🏦 Consignación / Cheque Bancario</option>
+                        </select>
+                        <input type="hidden" id="id_metodo_pago" name="id_metodo_pago" value="{{ metodos_pago[0].id if metodos_pago else 1 }}">
+                        <input type="hidden" id="metodo_pago" name="metodo_pago" value="{{ metodos_pago[0].nombre if metodos_pago else 'Efectivo' }}">
+                        <small class="form-text text-muted">Medio con el que se pagó el dinero o mercancía al proveedor.</small>
+                    </div>
+
+                    <div class="col-md-6 form-group mb-3">
+                        <label for="referencia_pago" class="font-weight-bold">🧾 N° Comprobante / Referencia de Pago (Opcional)</label>
+                        <input type="text" class="form-control" id="referencia_pago" name="referencia_pago" placeholder="Ej: Comprobante PSE #94810, Recibo Caja, Factura Proveedor...">
+                        <small class="form-text text-muted">Número de transacción, voucher o soporte del desembolso.</small>
                     </div>
                 </div>
 
@@ -143,6 +175,14 @@
 
 <script>
     var itemsCompra = [];
+
+    function actualizarMetodoPagoCompra() {
+        var sel = document.getElementById('select_metodo_pago');
+        if (!sel) return;
+        var opt = sel.options[sel.selectedIndex];
+        document.getElementById('metodo_pago').value = sel.value || 'Efectivo';
+        document.getElementById('id_metodo_pago').value = (opt && opt.dataset.id) ? opt.dataset.id : 1;
+    }
 
     function cargarPrecioProductoCompra() {
         var sel = document.getElementById('select_producto');

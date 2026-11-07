@@ -15,22 +15,23 @@ def ver_usuarios():
     q = request.args.get('q', '').strip()
     filtro = request.args.get('filtro', '').strip()
 
-    usuarios_res = UsuariosService.obtener_todos(q=q, filtro=filtro)
+    usuarios_res = UsuariosService.obtener_todos(q=q, filtro=filtro, empresa_id=empresa_id)
     roles = UsuariosService.obtener_roles()
 
-    usuarios = usuarios_res.get("items", []) if isinstance(usuarios_res, dict) else (usuarios_res if isinstance(usuarios_res, list) else [])
+    usuarios_raw = usuarios_res.get("items", []) if isinstance(usuarios_res, dict) else (usuarios_res if isinstance(usuarios_res, list) else [])
 
-    # Asignar rol y estado independientes para esta empresa a cada usuario
-    for u in usuarios:
+    # Mostrar únicamente usuarios con vinculación explícita en esta empresa (excluir 'No Vinculado')
+    usuarios = []
+    for u in usuarios_raw:
         if isinstance(u, dict):
             u_id = u.get('id')
             vinculacion = UsuariosService.obtener_vinculacion_empresa(u_id, empresa_id) if u_id else {}
-            if isinstance(vinculacion, dict):
-                u['id_rol'] = int(vinculacion.get('rol_id', u.get('id_rol', 2)))
-                u['estado'] = str(vinculacion.get('estado', 'Activo'))
-            else:
-                u['id_rol'] = int(u.get('id_rol', 2))
-                u['estado'] = 'Activo'
+            estado_vinc = str(vinculacion.get('estado', u.get('estado', 'No Vinculado'))) if isinstance(vinculacion, dict) else 'No Vinculado'
+            if estado_vinc == 'No Vinculado':
+                continue
+            u['id_rol'] = int(vinculacion.get('rol_id', u.get('id_rol', 2))) if isinstance(vinculacion, dict) else int(u.get('id_rol', 2))
+            u['estado'] = estado_vinc
+            usuarios.append(u)
 
     return render_template('usuarios/ver_usuarios.html', usuarios=usuarios, roles=roles, q=q, filtro=filtro)
 

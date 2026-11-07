@@ -40,7 +40,7 @@ def login():
                 empresas_activas = [
                     emp for emp in empresas_db 
                     if emp.get('estado', 'Activo') == 'Activo' and 
-                    UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id']).get('estado', 'Activo') == 'Activo'
+                    UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id']).get('estado', 'No Vinculado') == 'Activo'
                 ]
 
             session['empresas'] = empresas_activas
@@ -102,10 +102,10 @@ def activar_empresa(empresa_id):
         flash("Acceso Denegado: Las operaciones de esta empresa han sido pausadas por el Administrador.", "danger")
         return redirect(url_for('auth.seleccionar_empresa'))
 
-    # Bloqueo si la vinculación del trabajador específico está desvinculada
+    # Bloqueo si el trabajador no tiene vinculación Activa en la empresa (No Vinculado / Desvinculado / Inactivo)
     vinculacion = UsuariosService.obtener_vinculacion_empresa(usuario_id, empresa_id)
-    if int(rol_id_global) != 1 and vinculacion.get('estado') == 'Desvinculado':
-        flash("Acceso Denegado: Tu vinculación en esta empresa ha sido desactivada.", "danger")
+    if int(rol_id_global) != 1 and vinculacion.get('estado') != 'Activo':
+        flash("Acceso Denegado: No tienes una vinculación activa y autorizada en esta empresa.", "danger")
         return redirect(url_for('auth.seleccionar_empresa'))
 
     # Asignar rol exclusivo de esta empresa para el usuario (Admin Global conserva rol 1)

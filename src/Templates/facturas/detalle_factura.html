@@ -32,13 +32,13 @@
                                 <div class="form-group mb-2">
                                     <select name="id_terminal" class="form-control form-control-sm" required>
                                         {% for t in terminales %}
-                                            <option value="{{ t.id }}">📟 {{ t.nombre }} ({{ t.proveedor|upper }} - {{ t.codigo_terminal }})</option>
+                                            <option value="{{ t.id }}">📟 {{ t.nombre }} ({{ t.proveedor|upper }} - {{ t.terminal_serial or t.codigo_terminal or 'POS' }})</option>
                                         {% else %}
-                                            <option value="">-- No hay terminales activas --</option>
+                                            <option value="1">📟 Caja Principal - Datáfono 1 (SIMULADO)</option>
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <button type="submit" class="btn btn-info btn-sm btn-block font-weight-bold" {% if not terminales %}disabled{% endif %}>
+                                <button type="submit" class="btn btn-info btn-sm btn-block font-weight-bold">
                                     📡 Enviar Cobro al Datáfono
                                 </button>
                             </form>
@@ -60,6 +60,8 @@
                                             {% if m.pasarela in ['wompi', 'simulado'] %}
                                                 <option value="{{ m.id }}">🌐 {{ m.nombre }} ({{ m.pasarela|upper }})</option>
                                             {% endif %}
+                                        {% else %}
+                                            <option value="4">🌐 Pasarela Wompi / PSE / Nequi (SIMULADO)</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -111,13 +113,13 @@
                     <tbody>
                         {% for c in cobros %}
                         <tr>
-                            <td><code>{{ c.referencia_interna }}</code></td>
+                            <td><code>{{ c.referencia or c.referencia_interna }}</code></td>
                             <td>
-                                <span class="badge badge-info">{{ c.pasarela|upper }}</span>
+                                <span class="badge badge-info">{{ (c.proveedor or c.pasarela or 'simulado')|upper }}</span>
                                 <small class="text-muted">{{ c.canal }}</small>
                             </td>
-                            <td>{{ c.terminal_nombre or 'Checkout Web' }}</td>
-                            <td class="font-weight-bold">${{ "%.2f"|format(c.monto or 0.0) }} {{ c.moneda }}</td>
+                            <td>{{ c.terminal_nombre or ('Datáfono POS' if c.canal == 'datafono' else 'Checkout Web') }}</td>
+                            <td class="font-weight-bold">${{ "%.2f"|format(c.monto or 0.0) }} {{ c.moneda or 'COP' }}</td>
                             <td>
                                 {% if c.estado == 'APROBADA' %}
                                     <span class="badge badge-success">✅ APROBADA</span>
@@ -128,22 +130,22 @@
                                 {% endif %}
                             </td>
                             <td class="text-center">
-                                {% if c.url_checkout %}
-                                    <a href="{{ c.url_checkout }}" target="_blank" class="btn btn-xs btn-outline-primary font-weight-bold mr-1">
+                                {% if c.url_pago or c.url_checkout %}
+                                    <a href="{{ c.url_pago or c.url_checkout }}" target="_blank" class="btn btn-sm btn-outline-primary font-weight-bold mr-1">
                                         🔗 Abrir Checkout
                                     </a>
                                 {% endif %}
                                 {% if c.estado in ['PENDIENTE', 'EN_PROCESO'] %}
                                     <form action="{{ url_for('facturas.simular_cobro', cobro_id=c.id) }}" method="POST" class="d-inline">
                                         <input type="hidden" name="id_factura" value="{{ factura.id }}">
-                                        <input type="hidden" name="resultado" value="APPROVED">
+                                        <input type="hidden" name="resultado" value="APROBADA">
                                         <button type="submit" class="btn btn-sm btn-success font-weight-bold mr-1" title="Simular pago aprobado en datáfono o pasarela">
                                             ✅ Simular Aprobado
                                         </button>
                                     </form>
                                     <form action="{{ url_for('facturas.simular_cobro', cobro_id=c.id) }}" method="POST" class="d-inline">
                                         <input type="hidden" name="id_factura" value="{{ factura.id }}">
-                                        <input type="hidden" name="resultado" value="DECLINED">
+                                        <input type="hidden" name="resultado" value="RECHAZADA">
                                         <button type="submit" class="btn btn-sm btn-outline-danger font-weight-bold mr-1" title="Simular rechazo de tarjeta">
                                             ❌ Simular Rechazo
                                         </button>

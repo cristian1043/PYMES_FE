@@ -107,16 +107,16 @@ def create_app(config_name='default'):
             if isinstance(p, dict):
                 p['proveedor'] = prov_map.get(p.get('id_proveedor'))
 
-        bajos = [p for p in items if p.get('stock', 0) <= 2500]
-        sobrestock = [p for p in items if p.get('stock', 0) > 10000]
-        optimos = [p for p in items if 2500 < p.get('stock', 0) <= 10000]
+        bajos = [p for p in items if p.get('stock', 0) <= 10]
+        sobrestock = [p for p in items if p.get('stock', 0) > 100]
+        optimos = [p for p in items if 10 < p.get('stock', 0) <= 100]
         
         facturas_res = FacturasService.obtener_todas(per_page=1000)
         fact_list = facturas_res.get("items", []) if isinstance(facturas_res, dict) else (facturas_res if isinstance(facturas_res, list) else [])
-        emitidas = [f for f in fact_list if f.get('estado', 'Emitida') == 'Emitida']
-        total_ventas = sum(float(f.get('total', 0.0)) for f in emitidas)
+        facturas_validas = [f for f in fact_list if f.get('estado', 'Emitida') != 'Cancelada']
+        total_ventas = sum(float(f.get('total', 0.0)) for f in facturas_validas)
         
-        return render_template('index.html', bajos=bajos, sobrestock=sobrestock, optimos=optimos, total_productos=len(items), total_ventas=total_ventas, total_facturas=len(emitidas))
+        return render_template('index.html', bajos=bajos, sobrestock=sobrestock, optimos=optimos, total_productos=len(items), total_ventas=total_ventas, total_facturas=len(facturas_validas))
 
     @app.errorhandler(500)
     def internal_error(error):

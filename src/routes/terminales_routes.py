@@ -22,10 +22,16 @@ def ver_terminales():
 def nueva_terminal():
     """Crea una nueva terminal de pago (datáfono Bold o Simulado)."""
     emp_id = session.get('empresa_activa', {}).get('id', 1)
+    serial = (request.form.get('terminal_serial') or request.form.get('codigo_terminal') or '').strip()
+    modelo = (request.form.get('terminal_model') or request.form.get('ubicacion') or '').strip()
+    email_usr = (request.form.get('email_usuario') or session.get('usuario', {}).get('email') or '').strip()
     data = {
         'nombre': request.form.get('nombre', '').strip(),
-        'codigo_terminal': request.form.get('codigo_terminal', '').strip(),
-        'ubicacion': request.form.get('ubicacion', '').strip(),
+        'terminal_serial': serial,
+        'terminal_model': modelo,
+        'email_usuario': email_usr,
+        'codigo_terminal': serial,
+        'ubicacion': modelo,
         'proveedor': request.form.get('proveedor', 'simulado').strip(),
         'modo': request.form.get('modo', 'sandbox').strip(),
         'id_metodo_pago': int(request.form.get('id_metodo_pago')) if request.form.get('id_metodo_pago') else None,
@@ -43,14 +49,21 @@ def nueva_terminal():
 @requiere_rol(1, 2, 3)
 def editar_terminal(id):
     """Actualiza una terminal existente."""
+    serial = (request.form.get('terminal_serial') or request.form.get('codigo_terminal') or '').strip()
+    modelo = (request.form.get('terminal_model') or request.form.get('ubicacion') or '').strip()
+    email_usr = (request.form.get('email_usuario') or '').strip()
     data = {
         'nombre': request.form.get('nombre', '').strip(),
-        'codigo_terminal': request.form.get('codigo_terminal', '').strip(),
-        'ubicacion': request.form.get('ubicacion', '').strip(),
+        'terminal_serial': serial,
+        'terminal_model': modelo,
+        'codigo_terminal': serial,
+        'ubicacion': modelo,
         'proveedor': request.form.get('proveedor', 'simulado').strip(),
         'modo': request.form.get('modo', 'sandbox').strip(),
         'estado': request.form.get('estado', 'Activo').strip()
     }
+    if email_usr:
+        data['email_usuario'] = email_usr
     if request.form.get('id_metodo_pago'):
         data['id_metodo_pago'] = int(request.form.get('id_metodo_pago'))
     res, err = APIClient.put(f'/terminales/{id}', data=data)
