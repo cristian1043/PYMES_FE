@@ -1,12 +1,16 @@
 import requests
 from flask import current_app, session, flash, redirect, url_for
 
+
 class APIClient:
     """
     Cliente base HTTP para comunicarse con el Backend (PYMES_BE).
     Maneja las peticiones GET, POST, PUT, DELETE, construye las URLs con API_BASE_URL,
     adjunta tokens JWT de autenticación y refresca tokens de acceso automáticamente si expiran.
     """
+
+    # Timeout (connect_timeout, read_timeout) amplio para soportar cold-starts en Render u otros clouds
+    DEFAULT_TIMEOUT = (8, 25)
 
     @classmethod
     def _get_base_url(cls):
@@ -41,7 +45,7 @@ class APIClient:
         url = f"{cls._get_base_url()}/auth/refresh"
         headers = {"Authorization": f"Bearer {refresh_token}"}
         try:
-            res = requests.post(url, headers=headers, timeout=5)
+            res = requests.post(url, headers=headers, timeout=cls.DEFAULT_TIMEOUT)
             if res.status_code == 200:
                 data = res.json()
                 new_token = data.get("access_token")
@@ -78,6 +82,8 @@ class APIClient:
                         return json_resp['error']
         except Exception:
             pass
+        if isinstance(exception, requests.exceptions.Timeout):
+            return "El servidor tardó demasiado en responder (posible inicio en frío en Render). Intenta nuevamente en unos segundos."
         return str(exception)
 
     @classmethod
@@ -86,11 +92,11 @@ class APIClient:
         url = f"{cls._get_base_url()}{endpoint}"
         headers = cls._get_headers()
         try:
-            response = requests.get(url, params=params, headers=headers, timeout=5)
+            response = requests.get(url, params=params, headers=headers, timeout=cls.DEFAULT_TIMEOUT)
             if response.status_code == 401 and endpoint not in ("/auth/login", "/auth/refresh"):
                 if cls._try_refresh_token():
                     headers = cls._get_headers()
-                    response = requests.get(url, params=params, headers=headers, timeout=5)
+                    response = requests.get(url, params=params, headers=headers, timeout=cls.DEFAULT_TIMEOUT)
                 else:
                     cls._check_token_expired(response)
             response.raise_for_status()
@@ -109,11 +115,11 @@ class APIClient:
             if emp_id:
                 data["id_empresa"] = emp_id
         try:
-            response = requests.post(url, json=data, headers=headers, timeout=5)
+            response = requests.post(url, json=data, headers=headers, timeout=cls.DEFAULT_TIMEOUT)
             if response.status_code == 401 and endpoint not in ("/auth/login", "/auth/refresh"):
                 if cls._try_refresh_token():
                     headers = cls._get_headers()
-                    response = requests.post(url, json=data, headers=headers, timeout=5)
+                    response = requests.post(url, json=data, headers=headers, timeout=cls.DEFAULT_TIMEOUT)
                 else:
                     cls._check_token_expired(response)
             response.raise_for_status()
@@ -128,11 +134,11 @@ class APIClient:
         url = f"{cls._get_base_url()}{endpoint}"
         headers = cls._get_headers()
         try:
-            response = requests.put(url, json=data, headers=headers, timeout=5)
+            response = requests.put(url, json=data, headers=headers, timeout=cls.DEFAULT_TIMEOUT)
             if response.status_code == 401 and endpoint not in ("/auth/login", "/auth/refresh"):
                 if cls._try_refresh_token():
                     headers = cls._get_headers()
-                    response = requests.put(url, json=data, headers=headers, timeout=5)
+                    response = requests.put(url, json=data, headers=headers, timeout=cls.DEFAULT_TIMEOUT)
                 else:
                     cls._check_token_expired(response)
             response.raise_for_status()
@@ -147,11 +153,11 @@ class APIClient:
         url = f"{cls._get_base_url()}{endpoint}"
         headers = cls._get_headers()
         try:
-            response = requests.delete(url, headers=headers, timeout=5)
+            response = requests.delete(url, headers=headers, timeout=cls.DEFAULT_TIMEOUT)
             if response.status_code == 401 and endpoint not in ("/auth/login", "/auth/refresh"):
                 if cls._try_refresh_token():
                     headers = cls._get_headers()
-                    response = requests.delete(url, headers=headers, timeout=5)
+                    response = requests.delete(url, headers=headers, timeout=cls.DEFAULT_TIMEOUT)
                 else:
                     cls._check_token_expired(response)
             response.raise_for_status()
