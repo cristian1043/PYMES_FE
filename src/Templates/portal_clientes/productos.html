@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="font-weight-bold text-dark mb-1">📦 Catálogo de Productos Publicados en el Portal</h3>
+            <p class="text-muted mb-0">Configura qué productos son visibles para los clientes externos, su precio público y disponibilidad. El costo mayorista y el proveedor nunca se exponen en el portal público.</p>
+        </div>
+        <a href="{{ url_for('portal_admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">← Volver al Panel del Portal</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Código / Producto</th>
+                            <th>Stock Actual</th>
+                            <th>Precio Base</th>
+                            <th>Configuración Pública del Portal</th>
+                            <th class="text-center">Guardar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in productos %}
+                        <tr>
+                            <form action="{{ url_for('portal_admin.actualizar_producto_portal', id_producto=p.id) }}" method="POST">
+                                <td>
+                                    <strong class="text-dark">{{ p.nombre }}</strong><br>
+                                    <small class="text-muted"><code>{{ p.codigo }}</code> · {{ p.categoria_nombre or 'General' }}</small>
+                                </td>
+                                <td>
+                                    {% if p.stock <= 0 %}
+                                        <span class="badge badge-danger">Agotado (0)</span>
+                                    {% elif p.stock <= 10 %}
+                                        <span class="badge badge-warning text-dark">Bajo ({{ p.stock }})</span>
+                                    {% else %}
+                                        <span class="badge badge-success">{{ p.stock }} und.</span>
+                                    {% endif %}
+                                </td>
+                                <td class="font-weight-bold">${{ "{:,.2f}".format(p.precio or 0) }}</td>
+                                <td>
+                                    <div class="form-row align-items-center">
+                                        <div class="col-auto mr-2">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="pub_{{ p.id }}" name="publicado_portal" {% if p.publicado_portal %}checked{% endif %}>
+                                                <label class="custom-control-label font-weight-bold text-primary" for="pub_{{ p.id }}">Publicado</label>
+                                            </div>
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="disp_{{ p.id }}" name="disponible_portal" {% if p.get('disponible_portal', True) %}checked{% endif %}>
+                                                <label class="custom-control-label small" for="disp_{{ p.id }}">Disponible</label>
+                                            </div>
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="dest_{{ p.id }}" name="destacado" {% if p.destacado %}checked{% endif %}>
+                                                <label class="custom-control-label small text-warning font-weight-bold" for="dest_{{ p.id }}">⭐ Destacado</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input type="number" step="0.01" name="precio_publico" class="form-control form-control-sm" value="{{ p.precio_publico or '' }}" placeholder="Precio Portal ($)">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" name="descripcion_publica" class="form-control form-control-sm mb-1" value="{{ p.descripcion_publica or '' }}" placeholder="Descripción pública...">
+                                            <input type="url" name="imagen_publica" class="form-control form-control-sm" value="{{ p.imagen_publica or '' }}" placeholder="URL Imagen https://...">
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <button type="submit" class="btn btn-sm btn-primary font-weight-bold">💾 Aplicar</button>
+                                </td>
+                            </form>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No hay productos registrados en el inventario de esta empresa.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

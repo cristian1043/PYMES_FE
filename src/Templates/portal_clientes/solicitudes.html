@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="font-weight-bold text-dark mb-1">💬 Consultas, Reclamos y Solicitudes (PQRS)</h3>
+            <p class="text-muted mb-0">Atiende y responde los mensajes, preguntas y reclamos enviados por los clientes desde el portal web.</p>
+        </div>
+        <a href="{{ url_for('portal_admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">← Volver al Panel del Portal</a>
+    </div>
+
+    <div class="mb-3">
+        <a href="{{ url_for('portal_admin.solicitudes') }}" class="btn btn-sm {% if not estado_filtro %}btn-dark{% else %}btn-outline-dark{% endif %} mr-1">Todas</a>
+        {% for est in ['Abierta', 'En revision', 'Respondida', 'Cerrada'] %}
+            <a href="{{ url_for('portal_admin.solicitudes', estado=est) }}" class="btn btn-sm {% if estado_filtro == est %}btn-dark{% else %}btn-outline-secondary{% endif %} mr-1">{{ est }}</a>
+        {% endfor %}
+    </div>
+
+    {% for s in solicitudes %}
+    <div class="card shadow-sm mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center {% if s.estado == 'Abierta' %}bg-warning text-dark{% elif s.estado == 'Respondida' %}bg-success text-white{% else %}bg-light{% endif %}">
+            <div>
+                <strong>[{{ s.tipo }}] {{ s.asunto }}</strong>
+                <span class="small ml-2">· Por: {{ s.nombre_contacto }} ({{ s.email_contacto or s.telefono_contacto }})</span>
+            </div>
+            <span class="badge badge-light text-dark">{{ s.estado }} · {{ (s.created_at or '')[:16].replace('T', ' ') }}</span>
+        </div>
+        <div class="card-body">
+            <p class="mb-3">{{ s.mensaje }}</p>
+            {% if s.respuesta_empresa %}
+            <div class="alert alert-info py-2 mb-3">
+                <strong>Respuesta de la Empresa:</strong> {{ s.respuesta_empresa }}
+            </div>
+            {% endif %}
+            <form action="{{ url_for('portal_admin.responder_solicitud', id_solicitud=s.id) }}" method="POST">
+                <div class="form-row align-items-center">
+                    <div class="col-md-7 mb-2">
+                        <input type="text" name="respuesta_empresa" class="form-control form-control-sm" value="{{ s.respuesta_empresa or '' }}" placeholder="Escribe la respuesta oficial para el cliente..." required>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <select name="estado" class="form-control form-control-sm">
+                            <option value="Respondida" {% if s.estado == 'Respondida' %}selected{% endif %}>Respondida</option>
+                            <option value="En revision" {% if s.estado == 'En revision' %}selected{% endif %}>En revisión</option>
+                            <option value="Cerrada" {% if s.estado == 'Cerrada' %}selected{% endif %}>Cerrada</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <button type="submit" class="btn btn-sm btn-primary btn-block font-weight-bold">📨 Responder</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="card shadow-sm">
+        <div class="card-body text-center text-muted py-4">No hay consultas ni solicitudes registradas con este filtro.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

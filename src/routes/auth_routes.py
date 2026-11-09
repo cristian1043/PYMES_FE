@@ -1,241 +1,246 @@
-import os
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from src.services.auth_service import AuthService
 from src.services.empresas_service import EmpresasService
 from src.services.usuarios_service import UsuariosService
 
 auth_bp = Blueprint('auth', __name__)
 
+ICONOS_EMPRESA = ['🏢', '🏪', '🏭', '🏬', '🛠️', '💼']
+ROLES_NOMBRES = {1: 'Administrador', 2: 'Vendedor', 3: 'Almacenista'}
+
+
+def _enriquecer_empresas_usuario(usuario):
+    """
+    Obtiene las empresas autorizadas para el usuario y adjunta el rol específico
+    que el usuario desempeña en cada empresa.
+    """
+    user_id = usuario.get('id') if isinstance(usuario, dict) else None
+    es_super_admin = bool(usuario.get('es_super_admin', False)) if isinstance(usuario, dict) else False
+    empresas_raw = EmpresasService.obtener_todas(filtrar_por_usuario=True)
+
+    empresas_enriquecidas = []
+    for idx, emp in enumerate(empresas_raw):
+        if not isinstance(emp, dict):
+            continue
+        emp_copy = dict(emp)
+        emp_id = emp_copy.get('id')
+        emp_copy.setdefault('icono', ICONOS_EMPRESA[idx % len(ICONOS_EMPRESA)])
+
+        if es_super_admin:
+            rol_id = 1
+            rol_nombre = 'Super Admin'
+        else:
+            vinc = UsuariosService.obtener_vinculacion_empresa(user_id, emp_id) if (user_id and emp_id) else {}
+            if isinstance(vinc, dict) and vinc.get('estado') == 'Desvinculado':
+                continue
+            rol_id = int(vinc.get('rol_id') or usuario.get('rol_id') or usuario.get('id_rol') or 2)
+            rol_nombre = vinc.get('rol_nombre') or ROLES_NOMBRES.get(rol_id, 'Vendedor')
+
+        emp_copy['rol_id'] = rol_id
+        emp_copy['rol_nombre'] = rol_nombre
+        empresas_enriquecidas.append(emp_copy)
+
+    session['empresas'] = empresas_enriquecidas
+    return empresas_enriquecidas
+
+
+def _activar_empresa_en_sesion(emp):
+    """Configura `empresa_activa` y actualiza el `rol_id` contextual del usuario para esa empresa."""
+    session['empresa_activa'] = emp
+    session['empresa_id'] = emp.get('id')
+    if 'usuario' in session and isinstance(session['usuario'], dict):
+        rol_emp = int(emp.get('rol_id', 2))
+        session['usuario']['rol_id'] = rol_emp
+        session['usuario']['id_rol'] = rol_emp
+        session['usuario']['rol_nombre'] = emp.get('rol_nombre', ROLES_NOMBRES.get(rol_emp, 'Vendedor'))
+    session.modified = True
+
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Formulario e inicio de sesión global de usuario."""
-    if 'usuario' in session and 'empresa_activa' in session:
-        return redirect(url_for('index'))
-
     if request.method == 'POST':
-        identificador = request.form.get('identificador')
-        password = request.form.get('password')
+        identificador = (request.form.get('email') or request.form.get('identificador') or '').strip()
+        password = request.form.get('password') or ''
 
         usuario, error = AuthService.autenticar(identificador, password)
+        if error or not usuario:
+            flash(error or "Credenciales inválidas. Intenta nuevamente.", "danger")
+            return render_template('login.html')
 
-        if error:
-            flash(error, "danger")
+        empresas = _enriquecer_empresas_usuario(usuario)
+        if len(empresas) == 1:
+            emp = empresas[0]
+            if emp.get('estado') == 'Inactivo' and emp.get('rol_id') != 1:
+                flash("Tu empresa asignada se encuentra pausada por el Administrador.", "warning")
+                return redirect(url_for('auth.seleccionar_empresa'))
+            _activar_empresa_en_sesion(emp)
+            flash(f"¡Bienvenido, {usuario.get('nombre')}! Operando en {emp.get('nombre')}.", "success")
+            return redirect(url_for('index'))
+        elif len(empresas) > 1:
+            flash(f"¡Bienvenido, {usuario.get('nombre')}! Selecciona la empresa con la que deseas trabajar.", "info")
+            return redirect(url_for('auth.seleccionar_empresa'))
         else:
-            real_rol_id = int(usuario.get('id_rol', 2))
-            usuario_id = usuario.get('id')
-
-            session['usuario'] = {
-                'id': usuario_id,
-                'nombre': f"{usuario.get('nombre', '')} {usuario.get('apellido', '')}".strip() if usuario.get('apellido') and usuario.get('apellido') not in str(usuario.get('nombre', '')) else usuario.get('nombre', ''),
-                'email': usuario.get('email'),
-                'username': usuario.get('username'),
-                'documento': usuario.get('documento'),
-                'tipo_documento': usuario.get('tipo_documento', 'CC'),
-                'telefono': usuario.get('telefono', ''),
-                'rol_id': real_rol_id,
-                'rol_id_global': real_rol_id
-            }
-            
-            # Cargar y filtrar empresas según el estado del rol y estado operativo de la empresa
-            empresas_db = EmpresasService.obtener_todas()
-            if real_rol_id == 1:
-                empresas_activas = empresas_db
-            else:
-                empresas_activas = [
-                    emp for emp in empresas_db 
-                    if emp.get('estado', 'Activo') == 'Activo' and 
-                    UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id']).get('estado', 'No Vinculado') == 'Activo'
-                ]
-
-            session['empresas'] = empresas_activas
-            
-            flash(f"¡Bienvenido/a {session['usuario']['nombre']}!", "success")
+            flash(f"¡Bienvenido, {usuario.get('nombre')}! Registra una empresa o solicita vinculación a un Administrador.", "info")
             return redirect(url_for('auth.seleccionar_empresa'))
 
     return render_template('login.html')
 
+
 @auth_bp.route('/seleccionar_empresa', methods=['GET'])
 def seleccionar_empresa():
-    """Pantalla con tarjetas de empresas calculando el rol exclusivo de cada empresa para el usuario."""
     if 'usuario' not in session:
         return redirect(url_for('auth.login'))
 
-    usuario_actual = session['usuario']
-    usuario_id = usuario_actual['id']
-    rol_id_global = usuario_actual.get('rol_id_global') or usuario_actual.get('rol_id', 2)
+    empresas = _enriquecer_empresas_usuario(session.get('usuario', {}))
+    return render_template('seleccionar_empresa.html', empresas=empresas)
 
-    empresas_todas = EmpresasService.obtener_todas()
 
-    empresas_visibles = []
-    for emp in empresas_todas:
-        if isinstance(emp, dict):
-            vinculacion = UsuariosService.obtener_vinculacion_empresa(usuario_id, emp['id'])
-            estado_vinc = vinculacion.get('estado', 'No Vinculado')
-            rol_vinc = 1 if int(rol_id_global) == 1 else vinculacion.get('rol_id', rol_id_global)
-
-            # El Admin Global (rol_id 1) ve todas las empresas. Los demás ven solo en las que están 'Activo'
-            if rol_id_global == 1 or estado_vinc == 'Activo':
-                emp_copy = dict(emp)
-                emp_copy['rol_id'] = rol_vinc
-                roles_nombres = {1: 'Administrador', 2: 'Vendedor', 3: 'Almacenista'}
-                emp_copy['rol_nombre'] = roles_nombres.get(rol_vinc, 'Vendedor')
-                empresas_visibles.append(emp_copy)
-
-    session['empresas'] = empresas_visibles
-    return render_template('seleccionar_empresa.html', empresas=empresas_visibles)
-
-@auth_bp.route('/seleccionar_empresa/<int:empresa_id>', methods=['GET'])
+@auth_bp.route('/activar_empresa/<int:empresa_id>', methods=['GET'])
 def activar_empresa(empresa_id):
-    """Establece la empresa activa bloqueando el acceso a empleados en empresas inactivas."""
     if 'usuario' not in session:
         return redirect(url_for('auth.login'))
 
-    usuario_actual = session['usuario']
-    usuario_id = usuario_actual['id']
-    rol_id_global = usuario_actual.get('rol_id_global') or usuario_actual.get('rol_id', 2)
+    empresas = _enriquecer_empresas_usuario(session.get('usuario', {}))
+    emp = next((e for e in empresas if int(e.get('id', 0)) == int(empresa_id)), None)
 
-    empresas = EmpresasService.obtener_todas()
-    empresa_seleccionada = next((e for e in empresas if e['id'] == empresa_id), None)
-
-    if not empresa_seleccionada:
-        flash("La empresa seleccionada no existe.", "danger")
+    if not emp:
+        flash("Acceso denegado: No tienes vinculación activa con la empresa solicitada.", "danger")
         return redirect(url_for('auth.seleccionar_empresa'))
 
-    # Bloqueo para trabajadores si la empresa está operativamente INACTIVA
-    if int(rol_id_global) != 1 and empresa_seleccionada.get('estado') == 'Inactivo':
-        flash("Acceso Denegado: Las operaciones de esta empresa han sido pausadas por el Administrador.", "danger")
+    if emp.get('estado') == 'Inactivo' and int(emp.get('rol_id', 2)) != 1:
+        flash("Las operaciones de esta empresa se encuentran pausadas por el Administrador.", "danger")
         return redirect(url_for('auth.seleccionar_empresa'))
 
-    # Bloqueo si el trabajador no tiene vinculación Activa en la empresa (No Vinculado / Desvinculado / Inactivo)
-    vinculacion = UsuariosService.obtener_vinculacion_empresa(usuario_id, empresa_id)
-    if int(rol_id_global) != 1 and vinculacion.get('estado') != 'Activo':
-        flash("Acceso Denegado: No tienes una vinculación activa y autorizada en esta empresa.", "danger")
-        return redirect(url_for('auth.seleccionar_empresa'))
+    _activar_empresa_en_sesion(emp)
 
-    # Asignar rol exclusivo de esta empresa para el usuario (Admin Global conserva rol 1)
-    rol_especifico = 1 if int(rol_id_global) == 1 else vinculacion.get('rol_id', rol_id_global)
-    session['usuario']['rol_id'] = rol_especifico
-    session['usuario']['rol_id_global'] = rol_id_global
+    if emp.get('estado') == 'Inactivo' and int(emp.get('rol_id', 2)) == 1:
+        flash(f"Ingresaste a '{emp.get('nombre')}' (Pausada). Puedes reactivarla en Configuración.", "warning")
+        return redirect(url_for('empresas.configuracion'))
 
-    session['empresa_activa'] = empresa_seleccionada
-    roles_nombres = {1: 'Administrador', 2: 'Vendedor', 3: 'Almacenista'}
-    session['empresa_activa']['rol_nombre'] = roles_nombres.get(rol_especifico, 'Vendedor')
-    session['empresa_activa']['icono'] = '🏢'
-
-    flash(f"Entraste a trabajar en {empresa_seleccionada['nombre']}", "info")
+    flash(f"Espacio de trabajo activo: {emp.get('nombre')} ({emp.get('rol_nombre')})", "success")
     return redirect(url_for('index'))
+
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    """Formulario y registro de un nuevo usuario en la plataforma."""
-    if 'usuario' in session and 'empresa_activa' in session:
-        return redirect(url_for('index'))
-
     if request.method == 'POST':
-        datos = {
-            'tipo_documento': request.form.get('tipo_documento'),
-            'documento': request.form.get('documento'),
-            'nombre': request.form.get('nombre'),
-            'apellido': request.form.get('apellido'),
-            'telefono': request.form.get('telefono'),
-            'email': request.form.get('email'),
-            'username': request.form.get('username') or '',
-            'password_hash': request.form.get('password'),
-            'id_rol': int(request.form.get('id_rol', 2)),
-            'estado': 'Activo',
-            'fecha_nacimiento': request.form.get('fecha_nacimiento') or '',
-            'lugar_residencia': request.form.get('lugar_residencia') or '',
-            'estado_civil': request.form.get('estado_civil') or '',
-            'numero_hijos': request.form.get('numero_hijos') or 0,
-            'banco': request.form.get('banco') or '',
-            'tipo_cuenta': request.form.get('tipo_cuenta') or '',
-            'numero_cuenta': request.form.get('numero_cuenta') or ''
+        tipo_registro = request.form.get('tipo_registro', 'empleado')
+        id_rol_elegido = 1 if tipo_registro == 'dueno' else int(request.form.get('id_rol', 2))
+
+        user_data = {
+            "tipo_documento": request.form.get('tipo_documento'),
+            "documento": request.form.get('documento'),
+            "nombre": request.form.get('nombre'),
+            "apellido": request.form.get('apellido'),
+            "telefono": request.form.get('telefono'),
+            "email": request.form.get('email'),
+            "username": request.form.get('username', '').strip().lstrip('@'),
+            "password": request.form.get('password'),
+            "id_rol": id_rol_elegido,
+            "estado": "Activo",
+            "fecha_nacimiento": request.form.get('fecha_nacimiento', ''),
+            "lugar_residencia": request.form.get('lugar_residencia', ''),
+            "estado_civil": request.form.get('estado_civil', ''),
+            "numero_hijos": int(request.form.get('numero_hijos') or 0),
+            "banco": request.form.get('banco', ''),
+            "tipo_cuenta": request.form.get('tipo_cuenta', ''),
+            "numero_cuenta": request.form.get('numero_cuenta', '')
         }
 
-        res, err = AuthService.registrar(datos)
-        if err:
-            flash(f"Error al registrar la cuenta: {err}", "danger")
-        else:
-            uname = res.get('username') if isinstance(res, dict) and res.get('username') else ''
-            msg_usuario = f" Tu identificador asignado es @{uname}." if uname else ""
-            flash(f"¡Cuenta creada exitosamente!{msg_usuario} Ya puedes iniciar sesión con tu correo o @{uname}.", "success")
-            return redirect(url_for('auth.login'))
+        res, err = AuthService.registrar(user_data)
+        if err or not res:
+            flash(err or "No se pudo completar el registro.", "danger")
+            return render_template('register.html')
+
+        username_creado = res.get('username', '') if isinstance(res, dict) else ''
+
+        if tipo_registro == 'dueno':
+            usuario_log, err_log = AuthService.autenticar(user_data['email'], user_data['password'])
+            if usuario_log and not err_log:
+                flash(
+                    f"¡Bienvenido, {user_data['nombre']}! Tu cuenta (@{username_creado}) está lista. "
+                    f"Ahora registra los datos de tu empresa.",
+                    "success"
+                )
+                return redirect(url_for('empresas.nueva_empresa'))
+
+        flash(
+            f"¡Cuenta creada exitosamente! Tu usuario asignado es @{username_creado}. Ahora puedes iniciar sesión.",
+            "success"
+        )
+        return redirect(url_for('auth.login'))
 
     return render_template('register.html')
 
-@auth_bp.route('/logout')
-def logout():
-    """Cierra la sesión del usuario actual."""
-    session.clear()
-    flash("Has cerrado sesión correctamente.", "info")
-    return redirect(url_for('auth.login'))
 
 @auth_bp.route('/recuperar_password', methods=['GET', 'POST'])
 def recuperar_password():
-    """Flujo de solicitud de recuperación de contraseña vía correo o código OTP."""
-    token = request.args.get('token')
-    if token:
-        return render_template('recuperar_password.html', token=token, paso_codigo=True)
-
+    token = request.args.get('token', '').strip()
     if request.method == 'POST':
         identificador = request.form.get('identificador', '').strip()
-        if not identificador:
-            flash("Por favor ingresa tu correo, usuario o documento.", "warning")
-            return render_template('recuperar_password.html')
-
         res, err = AuthService.solicitar_recuperacion(identificador)
         if err:
-            flash(f"No se pudo generar la solicitud: {err}", "danger")
-            return render_template('recuperar_password.html')
-
-        token_generado = res.get('token') if isinstance(res, dict) else ''
-        codigo_generado = res.get('codigo') if isinstance(res, dict) else ''
-        email_enmascarado = res.get('email_enmascarado', '') if isinstance(res, dict) else ''
-        enviado_smtp = bool(res.get('enviado_smtp')) if isinstance(res, dict) else False
-        link_directo = res.get('link_directo', '') if isinstance(res, dict) else ''
-
-        if enviado_smtp:
-            flash(f"Hemos enviado el código de verificación de 6 dígitos a tu correo {email_enmascarado}.", "success")
+            flash(err, "danger")
         else:
-            flash(f"Solicitud verificada para {email_enmascarado}. Tu código de verificación de 6 dígitos ha sido generado.", "success")
+            mensaje = (res.get('mensaje') if isinstance(res, dict) else None) or (
+                "Si los datos ingresados coinciden con una cuenta activa, "
+                "hemos enviado las instrucciones de recuperación al correo registrado."
+            )
+            flash(mensaje, "info")
+            return render_template(
+                'recuperar_password.html',
+                token='',
+                paso_codigo=True,
+                identificador=identificador
+            )
 
+    return render_template('recuperar_password.html', token=token, paso_codigo=bool(token))
+
+
+@auth_bp.route('/recuperar_password/confirmar', methods=['POST'])
+def recuperar_password_confirmar():
+    token_o_codigo = request.form.get('token_o_codigo', '').strip()
+    identificador = request.form.get('identificador', '').strip()
+    password_nueva = request.form.get('password_nueva', '')
+    password_confirmar = request.form.get('password_confirmar', '')
+
+    if password_nueva != password_confirmar:
+        flash('Las contraseñas ingresadas no coinciden.', 'danger')
         return render_template(
             'recuperar_password.html',
             token='',
-            codigo=codigo_generado,
-            email_enmascarado=email_enmascarado,
-            enviado_smtp=enviado_smtp,
-            token_respaldo=token_generado,
             paso_codigo=True,
-            link_directo=link_directo
+            identificador=identificador
         )
 
-    return render_template('recuperar_password.html')
-
-@auth_bp.route('/recuperar_password_confirmar', methods=['POST'])
-def recuperar_password_confirmar():
-    """Aplica la nueva contraseña utilizando el token temporal o código OTP recibido."""
-    token_o_codigo = request.form.get('token_o_codigo', '').strip()
-    password_nueva = request.form.get('password_nueva', '').strip()
-    password_confirmar = request.form.get('password_confirmar', '').strip()
-    codigo_previo = request.form.get('codigo_previo', '').strip()
-
-    if not token_o_codigo:
-        flash("El código de verificación de 6 dígitos es obligatorio.", "danger")
-        return render_template('recuperar_password.html', codigo=codigo_previo, paso_codigo=True)
-
-    if not password_nueva or len(password_nueva) < 6:
-        flash("La nueva contraseña debe tener al menos 6 caracteres.", "warning")
-        return render_template('recuperar_password.html', token=token_o_codigo, codigo=codigo_previo, paso_codigo=True)
-
-    if password_nueva != password_confirmar:
-        flash("Las contraseñas no coinciden. Por favor verifica.", "danger")
-        return render_template('recuperar_password.html', token=token_o_codigo, codigo=codigo_previo, paso_codigo=True)
-
-    res, err = AuthService.confirmar_recuperacion(token_o_codigo, password_nueva)
+    res, err = AuthService.confirmar_recuperacion(
+        token_o_codigo=token_o_codigo,
+        password_nueva=password_nueva,
+        identificador=identificador
+    )
     if err:
-        flash(f"Error al restablecer contraseña: {err}", "danger")
-        return render_template('recuperar_password.html', token=token_o_codigo, codigo=codigo_previo, paso_codigo=True)
+        flash(err, 'danger')
+        return render_template(
+            'recuperar_password.html',
+            token='',
+            paso_codigo=True,
+            identificador=identificador
+        )
 
-    flash("¡Tu contraseña ha sido restablecida con éxito! Ya puedes iniciar sesión.", "success")
+    mensaje = (res.get('mensaje') if isinstance(res, dict) else None) or "¡Tu contraseña ha sido restablecida exitosamente!"
+    flash(mensaje, 'success')
+    return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/logout')
+def logout():
+    AuthService.logout()
+    flash('Has cerrado sesión correctamente.', 'info')
+    return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/logout_global', methods=['POST'])
+def logout_global():
+    AuthService.logout_global()
+    flash('Se ha cerrado tu sesión en todos los dispositivos.', 'warning')
     return redirect(url_for('auth.login'))

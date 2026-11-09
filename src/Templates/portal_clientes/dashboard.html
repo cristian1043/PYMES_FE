@@ -1,0 +1,317 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <!-- Encabezado y Enlace al Portal Público -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="font-weight-bold text-primary mb-1">🌐 Portal de Clientes — {{ session.get('empresa_activa', {}).get('nombre') }}</h3>
+            <p class="text-muted mb-0">
+                URL Pública del Portal: <a href="{{ portal_url }}" target="_blank" class="font-weight-bold"><code>{{ portal_url }}</code> ↗</a>
+            </p>
+        </div>
+        <div class="mt-2 mt-md-0 d-flex align-items-center">
+            {% if config.get('activo', True) %}
+                <span class="badge badge-success p-2 mr-2">🟢 Portal Público Activo</span>
+            {% else %}
+                <span class="badge badge-danger p-2 mr-2">🔴 Portal en Mantenimiento</span>
+            {% endif %}
+            {% if session.get('usuario', {}).get('rol_id') == 1 %}
+            <form action="{{ url_for('portal_admin.toggle_estado') }}" method="POST" class="d-inline mr-2">
+                {% if config.get('activo', True) %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger font-weight-bold">⏸️ Pausar Portal</button>
+                {% else %}
+                    <button type="submit" class="btn btn-sm btn-success font-weight-bold">▶️ Activar Portal</button>
+                {% endif %}
+            </form>
+            {% endif %}
+            <a href="{{ portal_url }}" target="_blank" class="btn btn-sm btn-primary font-weight-bold">🔗 Abrir Portal Público</a>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Indicadores Rápidos (KPIs) -->
+    <div class="row mb-4">
+        <div class="col-md-2 col-6 mb-3">
+            <div class="card border-left-primary shadow-sm h-100">
+                <div class="card-body py-3 text-center">
+                    <h6 class="text-muted small mb-1">Pedidos Activos</h6>
+                    <h3 class="font-weight-bold text-primary mb-1">{{ pedidos_pendientes }}</h3>
+                    <a href="{{ url_for('portal_admin.pedidos') }}" class="small font-weight-bold">Ver {{ total_pedidos }} totales →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body py-3 text-center">
+                    <h6 class="text-muted small mb-1">Citas / Reservas</h6>
+                    <h3 class="font-weight-bold text-info mb-1">{{ reservas_pendientes }}</h3>
+                    <a href="{{ url_for('portal_admin.reservas') }}" class="small font-weight-bold">Agenda ({{ total_reservas }}) →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body py-3 text-center">
+                    <h6 class="text-muted small mb-1">Clientes Portal</h6>
+                    <h3 class="font-weight-bold text-success mb-1">{{ total_clientes }}</h3>
+                    <a href="{{ url_for('portal_admin.clientes') }}" class="small font-weight-bold">Gestionar →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body py-3 text-center">
+                    <h6 class="text-muted small mb-1">Consultas / PQRS Abiertas</h6>
+                    <h3 class="font-weight-bold text-warning mb-1">{{ solicitudes_abiertas }}</h3>
+                    <a href="{{ url_for('portal_admin.solicitudes') }}" class="small font-weight-bold">Responder →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-12 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body py-3 text-center">
+                    <h6 class="text-muted small mb-1">Notificaciones Nuevas</h6>
+                    <h3 class="font-weight-bold text-danger mb-1">{{ notificaciones_no_leidas }}</h3>
+                    <a href="{{ url_for('portal_admin.notificaciones') }}" class="small font-weight-bold">Centro de Alertas →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegación Rápida de Submódulos del Portal -->
+    <div class="mb-4">
+        <a href="{{ url_for('portal_admin.pedidos') }}" class="btn btn-outline-primary btn-sm mr-1 mb-1 font-weight-bold">🛍️ Pedidos Recibidos</a>
+        {% if session.get('usuario', {}).get('rol_id') in [1, 2] %}
+        <a href="{{ url_for('portal_admin.reservas') }}" class="btn btn-outline-info btn-sm mr-1 mb-1 font-weight-bold">📅 Reservas y Agenda</a>
+        <a href="{{ url_for('portal_admin.servicios') }}" class="btn btn-outline-secondary btn-sm mr-1 mb-1 font-weight-bold">🛠️ Servicios Publicados</a>
+        <a href="{{ url_for('portal_admin.clientes') }}" class="btn btn-outline-success btn-sm mr-1 mb-1 font-weight-bold">👥 Clientes Registrados</a>
+        <a href="{{ url_for('portal_admin.solicitudes') }}" class="btn btn-outline-warning btn-sm mr-1 mb-1 font-weight-bold text-dark">💬 Consultas y Reclamos</a>
+        {% endif %}
+        {% if session.get('usuario', {}).get('rol_id') in [1, 3] %}
+        <a href="{{ url_for('portal_admin.productos') }}" class="btn btn-outline-dark btn-sm mr-1 mb-1 font-weight-bold">📦 Catálogo de Productos</a>
+        {% endif %}
+        <a href="{{ url_for('portal_admin.notificaciones') }}" class="btn btn-outline-danger btn-sm mb-1 font-weight-bold">🔔 Notificaciones</a>
+    </div>
+
+    <div class="row">
+        <!-- Columna Izquierda: Configuración General y Personalización (Solo Admin edita) -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 font-weight-bold">⚙️ Configuración General, Visual y de Contacto del Portal</h5>
+                    <span class="badge badge-info">Slug: {{ config.get('slug') }}</span>
+                </div>
+                <div class="card-body">
+                    {% set solo_lectura = session.get('usuario', {}).get('rol_id') != 1 %}
+                    <form action="{{ url_for('portal_admin.dashboard') }}" method="POST">
+                        <h6 class="font-weight-bold text-primary border-bottom pb-2 mb-3">1. Identidad Pública y URL</h6>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="font-weight-bold">Nombre Comercial Público *</label>
+                                <input type="text" name="nombre_publico" class="form-control" value="{{ config.get('nombre_publico', '') }}" required {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="font-weight-bold">Slug / Identificador URL *</label>
+                                <input type="text" name="slug" class="form-control" value="{{ config.get('slug', '') }}" required {% if solo_lectura %}disabled{% endif %}>
+                                <small class="text-muted">Ejemplo: <code>mi-empresa</code></small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Descripción / Propuesta de Valor</label>
+                            <textarea name="descripcion" class="form-control" rows="2" {% if solo_lectura %}disabled{% endif %}>{{ config.get('descripcion') or '' }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Historia / Quiénes Somos</label>
+                            <textarea name="historia" class="form-control" rows="2" {% if solo_lectura %}disabled{% endif %}>{{ config.get('historia') or '' }}</textarea>
+                        </div>
+
+                        <h6 class="font-weight-bold text-primary border-bottom pb-2 mt-4 mb-3">2. Personalización Visual</h6>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>URL del Logotipo</label>
+                                <input type="url" name="logo_url" class="form-control" value="{{ config.get('logo_url') or '' }}" placeholder="https://..." {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>URL del Banner Principal</label>
+                                <input type="url" name="banner_url" class="form-control" value="{{ config.get('banner_url') or '' }}" placeholder="https://..." {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>Color Primario</label>
+                                <input type="color" name="color_primario" class="form-control" value="{{ config.get('color_primario') or '#1e3c72' }}" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Color Secundario</label>
+                                <input type="color" name="color_secundario" class="form-control" value="{{ config.get('color_secundario') or '#2a5298' }}" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                        </div>
+
+                        <h6 class="font-weight-bold text-primary border-bottom pb-2 mt-4 mb-3">3. Contacto Público, Horarios y Redes Sociales</h6>
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label>Teléfono Público</label>
+                                <input type="text" name="telefono_publico" class="form-control" value="{{ config.get('telefono_publico') or '' }}" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label>WhatsApp Comercial</label>
+                                <input type="text" name="whatsapp" class="form-control" value="{{ config.get('whatsapp') or '' }}" placeholder="+57300..." {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label>Correo de Atención</label>
+                                <input type="email" name="correo_publico" class="form-control" value="{{ config.get('correo_publico') or '' }}" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>Dirección Física / Punto de Atención</label>
+                                <input type="text" name="direccion_publica" class="form-control" value="{{ config.get('direccion_publica') or '' }}" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Horario de Atención</label>
+                                <input type="text" name="horario_atencion" class="form-control" value="{{ config.get('horario_atencion') or '' }}" placeholder="Lun-Vie 8:00 AM - 6:00 PM" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                        </div>
+                        {% set redes = config.get('redes_sociales') or {} %}
+                        <div class="row">
+                            <div class="col-md-3 form-group">
+                                <label class="small">Facebook URL</label>
+                                <input type="url" name="facebook" class="form-control form-control-sm" value="{{ redes.get('facebook', '') }}" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="small">Instagram URL</label>
+                                <input type="url" name="instagram" class="form-control form-control-sm" value="{{ redes.get('instagram', '') }}" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="small">TikTok URL</label>
+                                <input type="url" name="tiktok" class="form-control form-control-sm" value="{{ redes.get('tiktok', '') }}" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="small">Sitio Web Externo</label>
+                                <input type="url" name="web" class="form-control form-control-sm" value="{{ redes.get('web', '') }}" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                        </div>
+
+                        <h6 class="font-weight-bold text-primary border-bottom pb-2 mt-4 mb-3">4. Módulos Activos y Modalidades de Entrega</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4 mb-2">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="activo" name="activo" {% if config.get('activo', True) %}checked{% endif %} {% if solo_lectura %}disabled{% endif %}>
+                                    <label class="custom-control-label font-weight-bold text-success" for="activo">Portal Público Activo</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="catalogo_activo" name="catalogo_activo" {% if config.get('catalogo_activo', True) %}checked{% endif %} {% if solo_lectura %}disabled{% endif %}>
+                                    <label class="custom-control-label" for="catalogo_activo">Catálogo de Productos</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="carrito_activo" name="carrito_activo" {% if config.get('carrito_activo', True) %}checked{% endif %} {% if solo_lectura %}disabled{% endif %}>
+                                    <label class="custom-control-label" for="carrito_activo">Carrito de Compras</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="servicios_activos" name="servicios_activos" {% if config.get('servicios_activos', True) %}checked{% endif %} {% if solo_lectura %}disabled{% endif %}>
+                                    <label class="custom-control-label" for="servicios_activos">Catálogo de Servicios</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="reservas_activas" name="reservas_activas" {% if config.get('reservas_activas', True) %}checked{% endif %} {% if solo_lectura %}disabled{% endif %}>
+                                    <label class="custom-control-label" for="reservas_activas">Agendamiento de Citas</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="mostrar_precios" name="mostrar_precios" {% if config.get('mostrar_precios', True) %}checked{% endif %} {% if solo_lectura %}disabled{% endif %}>
+                                    <label class="custom-control-label" for="mostrar_precios">Mostrar Precios</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="mostrar_stock" name="mostrar_stock" {% if config.get('mostrar_stock', True) %}checked{% endif %} {% if solo_lectura %}disabled{% endif %}>
+                                    <label class="custom-control-label" for="mostrar_stock">Mostrar Stock Disponible</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="permitir_recogida_tienda" name="permitir_recogida_tienda" {% if config.get('permitir_recogida_tienda', True) %}checked{% endif %} {% if solo_lectura %}disabled{% endif %}>
+                                    <label class="custom-control-label" for="permitir_recogida_tienda">Recogida en Tienda</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="permitir_entrega_domicilio" name="permitir_entrega_domicilio" {% if config.get('permitir_entrega_domicilio', True) %}checked{% endif %} {% if solo_lectura %}disabled{% endif %}>
+                                    <label class="custom-control-label" for="permitir_entrega_domicilio">Entrega a Domicilio</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label>Costo Base de Domicilio ($)</label>
+                                <input type="number" step="0.01" min="0" name="costo_envio_base" class="form-control" value="{{ config.get('costo_envio_base') or 0 }}" {% if solo_lectura %}disabled{% endif %}>
+                            </div>
+                            <div class="col-md-8 form-group">
+                                <label>Políticas y Términos Comerciales</label>
+                                <textarea name="politicas_terminos" class="form-control" rows="2" {% if solo_lectura %}disabled{% endif %}>{{ config.get('politicas_terminos') or '' }}</textarea>
+                            </div>
+                        </div>
+
+                        {% if not solo_lectura %}
+                        <div class="text-right">
+                            <button type="submit" class="btn btn-primary font-weight-bold px-4">💾 Guardar Configuración del Portal</button>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Últimos Pedidos y Notificaciones -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 font-weight-bold">🛍️ Últimos Pedidos Recibidos</h6>
+                    <a href="{{ url_for('portal_admin.pedidos') }}" class="text-white small">Ver todos</a>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for p in ultimos_pedidos %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <a href="{{ url_for('portal_admin.detalle_pedido', id_pedido=p.id) }}" class="font-weight-bold">{{ p.numero_pedido }}</a>
+                            <div class="small text-muted">{{ p.nombre_cliente }} · ${{ "{:,.0f}".format(p.total or 0) }}</div>
+                        </div>
+                        <span class="badge badge-info">{{ p.estado }}</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-muted text-center py-3">Sin pedidos recientes</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 font-weight-bold">🔔 Alertas Recientes del Portal</h6>
+                    <a href="{{ url_for('portal_admin.notificaciones') }}" class="text-white small">Ver todas</a>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for n in ultimas_notificaciones %}
+                    <li class="list-group-item {% if not n.leida %}bg-light font-weight-bold{% endif %}">
+                        <div class="small text-primary">{{ n.titulo }}</div>
+                        <div class="small text-muted">{{ n.mensaje }}</div>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-muted text-center py-3">No hay alertas registradas</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

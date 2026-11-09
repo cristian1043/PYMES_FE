@@ -52,10 +52,16 @@
         <form action="{{ url_for('empresas.nueva_empresa') }}" method="POST">
             <div class="row">
                 <div class="col-md-6 form-group mb-3">
-                    <label for="nombre" class="font-weight-bold">Nombre de la Empresa *</label>
-                    <input type="text" class="form-control" id="nombre" name="nombre" required minlength="3" placeholder="Ej: Empresa Los Laureles S.A.S.">
+                    <label for="nombre" class="font-weight-bold">Nombre Comercial *</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required minlength="3" placeholder="Ej: Los Laureles">
                 </div>
                 <div class="col-md-6 form-group mb-3">
+                    <label for="razon_social" class="font-weight-bold">Razón Social</label>
+                    <input type="text" class="form-control" id="razon_social" name="razon_social" placeholder="Ej: Los Laureles S.A.S.">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 form-group mb-3">
                     <label for="nit" class="font-weight-bold">NIT / Identificación *</label>
                     <input type="text" class="form-control" id="nit" name="nit" required pattern="[0-9.\-]{5,20}" placeholder="900.555.777-1">
                 </div>

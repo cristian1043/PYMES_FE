@@ -5,6 +5,7 @@ from src.utils.decorators import requiere_rol
 
 productos_bp = Blueprint('productos', __name__, url_prefix='/productos')
 
+
 @productos_bp.route('/', methods=['GET'])
 @requiere_rol(1, 2, 3)
 def ver_productos():
@@ -12,16 +13,18 @@ def ver_productos():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     res_paginado = ProductosService.obtener_todos(page=page, per_page=per_page)
-    
+
     items = res_paginado.get("items", []) if isinstance(res_paginado, dict) else res_paginado
     return render_template('productos/ver_productos.html', productos=items, paginacion=res_paginado)
 
+
 @productos_bp.route('/nuevo', methods=['GET', 'POST'])
-@requiere_rol(1, 2, 3) # Admin y Almacenista pueden crear/modificar productos e inventario
+@requiere_rol(1, 2, 3)  # Admin y Almacenista pueden crear/modificar productos e inventario
 def nuevo_producto():
     """Formulario y registro de un nuevo producto (Admin y Almacenista)."""
     siguiente_codigo = ProductosService.obtener_siguiente_codigo()
     if request.method == 'POST':
+        precio_pub_raw = request.form.get('precio_publico')
         data = {
             'codigo': request.form.get('codigo') or siguiente_codigo,
             'nombre': request.form.get('nombre'),
@@ -30,7 +33,13 @@ def nuevo_producto():
             'costo': float(request.form.get('costo')) if request.form.get('costo') else None,
             'stock': int(request.form.get('stock', 0)),
             'id_categoria': int(request.form.get('id_categoria')) if request.form.get('id_categoria') else None,
-            'id_proveedor': int(request.form.get('id_proveedor')) if request.form.get('id_proveedor') else None
+            'id_proveedor': int(request.form.get('id_proveedor')) if request.form.get('id_proveedor') else None,
+            'publicado_portal': request.form.get('publicado_portal') == 'on',
+            'disponible_portal': request.form.get('disponible_portal') == 'on',
+            'destacado': request.form.get('destacado') == 'on',
+            'precio_publico': float(precio_pub_raw) if precio_pub_raw else None,
+            'descripcion_publica': request.form.get('descripcion_publica'),
+            'imagen_publica': request.form.get('imagen_publica')
         }
         res, err = ProductosService.crear(data)
         if err:
@@ -44,8 +53,9 @@ def nuevo_producto():
     proveedores = prov_res.get("items", []) if isinstance(prov_res, dict) else (prov_res if isinstance(prov_res, list) else [])
     return render_template('productos/nuevo_producto.html', categorias=categorias, proveedores=proveedores, siguiente_codigo=siguiente_codigo)
 
+
 @productos_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
-@requiere_rol(1, 2, 3) # Admin y Almacenista pueden editar productos
+@requiere_rol(1, 2, 3)  # Admin y Almacenista pueden editar productos
 def editar_producto(id):
     """Formulario y procesamiento para actualizar un producto existente."""
     producto = ProductosService.obtener_por_id(id)
@@ -54,6 +64,7 @@ def editar_producto(id):
         return redirect(url_for('productos.ver_productos'))
 
     if request.method == 'POST':
+        precio_pub_raw = request.form.get('precio_publico')
         data = {
             'codigo': request.form.get('codigo', producto.get('codigo')),
             'nombre': request.form.get('nombre'),
@@ -62,7 +73,13 @@ def editar_producto(id):
             'costo': float(request.form.get('costo')) if request.form.get('costo') else None,
             'stock': int(request.form.get('stock', 0)),
             'id_categoria': int(request.form.get('id_categoria')) if request.form.get('id_categoria') else None,
-            'id_proveedor': int(request.form.get('id_proveedor')) if request.form.get('id_proveedor') else None
+            'id_proveedor': int(request.form.get('id_proveedor')) if request.form.get('id_proveedor') else None,
+            'publicado_portal': request.form.get('publicado_portal') == 'on',
+            'disponible_portal': request.form.get('disponible_portal') == 'on',
+            'destacado': request.form.get('destacado') == 'on',
+            'precio_publico': float(precio_pub_raw) if precio_pub_raw else None,
+            'descripcion_publica': request.form.get('descripcion_publica'),
+            'imagen_publica': request.form.get('imagen_publica')
         }
         res, err = ProductosService.actualizar(id, data)
         if err:

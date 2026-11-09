@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="font-weight-bold text-primary mb-1">🛍️ Pedidos Recibidos desde el Portal</h3>
+            <p class="text-muted mb-0">Gestiona el flujo de preparación, despacho, facturación y entrega de los pedidos realizados por clientes externos.</p>
+        </div>
+        <a href="{{ url_for('portal_admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">← Volver al Panel del Portal</a>
+    </div>
+
+    <!-- Filtros por Estado -->
+    <div class="mb-3">
+        <a href="{{ url_for('portal_admin.pedidos') }}" class="btn btn-sm {% if not estado_filtro %}btn-primary{% else %}btn-outline-primary{% endif %} mr-1 mb-1">Todos</a>
+        {% for est in ['Pendiente', 'Confirmado', 'En preparacion', 'Listo para entrega', 'Enviado', 'Entregado', 'Cancelado'] %}
+            <a href="{{ url_for('portal_admin.pedidos', estado=est) }}" class="btn btn-sm {% if estado_filtro == est %}btn-primary{% else %}btn-outline-secondary{% endif %} mr-1 mb-1">{{ est }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>N° Pedido</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Modalidad / Dirección</th>
+                            <th>Total</th>
+                            <th>Estado Pago</th>
+                            <th>Estado Pedido</th>
+                            <th class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pedidos %}
+                        <tr>
+                            <td class="font-weight-bold"><code>{{ p.numero_pedido }}</code></td>
+                            <td class="small">{{ (p.fecha_creacion or '')[:16].replace('T', ' ') }}</td>
+                            <td>
+                                <strong>{{ p.nombre_cliente }}</strong><br>
+                                <small class="text-muted">{{ p.documento_cliente }} · {{ p.telefono_cliente or p.email_cliente }}</small>
+                            </td>
+                            <td class="small">
+                                <span class="badge badge-light border">{{ p.modalidad_entrega }}</span><br>
+                                {{ p.direccion_entrega or 'Recogida en tienda' }}
+                            </td>
+                            <td class="font-weight-bold text-success">${{ "{:,.2f}".format(p.total or 0) }}</td>
+                            <td>
+                                {% if p.estado_pago == 'Pagado' %}
+                                    <span class="badge badge-success">✅ Pagado</span>
+                                {% else %}
+                                    <span class="badge badge-warning text-dark">⏳ {{ p.estado_pago }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if p.estado == 'Entregado' %}
+                                    <span class="badge badge-success">{{ p.estado }}</span>
+                                {% elif p.estado == 'Cancelado' %}
+                                    <span class="badge badge-danger">{{ p.estado }}</span>
+                                {% elif p.estado in ['En preparacion', 'Listo para entrega', 'Enviado'] %}
+                                    <span class="badge badge-info">{{ p.estado }}</span>
+                                {% else %}
+                                    <span class="badge badge-primary">{{ p.estado }}</span>
+                                {% endif %}
+                                {% if p.id_factura %}
+                                    <br><small class="text-success font-weight-bold">🧾 Factura #{{ p.id_factura }}</small>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('portal_admin.detalle_pedido', id_pedido=p.id) }}" class="btn btn-sm btn-primary font-weight-bold">🔍 Gestionar</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">No se encontraron pedidos con el filtro seleccionado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

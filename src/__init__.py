@@ -42,6 +42,7 @@ def create_app(config_name='default'):
     from src.routes.usuarios_routes import usuarios_bp
     from src.routes.empresas_routes import empresas_bp
     from src.routes.terminales_routes import terminales_bp
+    from src.routes.portal_admin_routes import portal_admin_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(clientes_bp)
@@ -53,6 +54,7 @@ def create_app(config_name='default'):
     app.register_blueprint(usuarios_bp)
     app.register_blueprint(empresas_bp)
     app.register_blueprint(terminales_bp)
+    app.register_blueprint(portal_admin_bp)
     
     # Middleware para proteger todas las rutas privadas de la aplicación
     @app.before_request

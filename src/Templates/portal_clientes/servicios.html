@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="font-weight-bold text-primary mb-1">🛠️ Catálogo de Servicios Publicados</h3>
+            <p class="text-muted mb-0">Administra los servicios que la empresa ofrece a sus clientes y habilita su agendamiento en línea.</p>
+        </div>
+        <a href="{{ url_for('portal_admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">← Volver al Panel del Portal</a>
+    </div>
+
+    {% if session.get('usuario', {}).get('rol_id') == 1 %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white font-weight-bold">
+            ➕ Registrar Nuevo Servicio Empresarial
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('portal_admin.servicios') }}" method="POST">
+                <div class="form-row">
+                    <div class="col-md-2 form-group">
+                        <label class="font-weight-bold">Código</label>
+                        <input type="text" name="codigo" class="form-control" placeholder="SRV-001">
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label class="font-weight-bold">Nombre del Servicio *</label>
+                        <input type="text" name="nombre" class="form-control" required placeholder="Ej: Mantenimiento Preventivo">
+                    </div>
+                    <div class="col-md-3 form-group">
+                        <label class="font-weight-bold">Categoría</label>
+                        <input type="text" name="categoria" class="form-control" placeholder="Soporte Técnico">
+                    </div>
+                    <div class="col-md-3 form-group">
+                        <label class="font-weight-bold">Precio ($) *</label>
+                        <input type="number" step="0.01" min="0" name="precio" class="form-control" required placeholder="50000">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col-md-3 form-group">
+                        <label>Duración Estimada (min)</label>
+                        <input type="number" min="15" step="15" name="duracion_estimada_min" class="form-control" value="60">
+                    </div>
+                    <div class="col-md-3 form-group">
+                        <label>Modalidad</label>
+                        <select name="modalidad" class="form-control">
+                            <option value="Presencial">Presencial</option>
+                            <option value="Domicilio">A Domicilio</option>
+                            <option value="Virtual">Virtual / Remoto</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Descripción Pública</label>
+                        <input type="text" name="descripcion" class="form-control" placeholder="Detalle del servicio incluido...">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="custom-control custom-checkbox custom-control-inline">
+                            <input type="checkbox" class="custom-control-input" id="new_pub" name="publicado_portal" checked>
+                            <label class="custom-control-label font-weight-bold" for="new_pub">Publicar en Portal</label>
+                        </div>
+                        <div class="custom-control custom-checkbox custom-control-inline">
+                            <input type="checkbox" class="custom-control-input" id="new_disp" name="disponible" checked>
+                            <label class="custom-control-label" for="new_disp">Disponible</label>
+                        </div>
+                        <div class="custom-control custom-checkbox custom-control-inline">
+                            <input type="checkbox" class="custom-control-input" id="new_res" name="requiere_reserva" checked>
+                            <label class="custom-control-label" for="new_res">Permite Agendar Cita</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success font-weight-bold">➕ Crear Servicio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Código / Servicio</th>
+                            <th>Categoría / Modalidad</th>
+                            <th>Duración</th>
+                            <th>Precio</th>
+                            <th>Estado en Portal</th>
+                            {% if session.get('usuario', {}).get('rol_id') == 1 %}
+                            <th class="text-center">Acciones</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in servicios %}
+                        <tr>
+                            <td>
+                                <strong>{{ s.nombre }}</strong><br>
+                                <small class="text-muted"><code>{{ s.codigo }}</code> · {{ s.descripcion or '' }}</small>
+                            </td>
+                            <td>
+                                <span class="badge badge-secondary">{{ s.categoria or 'General' }}</span>
+                                <span class="badge badge-info">{{ s.modalidad }}</span>
+                            </td>
+                            <td>{{ s.duracion_estimada_min }} min</td>
+                            <td class="font-weight-bold text-success">${{ "{:,.0f}".format(s.precio or 0) }}</td>
+                            <td>
+                                {% if s.publicado_portal and s.disponible %}
+                                    <span class="badge badge-success">🟢 Publicado</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">⚪ Oculto</span>
+                                {% endif %}
+                                {% if s.requiere_reserva %}
+                                    <span class="badge badge-primary">📅 Agendable</span>
+                                {% endif %}
+                            </td>
+                            {% if session.get('usuario', {}).get('rol_id') == 1 %}
+                            <td class="text-center">
+                                <form action="{{ url_for('portal_admin.eliminar_servicio', id_servicio=s.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ Eliminar</button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">Aún no se han registrado servicios en esta empresa.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

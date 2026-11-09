@@ -5,12 +5,14 @@ from src.utils.decorators import requiere_rol
 
 empresas_bp = Blueprint('empresas', __name__, url_prefix='/empresa')
 
+
 @empresas_bp.route('/nueva', methods=['GET', 'POST'])
 def nueva_empresa():
     """Formulario para crear y registrar una nueva empresa en la base de datos."""
     if request.method == 'POST':
         data = {
             'nombre': request.form.get('nombre'),
+            'razon_social': request.form.get('razon_social') or request.form.get('nombre'),
             'nit': request.form.get('nit'),
             'direccion': request.form.get('direccion'),
             'telefono': request.form.get('telefono'),
@@ -22,13 +24,20 @@ def nueva_empresa():
         if err:
             flash(f"Error al registrar la empresa: {err}", "danger")
         else:
+            if isinstance(res, dict) and res.get('id') and 'usuario' in session:
+                empresas_usr = list(session['usuario'].get('empresas', []))
+                if res['id'] not in empresas_usr:
+                    empresas_usr.append(res['id'])
+                    session['usuario']['empresas'] = empresas_usr
+                    session.modified = True
             flash("¡Nueva empresa registrada exitosamente en el sistema!", "success")
             return redirect(url_for('auth.seleccionar_empresa'))
 
     return render_template('empresas/nueva_empresa.html')
 
+
 @empresas_bp.route('/configuracion', methods=['GET', 'POST'])
-@requiere_rol(1) # Exclusivo para Administrador
+@requiere_rol(1)  # Exclusivo para Administrador
 def configuracion():
     """Formulario para actualizar los datos internos y el estado operativo de la empresa activa (Solo Admin)."""
     empresa_activa = session.get('empresa_activa')
@@ -41,6 +50,7 @@ def configuracion():
     if request.method == 'POST':
         data = {
             'nombre': request.form.get('nombre'),
+            'razon_social': request.form.get('razon_social') or request.form.get('nombre'),
             'nit': request.form.get('nit'),
             'direccion': request.form.get('direccion'),
             'telefono': request.form.get('telefono'),
@@ -52,7 +62,9 @@ def configuracion():
             flash(f"Error al actualizar los datos de la empresa: {err}", "danger")
         else:
             session['empresa_activa']['nombre'] = data['nombre']
+            session['empresa_activa']['razon_social'] = data['razon_social']
             session['empresa_activa']['nit'] = data['nit']
+            session.modified = True
             flash("¡Datos de la empresa actualizados exitosamente!", "success")
             return redirect(url_for('empresas.configuracion'))
 
@@ -61,7 +73,7 @@ def configuracion():
         session['empresa_activa'].update({
             k: v for k, v in datos_actuales.items()
             if k in (
-                'nombre', 'nit', 'estado', 'plan_membresia', 'precio_membresia',
+                'nombre', 'razon_social', 'nit', 'estado', 'plan_membresia', 'precio_membresia',
                 'estado_membresia', 'membresia_activa', 'dias_restantes_membresia',
                 'fecha_inicio_membresia', 'fecha_vencimiento_membresia'
             )
@@ -185,8 +197,9 @@ def cancelar_cobro_membresia(cobro_id):
         flash("🚫 Cobro de membresía pendiente cancelado.", "info")
     return redirect(url_for('empresas.configuracion') + '#membresia')
 
+
 @empresas_bp.route('/cambiar_estado/<int:id>', methods=['POST'])
-@requiere_rol(1) # Exclusivo para Administrador
+@requiere_rol(1)  # Exclusivo para Administrador
 def cambiar_estado(id):
     """Permite al Administrador desactivar o reactivar la empresa en la base de datos MySQL."""
     empresa = EmpresasService.obtener_por_id(id)
@@ -203,7 +216,8 @@ def cambiar_estado(id):
     else:
         if 'empresa_activa' in session and session['empresa_activa']['id'] == id:
             session['empresa_activa']['estado'] = nuevo_estado
-        
+            session.modified = True
+
         flash(f"La empresa ha sido actualizada a estado: {nuevo_estado}", "info")
 
     return redirect(url_for('empresas.configuracion'))

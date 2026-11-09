@@ -1,0 +1,164 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="font-weight-bold text-primary mb-1">🛍️ Pedido {{ pedido.numero_pedido }}</h3>
+            <p class="text-muted mb-0">Recibido el {{ (pedido.fecha_creacion or '')[:19].replace('T', ' ') }} · Estado actual: <span class="badge badge-info">{{ pedido.estado }}</span></p>
+        </div>
+        <a href="{{ url_for('portal_admin.pedidos') }}" class="btn btn-outline-secondary btn-sm">← Volver a Pedidos</a>
+    </div>
+
+    <div class="row">
+        <!-- Detalle de Productos e Información del Cliente -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white font-weight-bold">
+                    📦 Ítems Solicitados en el Pedido
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-right">Precio Unit.</th>
+                                <th class="text-right">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in pedido.get('detalles', []) %}
+                            <tr>
+                                <td><code>{{ d.codigo_producto or ('#' ~ d.id_producto) }}</code></td>
+                                <td class="font-weight-bold">{{ d.nombre_producto }}</td>
+                                <td class="text-center font-weight-bold">{{ d.cantidad }}</td>
+                                <td class="text-right">${{ "{:,.2f}".format(d.precio_unitario or 0) }}</td>
+                                <td class="text-right font-weight-bold">${{ "{:,.2f}".format(d.subtotal or 0) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-right">Subtotal Productos:</td>
+                                <td class="text-right font-weight-bold">${{ "{:,.2f}".format(pedido.subtotal or 0) }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-right">Costo de Envío ({{ pedido.modalidad_entrega }}):</td>
+                                <td class="text-right">${{ "{:,.2f}".format(pedido.costo_envio or 0) }}</td>
+                            </tr>
+                            <tr class="table-success">
+                                <td colspan="4" class="text-right font-weight-bold">TOTAL DEL PEDIDO:</td>
+                                <td class="text-right font-weight-bold text-success" style="font-size: 1.15rem;">${{ "{:,.2f}".format(pedido.total or 0) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Datos del Cliente y Entrega -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light font-weight-bold">
+                    👤 Datos del Cliente y Entrega
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Cliente:</strong> {{ pedido.nombre_cliente }}</p>
+                            <p class="mb-1"><strong>Documento:</strong> {{ pedido.documento_cliente or 'N/A' }}</p>
+                            <p class="mb-1"><strong>Teléfono:</strong> {{ pedido.telefono_cliente or 'N/A' }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ pedido.email_cliente or 'N/A' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Modalidad:</strong> <span class="badge badge-primary">{{ pedido.modalidad_entrega }}</span></p>
+                            <p class="mb-1"><strong>Dirección:</strong> {{ pedido.direccion_entrega or 'Recogida en sede de la empresa' }} ({{ pedido.ciudad_entrega or '' }})</p>
+                            <p class="mb-1"><strong>Método de Pago:</strong> {{ pedido.metodo_pago_preferido }} ({{ pedido.estado_pago }})</p>
+                            <p class="mb-0"><strong>Observaciones:</strong> {{ pedido.observaciones or 'Sin observaciones adicionales.' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historial de Auditoría del Pedido -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white font-weight-bold">
+                    🕒 Historial de Estados y Trazabilidad
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for h in pedido.get('historial', []) %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge badge-dark">{{ h.estado_anterior or 'Inicio' }} ➔ {{ h.estado_nuevo }}</span>
+                            <span class="small text-muted ml-2">({{ h.actor_tipo }})</span>
+                            {% if h.comentario %}
+                                <div class="small mt-1">{{ h.comentario }}</div>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">{{ (h.fecha or '')[:19].replace('T', ' ') }}</small>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-muted">Sin registros de cambios aún.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Actualizar Estado y Generar Factura -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-primary shadow-sm">
+                <div class="card-header bg-primary text-white font-weight-bold">
+                    ⚡ Actualizar Estado del Pedido
+                </div>
+                <div class="card-body">
+                    {% set rol_id = session.get('usuario', {}).get('rol_id', 2) %}
+                    <form action="{{ url_for('portal_admin.actualizar_estado_pedido', id_pedido=pedido.id) }}" method="POST">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Nuevo Estado *</label>
+                            <select name="estado" class="form-control" required>
+                                {% if rol_id == 3 %}
+                                    <!-- Almacenista: preparación y despacho -->
+                                    {% for est in ['En preparacion', 'Listo para entrega', 'Enviado'] %}
+                                        <option value="{{ est }}" {% if pedido.estado == est %}selected{% endif %}>{{ est }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    <!-- Admin y Vendedor: ciclo completo -->
+                                    {% for est in ['Pendiente', 'Confirmado', 'En preparacion', 'Listo para entrega', 'Enviado', 'Entregado', 'Cancelado'] %}
+                                        <option value="{{ est }}" {% if pedido.estado == est %}selected{% endif %}>{{ est }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Comentario / Guía de Despacho</label>
+                            <textarea name="comentario" class="form-control" rows="3" placeholder="Ej: Pedido alistado en bodega / Guía transportadora..."></textarea>
+                        </div>
+
+                        {% if rol_id in [1, 2] and not pedido.id_factura %}
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="generar_factura" name="generar_factura">
+                                <label class="custom-control-label font-weight-bold text-success" for="generar_factura">
+                                    🧾 Generar Factura Comercial automáticamente
+                                </label>
+                            </div>
+                            <small class="text-muted">Crea la factura oficial en el módulo de Ventas vinculada a este pedido.</small>
+                        </div>
+                        {% endif %}
+
+                        {% if pedido.id_factura %}
+                        <div class="alert alert-success py-2 small font-weight-bold">
+                            🧾 Factura Comercial #{{ pedido.id_factura }} ya emitida para este pedido.
+                            <a href="{{ url_for('facturas.detalle_factura', id=pedido.id_factura) }}" class="d-block mt-1">Ver Factura Oficial →</a>
+                        </div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-primary btn-block font-weight-bold">💾 Guardar Estado</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

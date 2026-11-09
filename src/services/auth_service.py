@@ -1,6 +1,7 @@
 from flask import session
 from src.services.api_client import APIClient
 
+
 class AuthService:
     """
     Servicio de autenticación para validar e inscribir usuarios utilizando JWT contra el Backend.
@@ -23,18 +24,25 @@ class AuthService:
             session.clear()
             session["access_token"] = resp.get("access_token")
             session["refresh_token"] = resp.get("refresh_token")
-            session["usuario"] = resp.get("usuario")
-            return resp.get("usuario"), None
+            usuario = resp.get("usuario", {})
+            if "rol_id" not in usuario and "id_rol" in usuario:
+                usuario["rol_id"] = usuario.get("id_rol")
+            session["usuario"] = usuario
+            return usuario, None
 
         return None, "Error inesperado al iniciar sesión"
 
     @staticmethod
     def logout():
         """Limpia los tokens y datos del usuario de la sesión."""
-        session.pop("access_token", None)
-        session.pop("refresh_token", None)
-        session.pop("usuario", None)
-        session.pop("empresa_id", None)
+        session.clear()
+
+    @staticmethod
+    def logout_global():
+        """Invalida el token_version en el backend y limpia la sesión."""
+        if session.get("access_token"):
+            APIClient.post('/auth/logout-global', data={})
+        session.clear()
 
     @staticmethod
     def registrar(datos_usuario):
@@ -64,14 +72,17 @@ class AuthService:
         })
 
     @staticmethod
-    def confirmar_recuperacion(token_o_codigo, password_nueva):
+    def confirmar_recuperacion(token_o_codigo, password_nueva, identificador=None):
         """
         Envía al backend el token o código OTP con la nueva contraseña.
         """
-        return APIClient.post('/auth/recuperar-password-confirmar', data={
+        payload = {
             "token": token_o_codigo,
             "password_nueva": password_nueva
-        })
+        }
+        if identificador:
+            payload["identificador"] = identificador
+        return APIClient.post('/auth/recuperar-password-confirmar', data=payload)
 
     @staticmethod
     def solicitar_eliminacion_cuenta(password_actual):

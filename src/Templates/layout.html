@@ -76,6 +76,28 @@
         </li>
 
         <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle font-weight-bold text-primary" href="#" id="navbarPortalClientes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            🌐 Portal de Clientes
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarPortalClientes">
+            <a class="dropdown-item font-weight-bold text-primary" href="{{ url_for('portal_admin.dashboard') }}">⚙️ Panel y Configuración del Portal</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{{ url_for('portal_admin.pedidos') }}">🛍️ Pedidos Recibidos</a>
+            {% if session['usuario'].get('rol_id') in [1, 2] %}
+            <a class="dropdown-item" href="{{ url_for('portal_admin.reservas') }}">📅 Reservas y Agenda de Citas</a>
+            <a class="dropdown-item" href="{{ url_for('portal_admin.servicios') }}">🛠️ Servicios Publicados</a>
+            <a class="dropdown-item" href="{{ url_for('portal_admin.clientes') }}">👥 Clientes del Portal</a>
+            <a class="dropdown-item" href="{{ url_for('portal_admin.solicitudes') }}">💬 Consultas y Reclamos (PQRS)</a>
+            {% endif %}
+            {% if session['usuario'].get('rol_id') in [1, 3] %}
+            <a class="dropdown-item" href="{{ url_for('portal_admin.productos') }}">📦 Catálogo e Inventario Publicado</a>
+            {% endif %}
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{{ url_for('portal_admin.notificaciones') }}">🔔 Notificaciones del Portal</a>
+          </div>
+        </li>
+
+        <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarReportes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Reportes
           </a>
