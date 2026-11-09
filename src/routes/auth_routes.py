@@ -26,8 +26,12 @@ def login():
 
             session['usuario'] = {
                 'id': usuario_id,
-                'nombre': f"{usuario.get('nombre', '')} {usuario.get('apellido', '')}".strip(),
+                'nombre': f"{usuario.get('nombre', '')} {usuario.get('apellido', '')}".strip() if usuario.get('apellido') and usuario.get('apellido') not in str(usuario.get('nombre', '')) else usuario.get('nombre', ''),
                 'email': usuario.get('email'),
+                'username': usuario.get('username'),
+                'documento': usuario.get('documento'),
+                'tipo_documento': usuario.get('tipo_documento', 'CC'),
+                'telefono': usuario.get('telefono', ''),
                 'rol_id': real_rol_id,
                 'rol_id_global': real_rol_id
             }
@@ -184,13 +188,27 @@ def recuperar_password():
             flash(f"No se pudo generar la solicitud: {err}", "danger")
             return render_template('recuperar_password.html')
 
-        token_generado = res.get('token') if res else ''
-        codigo_generado = res.get('codigo') if res else ''
-        email_enmascarado = res.get('email_enmascarado', '') if res else ''
-        link_directo = res.get('link_directo', '') if res else ''
+        token_generado = res.get('token') if isinstance(res, dict) else ''
+        codigo_generado = res.get('codigo') if isinstance(res, dict) else ''
+        email_enmascarado = res.get('email_enmascarado', '') if isinstance(res, dict) else ''
+        enviado_smtp = bool(res.get('enviado_smtp')) if isinstance(res, dict) else False
+        link_directo = res.get('link_directo', '') if isinstance(res, dict) else ''
 
-        flash(f"Hemos enviado el enlace y código de verificación a {email_enmascarado}. Por favor revisa tu bandeja de entrada.", "success")
-        return render_template('recuperar_password.html', token=token_generado, codigo=codigo_generado, paso_codigo=True, link_directo=link_directo)
+        if enviado_smtp:
+            flash(f"Hemos enviado el código de verificación de 6 dígitos a tu correo {email_enmascarado}.", "success")
+        else:
+            flash(f"Solicitud verificada para {email_enmascarado}. Tu código de verificación de 6 dígitos ha sido generado.", "success")
+
+        return render_template(
+            'recuperar_password.html',
+            token='',
+            codigo=codigo_generado,
+            email_enmascarado=email_enmascarado,
+            enviado_smtp=enviado_smtp,
+            token_respaldo=token_generado,
+            paso_codigo=True,
+            link_directo=link_directo
+        )
 
     return render_template('recuperar_password.html')
 
@@ -200,24 +218,24 @@ def recuperar_password_confirmar():
     token_o_codigo = request.form.get('token_o_codigo', '').strip()
     password_nueva = request.form.get('password_nueva', '').strip()
     password_confirmar = request.form.get('password_confirmar', '').strip()
+    codigo_previo = request.form.get('codigo_previo', '').strip()
 
     if not token_o_codigo:
-        flash("El token o código de verificación es obligatorio.", "danger")
-        return redirect(url_for('auth.recuperar_password'))
+        flash("El código de verificación de 6 dígitos es obligatorio.", "danger")
+        return render_template('recuperar_password.html', codigo=codigo_previo, paso_codigo=True)
 
     if not password_nueva or len(password_nueva) < 6:
         flash("La nueva contraseña debe tener al menos 6 caracteres.", "warning")
-        return render_template('recuperar_password.html', token=token_o_codigo, paso_codigo=True)
+        return render_template('recuperar_password.html', token=token_o_codigo, codigo=codigo_previo, paso_codigo=True)
 
     if password_nueva != password_confirmar:
         flash("Las contraseñas no coinciden. Por favor verifica.", "danger")
-        return render_template('recuperar_password.html', token=token_o_codigo, paso_codigo=True)
+        return render_template('recuperar_password.html', token=token_o_codigo, codigo=codigo_previo, paso_codigo=True)
 
     res, err = AuthService.confirmar_recuperacion(token_o_codigo, password_nueva)
     if err:
         flash(f"Error al restablecer contraseña: {err}", "danger")
-        return render_template('recuperar_password.html', token=token_o_codigo, paso_codigo=True)
+        return render_template('recuperar_password.html', token=token_o_codigo, codigo=codigo_previo, paso_codigo=True)
 
     flash("¡Tu contraseña ha sido restablecida con éxito! Ya puedes iniciar sesión.", "success")
     return redirect(url_for('auth.login'))
-

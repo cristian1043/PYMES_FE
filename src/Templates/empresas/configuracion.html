@@ -50,6 +50,207 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN DE MEMBRESÍA EMPRESARIAL ($19.900 COP / MES) -->
+            <div id="membresia" class="card border-primary shadow mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                    <div>
+                        <h5 class="mb-0 font-weight-bold">💎 Membresía PYMEsoft — Plan PYME Mensual ($19.900 COP)</h5>
+                        <small class="text-white-50">Tecnología de cobro integrada con Wompi (PSE, Nequi, Tarjeta, QR), Datáfono Bold y Sandbox</small>
+                    </div>
+                    <div class="text-right">
+                        {% if empresa.get('membresia_activa', True) %}
+                            <span class="badge badge-light text-success p-2 font-weight-bold">
+                                ✅ MEMBRESÍA ACTIVA ({{ empresa.get('dias_restantes_membresia', 30) }} días restantes)
+                            </span>
+                        {% else %}
+                            <span class="badge badge-warning text-dark p-2 font-weight-bold">
+                                ⚠️ MEMBRESÍA {{ (empresa.get('estado_membresia') or 'VENCIDA')|upper }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Resumen del Plan de $19.900 COP -->
+                    <div class="row align-items-center bg-light rounded p-3 mb-4 border mx-0">
+                        <div class="col-md-7">
+                            <h5 class="font-weight-bold text-primary mb-1">
+                                {{ empresa.get('plan_membresia', 'Plan PYME Mensual') }}
+                            </h5>
+                            <p class="text-muted small mb-1">
+                                Incluye facturación ilimitada, control de inventario Kardex, pasarelas de pago y acceso multi-dispositivo (Web + App Móvil).
+                            </p>
+                            {% if empresa.get('fecha_vencimiento_membresia') %}
+                                <small class="text-dark font-weight-bold">
+                                    📅 Vigencia actual hasta: <code>{{ empresa.get('fecha_vencimiento_membresia') }}</code>
+                                </small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-5 text-md-right mt-3 mt-md-0">
+                            <span class="text-muted small d-block">Valor Suscripción Mensual</span>
+                            <h3 class="font-weight-bold text-success mb-0">$19.900 <small class="text-muted" style="font-size: 14px;">COP / mes</small></h3>
+                            <small class="text-muted">Ciclo de 30 días calendario</small>
+                        </div>
+                    </div>
+
+                    <!-- Opciones de Tecnología de Cobro de Membresía ($19.900 COP) -->
+                    <div class="row">
+                        <!-- OPCIÓN 1: LINK DE PAGO ONLINE (WOMPI / PSE / NEQUI / SIMULADO) -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-success">
+                                <div class="card-body d-flex flex-column justify-content-between">
+                                    <div>
+                                        <h6 class="font-weight-bold text-success mb-2">🌐 1. Pago Online (Wompi / PSE / Nequi)</h6>
+                                        <p class="small text-muted mb-2">Genera un link de checkout por <strong>$19.900 COP</strong> (PSE, Nequi, QR Bancolombia, Tarjetas o Sandbox).</p>
+                                    </div>
+                                    <form action="{{ url_for('empresas.cobrar_membresia') }}" method="POST">
+                                        <input type="hidden" name="modo_cobro" value="link">
+                                        <input type="hidden" name="meses" value="1">
+                                        <div class="form-group mb-2">
+                                            <select name="id_metodo_pago" class="form-control form-control-sm">
+                                                {% for m in metodos_pago %}
+                                                    {% if m.pasarela in ['wompi', 'simulado'] %}
+                                                        <option value="{{ m.id }}">🌐 {{ m.nombre }} ({{ m.pasarela|upper }})</option>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <option value="4">🌐 Pasarela Wompi / PSE / Nequi (SIMULADO)</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-sm btn-block font-weight-bold">
+                                            🔗 Pagar $19.900 COP con Link
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OPCIÓN 2: TERMINAL / DATÁFONO POS (BOLD / SIMULADO) -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-info">
+                                <div class="card-body d-flex flex-column justify-content-between">
+                                    <div>
+                                        <h6 class="font-weight-bold text-info mb-2">📟 2. Datáfono POS (Bold)</h6>
+                                        <p class="small text-muted mb-2">Envía el cobro de <strong>$19.900 COP</strong> directamente al datáfono Bold vinculado o terminal simulada.</p>
+                                    </div>
+                                    <form action="{{ url_for('empresas.cobrar_membresia') }}" method="POST">
+                                        <input type="hidden" name="modo_cobro" value="terminal">
+                                        <input type="hidden" name="meses" value="1">
+                                        <div class="form-group mb-2">
+                                            <select name="id_terminal" class="form-control form-control-sm">
+                                                {% for t in terminales %}
+                                                    <option value="{{ t.id }}">📟 {{ t.nombre }} ({{ t.proveedor|upper }})</option>
+                                                {% else %}
+                                                    <option value="1">📟 Caja Principal - Datáfono 1 (SIMULADO)</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-info btn-sm btn-block font-weight-bold">
+                                            📡 Cobrar $19.900 en Datáfono
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OPCIÓN 3: REGISTRO DIRECTO / TRANSFERENCIA VERIFICADA -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-secondary">
+                                <div class="card-body d-flex flex-column justify-content-between">
+                                    <div>
+                                        <h6 class="font-weight-bold text-dark mb-2">💵 3. Pago Directo / Transferencia</h6>
+                                        <p class="small text-muted mb-2">Registra y activa de inmediato los 30 días de membresía con comprobante de pago por <strong>$19.900 COP</strong>.</p>
+                                    </div>
+                                    <form action="{{ url_for('empresas.cobrar_membresia') }}" method="POST">
+                                        <input type="hidden" name="modo_cobro" value="manual">
+                                        <input type="hidden" name="meses" value="1">
+                                        <div class="form-group mb-2">
+                                            <input type="text" name="referencia_pago" class="form-control form-control-sm" placeholder="N° Comprobante / Nequi (opcional)">
+                                        </div>
+                                        <button type="submit" class="btn btn-dark btn-sm btn-block font-weight-bold">
+                                            ✅ Activar Membresía ($19.900)
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HISTORIAL Y SIMULADOR SANDBOX DE TRANSACCIONES DE MEMBRESÍA -->
+                    {% if pagos_membresia %}
+                    <hr class="my-3">
+                    <h6 class="font-weight-bold text-dark mb-2">📋 Historial y Transacciones de Membresía ($19.900 COP)</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Referencia</th>
+                                    <th>Pasarela / Canal</th>
+                                    <th>Monto</th>
+                                    <th>Estado</th>
+                                    <th>Vigencia Otorgada</th>
+                                    <th class="text-center">Acciones / Checkout Sandbox</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pm in pagos_membresia %}
+                                <tr>
+                                    <td><code>{{ pm.referencia }}</code></td>
+                                    <td>
+                                        <span class="badge badge-info">{{ (pm.proveedor or 'simulado')|upper }}</span>
+                                        <small class="text-muted">{{ pm.canal }}</small>
+                                    </td>
+                                    <td class="font-weight-bold">${{ "{:,.0f}".format(pm.monto or 19900) }} {{ pm.moneda or 'COP' }}</td>
+                                    <td>
+                                        {% if pm.estado == 'APROBADA' %}
+                                            <span class="badge badge-success">✅ APROBADA</span>
+                                        {% elif pm.estado == 'PENDIENTE' %}
+                                            <span class="badge badge-warning text-dark">⏳ PENDIENTE</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">❌ {{ pm.estado }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small">
+                                        {% if pm.periodo_fin %}
+                                            Hasta <code>{{ pm.periodo_fin }}</code>
+                                        {% else %}
+                                            <span class="text-muted">En espera de pago</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if pm.url_pago %}
+                                            <a href="{{ pm.url_pago }}" target="_blank" class="btn btn-sm btn-outline-primary font-weight-bold mr-1">
+                                                🔗 Abrir Checkout
+                                            </a>
+                                        {% endif %}
+                                        {% if pm.estado == 'PENDIENTE' %}
+                                            <form action="{{ url_for('empresas.simular_cobro_membresia', cobro_id=pm.id) }}" method="POST" class="d-inline">
+                                                <input type="hidden" name="resultado" value="APROBADA">
+                                                <button type="submit" class="btn btn-sm btn-success font-weight-bold mr-1" title="Simular aprobación de $19.900 COP">
+                                                    ✅ Simular Aprobado
+                                                </button>
+                                            </form>
+                                            <form action="{{ url_for('empresas.simular_cobro_membresia', cobro_id=pm.id) }}" method="POST" class="d-inline">
+                                                <input type="hidden" name="resultado" value="RECHAZADA">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger font-weight-bold mr-1" title="Simular rechazo">
+                                                    ❌ Rechazar
+                                                </button>
+                                            </form>
+                                            <form action="{{ url_for('empresas.sincronizar_cobro_membresia', cobro_id=pm.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary font-weight-bold">
+                                                    🔄 Consultar
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
             <!-- SECCIÓN PARA DESACTIVAR / REACTIVAR EMPRESA -->
             <div class="card border-danger shadow-sm">
                 <div class="card-header bg-danger text-white">

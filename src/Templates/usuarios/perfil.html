@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <div class="container my-5">
     <!-- Cabecera de Perfil de Usuario -->
     <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
@@ -46,10 +47,38 @@
                 <div class="card shadow-sm border-0 rounded-lg h-100">
                     <div class="card-header bg-white border-bottom py-3">
                         <h5 class="mb-0 text-primary font-weight-bold">
-                            <i class="fas fa-id-card mr-2"></i> Información Personal y Contacto
+                            <i class="fas fa-id-card mr-2"></i> Información Personal y Contacto (Editable)
                         </h5>
                     </div>
                     <div class="card-body p-4">
+                        <!-- CAMPOS INMUTABLES DE IDENTIDAD (SOLO LECTURA) -->
+                        <div class="p-3 mb-4 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small font-weight-bold text-dark">
+                                    <i class="fas fa-lock text-secondary mr-1"></i> IDENTIFICACIÓN OFICIAL (NO MODIFICABLE)
+                                </span>
+                                <span class="badge badge-secondary">Solo Lectura</span>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3 mb-2">
+                                    <label class="small font-weight-bold text-secondary">ID Cuenta</label>
+                                    <input type="text" class="form-control form-control-sm bg-light font-weight-bold" value="#{{ usuario.id }}" readonly title="Campo no modificable">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="small font-weight-bold text-secondary">Tipo Doc.</label>
+                                    <input type="text" class="form-control form-control-sm bg-light font-weight-bold" value="{{ usuario.tipo_documento }}" readonly title="Campo no modificable">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="small font-weight-bold text-secondary">N° Documento</label>
+                                    <input type="text" class="form-control form-control-sm bg-light font-weight-bold" value="{{ usuario.documento }}" readonly title="Campo no modificable">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="small font-weight-bold text-secondary">Usuario (@)</label>
+                                    <input type="text" class="form-control form-control-sm bg-light text-primary font-weight-bold" value="@{{ usuario.username or 'No asignado' }}" readonly title="Campo no modificable">
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="nombre" class="font-weight-bold text-secondary">Nombres *</label>
@@ -100,22 +129,6 @@
                             <div class="col-md-6">
                                 <label for="numero_hijos" class="font-weight-bold text-secondary">Número de Hijos</label>
                                 <input type="number" name="numero_hijos" id="numero_hijos" min="0" max="20" class="form-control" value="{{ usuario.numero_hijos or 0 }}">
-                            </div>
-                        </div>
-
-                        <!-- CAMPOS INMUTABLES DE IDENTIDAD -->
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label class="font-weight-bold text-secondary">Tipo Documento</label>
-                                <input type="text" class="form-control bg-light" value="{{ usuario.tipo_documento }}" readonly title="Campo no modificable">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="font-weight-bold text-secondary">N° Documento</label>
-                                <input type="text" class="form-control bg-light" value="{{ usuario.documento }}" readonly title="Campo no modificable">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="font-weight-bold text-secondary">Usuario Asignado (@)</label>
-                                <input type="text" class="form-control bg-light text-primary font-weight-bold" value="@{{ usuario.username or 'No asignado' }}" readonly title="Campo no modificable">
                             </div>
                         </div>
 
@@ -215,6 +228,62 @@
             </div>
         </div>
     </form>
+
+    <!-- ZONA DE PELIGRO: ELIMINACIÓN DE CUENTA CON VERIFICACIÓN EN DOS PASOS -->
+    <div class="card shadow-sm border-danger rounded-lg mt-2">
+        <div class="card-header bg-danger text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 font-weight-bold">
+                <i class="fas fa-user-times mr-2"></i> Eliminar mi Cuenta (Verificación de Seguridad en 2 Pasos)
+            </h5>
+            <span class="badge badge-light text-danger font-weight-bold">2FA Requerido</span>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted mb-3">
+                La eliminación de la cuenta es permanente. Para evitar eliminaciones accidentales o no autorizadas, requerimos una <strong>verificación en dos pasos</strong>: primero valida tu contraseña actual y luego confirma con el código de 6 dígitos generado.
+            </p>
+
+            <div id="alertaEliminarPerfil" class="alert d-none" role="alert"></div>
+
+            <div class="row">
+                <!-- PASO 1 -->
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border">
+                        <div class="card-body">
+                            <h6 class="font-weight-bold text-dark mb-2">Paso 1: Verifica tu contraseña actual</h6>
+                            <div class="form-group mb-3">
+                                <input type="password" id="inputPassEliminarPerfil" class="form-control" placeholder="Contraseña actual de tu cuenta">
+                            </div>
+                            <button type="button" id="btnPaso1EliminarPerfil" class="btn btn-outline-danger font-weight-bold" onclick="solicitarCodigoEliminacionPerfil()">
+                                <i class="fas fa-shield-alt mr-1"></i> Verificar y Enviar Código (Paso 1)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 2 -->
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border border-danger" id="cardPaso2Perfil" style="opacity: 0.55; pointer-events: none;">
+                        <div class="card-body">
+                            <h6 class="font-weight-bold text-danger mb-2">Paso 2: Confirma el código de 6 dígitos</h6>
+                            <div id="boxCodigoEliminarPerfil" class="p-2 mb-2 text-center rounded d-none" style="background: #fef2f2; border: 1px dashed #dc2626;">
+                                <small class="font-weight-bold text-dark d-block">Código de 2do paso generado:</small>
+                                <span id="textoCodigoEliminarPerfil" class="font-weight-bold text-danger" style="font-size: 1.4rem; letter-spacing: 4px;"></span>
+                            </div>
+                            <form action="{{ url_for('usuarios.confirmar_eliminacion_cuenta') }}" method="POST">
+                                <input type="hidden" name="origen" value="perfil">
+                                <div class="form-group mb-3">
+                                    <input type="text" name="codigo" id="inputCodigoEliminarPerfil" class="form-control text-center font-weight-bold" maxlength="6" placeholder="Código de 6 dígitos" required>
+                                </div>
+                                <button type="submit" class="btn btn-danger btn-block font-weight-bold">
+                                    <i class="fas fa-trash-alt mr-1"></i> Confirmar y Eliminar Cuenta (Paso 2)
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -234,6 +303,50 @@ function togglePasswordVisibility(fieldId) {
             eyeIcon.classList.remove('fa-eye-slash');
             eyeIcon.classList.add('fa-eye');
         }
+    }
+}
+
+async function solicitarCodigoEliminacionPerfil() {
+    const passInput = document.getElementById('inputPassEliminarPerfil');
+    const alerta = document.getElementById('alertaEliminarPerfil');
+    const btn = document.getElementById('btnPaso1EliminarPerfil');
+    const password = (passInput ? passInput.value : '').trim();
+
+    alerta.className = 'alert d-none';
+    if (!password) {
+        alerta.className = 'alert alert-warning';
+        alerta.textContent = 'Ingresa tu contraseña actual para iniciar el Paso 1.';
+        return;
+    }
+
+    btn.disabled = true;
+    try {
+        const resp = await fetch("{{ url_for('usuarios.solicitar_eliminacion_cuenta') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password_actual: password })
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.exito) {
+            alerta.className = 'alert alert-danger';
+            alerta.textContent = data.mensaje || 'Contraseña incorrecta.';
+            return;
+        }
+        const card2 = document.getElementById('cardPaso2Perfil');
+        card2.style.opacity = '1';
+        card2.style.pointerEvents = 'auto';
+        if (data.codigo) {
+            document.getElementById('boxCodigoEliminarPerfil').classList.remove('d-none');
+            document.getElementById('textoCodigoEliminarPerfil').textContent = data.codigo;
+            document.getElementById('inputCodigoEliminarPerfil').value = data.codigo;
+        }
+        alerta.className = 'alert alert-success';
+        alerta.textContent = data.mensaje;
+    } catch (e) {
+        alerta.className = 'alert alert-danger';
+        alerta.textContent = 'No se pudo conectar con el servidor.';
+    } finally {
+        btn.disabled = false;
     }
 }
 </script>

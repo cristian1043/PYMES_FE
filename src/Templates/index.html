@@ -1,24 +1,113 @@
 {% extends "layout.html" %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    /* Botón Circular Flotante en la Esquina del Index */
+    .floating-profile-corner {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        z-index: 1045;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .btn-circle-profile {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: #ffffff;
+        border: 3px solid #ffffff;
+        box-shadow: 0 8px 24px rgba(30, 60, 114, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.55rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        position: relative;
+        outline: none !important;
+    }
+    .btn-circle-profile:hover {
+        transform: translateY(-4px) scale(1.06);
+        box-shadow: 0 12px 28px rgba(30, 60, 114, 0.6);
+        color: #ffffff;
+    }
+    .btn-circle-profile .status-dot {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 15px;
+        height: 15px;
+        background-color: #22c55e;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+    }
+    .floating-profile-label {
+        background: #0f172a;
+        color: #ffffff;
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 7px 14px;
+        border-radius: 20px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .floating-profile-corner:hover .floating-profile-label {
+        background: #1e3c72;
+    }
+    .readonly-id-box {
+        background-color: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #334155 !important;
+        font-weight: 700;
+        cursor: not-allowed;
+    }
+    .otp-delete-banner {
+        background: #fef2f2;
+        border: 2px dashed #dc2626;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+    }
+    .otp-delete-code {
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: 5px;
+        color: #dc2626;
+        background: #ffffff;
+        padding: 4px 14px;
+        border-radius: 8px;
+        border: 1px solid #fecaca;
+        display: inline-block;
+        margin: 4px 0;
+    }
+</style>
+
+{% set u_info = usuario_perfil if usuario_perfil is defined and usuario_perfil else session.get('usuario', {}) %}
+
 <div class="container mt-4 mb-5">
     {% if not session.get('empresa_activa') %}
     <!-- VISTA PARA USUARIO INDEPENDIENTE (SIN EMPRESA VINCULADA) -->
     <div class="jumbotron bg-white shadow-sm border rounded p-4 mb-4">
         <div class="row align-items-center">
             <div class="col-md-8">
-                <h1 class="display-5 font-weight-bold text-primary mb-2">Bienvenido, {{ session['usuario']['nombre'] }}</h1>
+                <h1 class="display-5 font-weight-bold text-primary mb-2">Bienvenido, {{ u_info.get('nombre', session['usuario']['nombre']) }}</h1>
                 <p class="lead text-dark mb-2">
-                    Estado: <span class="badge badge-secondary px-3 py-2">👤 Usuario Independiente</span>
+                    Estado: <span class="badge badge-secondary px-3 py-2">👤 Usuario / Cliente Independiente</span>
                 </p>
                 <p class="text-muted mb-0">
-                    Actualmente no estás asociado a ninguna empresa. Por tanto, no tienes asignado ningún rol empresarial.
+                    Actualmente no estás asociado a ninguna empresa. Puedes gestionar tu información personal desde el botón circular en la esquina inferior derecha.
                 </p>
             </div>
             <div class="col-md-4 text-md-right mt-3 mt-md-0">
-                <a href="{{ url_for('usuarios.perfil') }}" class="btn btn-primary btn-lg font-weight-bold shadow-sm">
+                <button type="button" class="btn btn-primary btn-lg font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalMiCuentaIndex">
                     👤 Mi Información Personal
-                </a>
+                </button>
             </div>
         </div>
     </div>
@@ -27,7 +116,7 @@
         <div class="card-body p-4 text-center">
             <h4 class="font-weight-bold text-dark mb-3">💼 Vinculación a una Empresa</h4>
             <p class="text-muted mx-auto mb-3" style="max-width: 600px;">
-                Para unirte al equipo de trabajo de una empresa y obtener un rol operativo (Vendedor, Almacenista o Administrador), comparte tu identificador único <strong>@{{ session['usuario'].get('username') or session['usuario']['email'].split('@')[0] }}</strong> con el administrador de la empresa.
+                Para unirte al equipo de trabajo de una empresa y obtener un rol operativo (Vendedor, Almacenista o Administrador), comparte tu identificador único <strong>@{{ u_info.get('username') or session['usuario'].get('username') or session['usuario']['email'].split('@')[0] }}</strong> con el administrador de la empresa.
             </p>
             <a href="{{ url_for('auth.seleccionar_empresa') }}" class="btn btn-outline-primary font-weight-bold">
                 🏢 Ver Empresas del Sistema
@@ -68,7 +157,7 @@
                         <div class="col">
                             <div class="text-xs font-weight-bold text-uppercase mb-1">Ventas Realizadas</div>
                             <div class="h4 mb-0 font-weight-bold">${{ "%.2f"|format(total_ventas or 0.0) }}</div>
-                            <small>{{ total_facturas or 0 }} Facturas Emitidas</small>
+                            <small>{{ total_facturas or 0 }} Facturas Válidas</small>
                         </div>
                         <div class="col-auto h2 mb-0">💰</div>
                     </div>
@@ -98,7 +187,7 @@
                         <div class="col">
                             <div class="text-xs font-weight-bold text-uppercase mb-1">Alertas Stock Bajo</div>
                             <div class="h4 mb-0 font-weight-bold">{{ bajos|length }}</div>
-                            <small class="font-weight-bold">≤ 2.500 Unidades</small>
+                            <small class="font-weight-bold">≤ 10 Unidades</small>
                         </div>
                         <div class="col-auto h2 mb-0">⚠️</div>
                     </div>
@@ -113,7 +202,7 @@
                         <div class="col">
                             <div class="text-xs font-weight-bold text-uppercase mb-1">Alertas Sobre-stock</div>
                             <div class="h4 mb-0 font-weight-bold">{{ sobrestock|length }}</div>
-                            <small>> 10.000 Unidades</small>
+                            <small>> 100 Unidades</small>
                         </div>
                         <div class="col-auto h2 mb-0">📦⚡</div>
                     </div>
@@ -130,7 +219,7 @@
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm border-warning">
                 <div class="card-header bg-warning text-dark font-weight-bold d-flex justify-content-between align-items-center">
-                    <span>⚠️ Alerta de Stock Bajo (≤ 2.500 Unidades)</span>
+                    <span>⚠️ Alerta de Stock Bajo (≤ 10 Unidades)</span>
                     <span class="badge badge-dark">{{ bajos|length }} Críticos</span>
                 </div>
                 <div class="card-body p-0">
@@ -158,7 +247,6 @@
                             {% endfor %}
                         </div>
 
-                        <!-- MODALES FUERA DEL FLEX CONTAINER PARA EVITAR GLITCH DE MOUSE -->
                         {% for p in bajos[:5] %}
                         {% if p.proveedor %}
                         <div class="modal fade text-left" id="modalProv{{ p.id }}" tabindex="-1" role="dialog" aria-hidden="true">
@@ -203,7 +291,7 @@
                         {% endif %}
                     {% else %}
                         <div class="p-4 text-center text-muted">
-                            ✅ Excelente: Todos los productos tienen niveles de inventario por encima de 2.500 unidades.
+                            ✅ Excelente: Todos los productos tienen niveles de inventario óptimos.
                         </div>
                     {% endif %}
                 </div>
@@ -214,7 +302,7 @@
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm border-info">
                 <div class="card-header bg-info text-white font-weight-bold d-flex justify-content-between align-items-center">
-                    <span>📦⚡ Alerta de Sobre-stock Excesivo (> 10.000 Unidades)</span>
+                    <span>📦⚡ Alerta de Sobre-stock Excesivo (> 100 Unidades)</span>
                     <span class="badge badge-light text-dark">{{ sobrestock|length }} Acumulados</span>
                 </div>
                 <div class="card-body p-0">
@@ -239,7 +327,7 @@
                         {% endif %}
                     {% else %}
                         <div class="p-4 text-center text-muted">
-                            👍 No hay excedentes de almacenamiento por encima del límite óptimo de 10.000 unidades.
+                            👍 No hay excedentes de almacenamiento por encima del límite óptimo.
                         </div>
                     {% endif %}
                 </div>
@@ -248,4 +336,292 @@
     </div>
     {% endif %}
 </div>
+
+<!-- ====================================================================== -->
+<!-- BOTÓN CIRCULAR FLOTANTE EN ESQUINA (INFORMACIÓN PERSONAL DEL TITULAR) -->
+<!-- ====================================================================== -->
+<div class="floating-profile-corner">
+    <span class="floating-profile-label d-none d-sm-inline-block" data-toggle="modal" data-target="#modalMiCuentaIndex">
+        <i class="fas fa-user-edit mr-1"></i> Mi Cuenta / Info Personal
+    </span>
+    <button type="button" id="btnCircularInfoPersonal" class="btn-circle-profile" data-toggle="modal" data-target="#modalMiCuentaIndex" title="Ver y editar mi información personal">
+        {{ (u_info.get('nombre') or session['usuario'].get('nombre') or 'U')[:1] | upper }}
+        <span class="status-dot" title="Sesión Activa"></span>
+    </button>
+</div>
+
+<!-- ====================================================================== -->
+<!-- MODAL DE INFORMACIÓN PERSONAL EDITABLE Y ELIMINACIÓN EN 2 PASOS        -->
+<!-- ====================================================================== -->
+<div class="modal fade" id="modalMiCuentaIndex" tabindex="-1" role="dialog" aria-labelledby="modalMiCuentaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
+            <!-- Cabecera del Modal -->
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center font-weight-bold mr-3 shadow-sm" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                        {{ (u_info.get('nombre') or 'U')[:1] | upper }}
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold mb-0" id="modalMiCuentaLabel">
+                            {{ u_info.get('nombre', '') }} {{ u_info.get('apellido', '') }}
+                        </h5>
+                        <small class="text-light">
+                            <i class="fas fa-at"></i>{{ u_info.get('username') or 'usuario' }} &bull; {{ u_info.get('email', '') }}
+                        </small>
+                    </div>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body p-4">
+                <!-- Pestañas del Modal -->
+                <ul class="nav nav-pills mb-4" id="pillsCuentaTab" role="tablist">
+                    <li class="nav-item mr-2">
+                        <a class="nav-link active font-weight-bold" id="tab-info-personal" data-toggle="pill" href="#pane-info-personal" role="tab">
+                            <i class="fas fa-id-card mr-1"></i> Información Personal (Editable)
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link font-weight-bold text-danger" id="tab-eliminar-cuenta" data-toggle="pill" href="#pane-eliminar-cuenta" role="tab">
+                            <i class="fas fa-user-times mr-1"></i> Eliminar Cuenta (2 Pasos)
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- PESTAÑA 1: INFORMACIÓN PERSONAL EDITABLE -->
+                    <div class="tab-pane fade show active" id="pane-info-personal" role="tabpanel">
+                        <form action="{{ url_for('usuarios.perfil') }}" method="POST">
+                            <input type="hidden" name="origen" value="index">
+
+                            <!-- BLOQUE DE IDENTIFICACIÓN INMUTABLE (NO MODIFICABLE) -->
+                            <div class="p-3 mb-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="font-weight-bold text-dark small">
+                                        <i class="fas fa-lock text-secondary mr-1"></i> DATOS DE IDENTIFICACIÓN OFICIAL (NO MODIFICABLES)
+                                    </span>
+                                    <span class="badge badge-secondary">Solo Lectura</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 mb-2">
+                                        <label class="small font-weight-bold text-muted mb-1">ID de Cuenta</label>
+                                        <input type="text" class="form-control form-control-sm readonly-id-box" value="#{{ u_info.get('id', '') }}" readonly>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <label class="small font-weight-bold text-muted mb-1">Tipo Doc.</label>
+                                        <input type="text" class="form-control form-control-sm readonly-id-box" value="{{ u_info.get('tipo_documento', 'CC') }}" readonly>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <label class="small font-weight-bold text-muted mb-1">N° Identificación</label>
+                                        <input type="text" class="form-control form-control-sm readonly-id-box" value="{{ u_info.get('documento', '') }}" readonly>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <label class="small font-weight-bold text-muted mb-1">Usuario (@)</label>
+                                        <input type="text" class="form-control form-control-sm readonly-id-box text-primary" value="@{{ u_info.get('username', '') }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BLOQUE EDITABLE DE DATOS PERSONALES -->
+                            <h6 class="text-primary font-weight-bold mb-3">
+                                <i class="fas fa-pen mr-1"></i> Datos Personales y de Contacto (Editables)
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="small font-weight-bold text-secondary">Nombres *</label>
+                                    <input type="text" name="nombre" class="form-control" value="{{ u_info.get('nombre', '') }}" required minlength="2">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="small font-weight-bold text-secondary">Apellidos *</label>
+                                    <input type="text" name="apellido" class="form-control" value="{{ u_info.get('apellido', '') }}" required minlength="2">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="small font-weight-bold text-secondary">Correo Electrónico *</label>
+                                    <input type="email" name="email" class="form-control" value="{{ u_info.get('email', '') }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="small font-weight-bold text-secondary">Teléfono / Celular *</label>
+                                    <input type="tel" name="telefono" class="form-control" value="{{ u_info.get('telefono', '') }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="small font-weight-bold text-secondary">Fecha de Nacimiento</label>
+                                    <input type="date" name="fecha_nacimiento" class="form-control" value="{{ u_info.get('fecha_nacimiento', '') }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="small font-weight-bold text-secondary">Lugar de Residencia / Dirección</label>
+                                    <input type="text" name="lugar_residencia" class="form-control" value="{{ u_info.get('lugar_residencia', '') }}" placeholder="Ciudad, Barrio o Dirección">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="small font-weight-bold text-secondary">Estado Civil</label>
+                                    <select name="estado_civil" class="form-control">
+                                        <option value="">Seleccione...</option>
+                                        <option value="Soltero(a)" {% if u_info.get('estado_civil') == 'Soltero(a)' %}selected{% endif %}>Soltero(a)</option>
+                                        <option value="Casado(a)" {% if u_info.get('estado_civil') == 'Casado(a)' %}selected{% endif %}>Casado(a)</option>
+                                        <option value="Unión Libre" {% if u_info.get('estado_civil') == 'Unión Libre' %}selected{% endif %}>Unión Libre</option>
+                                        <option value="Divorciado(a)" {% if u_info.get('estado_civil') == 'Divorciado(a)' %}selected{% endif %}>Divorciado(a)</option>
+                                        <option value="Viudo(a)" {% if u_info.get('estado_civil') == 'Viudo(a)' %}selected{% endif %}>Viudo(a)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="small font-weight-bold text-secondary">N° de Hijos</label>
+                                    <input type="number" name="numero_hijos" min="0" max="20" class="form-control" value="{{ u_info.get('numero_hijos', 0) }}">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="small font-weight-bold text-secondary">Banco</label>
+                                    <input type="text" name="banco" class="form-control" value="{{ u_info.get('banco', '') }}" placeholder="Ej: Bancolombia">
+                                </div>
+                                <input type="hidden" name="tipo_cuenta" value="{{ u_info.get('tipo_cuenta', 'Ahorros') }}">
+                                <input type="hidden" name="numero_cuenta" value="{{ u_info.get('numero_cuenta', '') }}">
+                            </div>
+
+                            <!-- CAMBIO OPCIONAL DE CONTRASEÑA -->
+                            <div class="border-top pt-3 mt-1">
+                                <a class="small font-weight-bold text-primary" data-toggle="collapse" href="#collapsePassIndex" role="button" aria-expanded="false">
+                                    <i class="fas fa-key mr-1"></i> ¿Deseas cambiar también tu contraseña? (Opcional)
+                                </a>
+                                <div class="collapse mt-2" id="collapsePassIndex">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2">
+                                            <input type="password" name="password_actual" class="form-control form-control-sm" placeholder="Contraseña actual">
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <input type="password" name="password_nueva" class="form-control form-control-sm" placeholder="Nueva contraseña (mín. 6)">
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <input type="password" name="password_confirmar" class="form-control form-control-sm" placeholder="Confirmar nueva clave">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-3">
+                                <a href="{{ url_for('usuarios.perfil') }}" class="btn btn-outline-secondary btn-sm font-weight-bold">
+                                    <i class="fas fa-external-link-alt mr-1"></i> Abrir Vista Completa
+                                </a>
+                                <button type="submit" class="btn btn-primary font-weight-bold px-4 shadow-sm">
+                                    <i class="fas fa-save mr-1"></i> Guardar Cambios
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- PESTAÑA 2: ELIMINAR CUENTA CON VERIFICACIÓN DE DOS PASOS -->
+                    <div class="tab-pane fade" id="pane-eliminar-cuenta" role="tabpanel">
+                        <div class="alert alert-danger border-0">
+                            <h6 class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Eliminación de Cuenta con Verificación de Dos Pasos (2FA)</h6>
+                            <p class="small mb-0">
+                                Por tu seguridad, para eliminar tu cuenta debes completar <strong>2 pasos</strong>: primero verificar tu contraseña actual y luego confirmar el código de seguridad de 6 dígitos.
+                            </p>
+                        </div>
+
+                        <div id="alertaEliminarIndex" class="alert d-none" role="alert"></div>
+
+                        <!-- PASO 1: VERIFICAR CONTRASEÑA ACTUAL -->
+                        <div id="paso1EliminarIndex" class="card border-danger mb-3">
+                            <div class="card-body">
+                                <h6 class="font-weight-bold text-dark mb-2">Paso 1 de 2: Confirma tu contraseña actual</h6>
+                                <div class="form-group mb-3">
+                                    <label class="small font-weight-bold text-secondary">Contraseña Actual *</label>
+                                    <input type="password" id="inputPassEliminarIndex" class="form-control" placeholder="Escribe tu contraseña actual para continuar">
+                                </div>
+                                <button type="button" id="btnPaso1EliminarIndex" class="btn btn-outline-danger font-weight-bold" onclick="solicitarCodigoEliminacionIndex()">
+                                    <i class="fas fa-shield-alt mr-1"></i> Verificar Contraseña y Generar Código (Paso 1)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PASO 2: INGRESAR CÓDIGO DE 6 DÍGITOS Y ELIMINAR -->
+                        <div id="paso2EliminarIndex" class="card border-danger d-none">
+                            <div class="card-body">
+                                <h6 class="font-weight-bold text-danger mb-2">Paso 2 de 2: Ingresa el código de verificación de 6 dígitos</h6>
+                                <div id="bannerCodigoEliminarIndex" class="otp-delete-banner mb-3 d-none">
+                                    <div class="small font-weight-bold text-dark">Código de 2do Paso generado para <span id="emailDestinoEliminarIndex"></span>:</div>
+                                    <div class="otp-delete-code" id="codigoMostradoEliminarIndex"></div>
+                                    <div>
+                                        <button type="button" class="btn btn-xs btn-outline-danger font-weight-bold mt-1" onclick="copiarCodigoEliminarIndex()">
+                                            <i class="fas fa-paste mr-1"></i> Usar este código
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <form action="{{ url_for('usuarios.confirmar_eliminacion_cuenta') }}" method="POST">
+                                    <input type="hidden" name="origen" value="index">
+                                    <div class="form-group mb-3">
+                                        <label class="small font-weight-bold text-secondary">Código de Seguridad (6 dígitos) *</label>
+                                        <input type="text" name="codigo" id="inputCodigoEliminarIndex" class="form-control text-center font-weight-bold" style="font-size: 1.25rem; letter-spacing: 4px;" maxlength="6" required placeholder="000000">
+                                    </div>
+                                    <button type="submit" class="btn btn-danger btn-block font-weight-bold py-2 shadow-sm">
+                                        <i class="fas fa-trash-alt mr-1"></i> Confirmar y Eliminar Definitivamente mi Cuenta (Paso 2)
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function solicitarCodigoEliminacionIndex() {
+    const passInput = document.getElementById('inputPassEliminarIndex');
+    const alerta = document.getElementById('alertaEliminarIndex');
+    const btn = document.getElementById('btnPaso1EliminarIndex');
+    const password = (passInput ? passInput.value : '').trim();
+
+    alerta.className = 'alert d-none';
+    if (!password) {
+        alerta.className = 'alert alert-warning';
+        alerta.textContent = 'Debes ingresar tu contraseña actual para iniciar la verificación de dos pasos.';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Verificando...';
+
+    try {
+        const resp = await fetch("{{ url_for('usuarios.solicitar_eliminacion_cuenta') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password_actual: password })
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.exito) {
+            alerta.className = 'alert alert-danger';
+            alerta.textContent = data.mensaje || 'Contraseña incorrecta.';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-shield-alt mr-1"></i> Verificar Contraseña y Generar Código (Paso 1)';
+            return;
+        }
+
+        document.getElementById('paso2EliminarIndex').classList.remove('d-none');
+        if (data.codigo) {
+            document.getElementById('bannerCodigoEliminarIndex').classList.remove('d-none');
+            document.getElementById('codigoMostradoEliminarIndex').textContent = data.codigo;
+            document.getElementById('emailDestinoEliminarIndex').textContent = data.email_enmascarado || 'tu cuenta';
+        }
+        alerta.className = 'alert alert-success';
+        alerta.textContent = data.mensaje || 'Paso 1 completado. Ingresa el código de 6 dígitos para confirmar.';
+    } catch (e) {
+        alerta.className = 'alert alert-danger';
+        alerta.textContent = 'Error de red al solicitar el código de verificación.';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-shield-alt mr-1"></i> Reenviar Código (Paso 1)';
+    }
+}
+
+function copiarCodigoEliminarIndex() {
+    const code = document.getElementById('codigoMostradoEliminarIndex').textContent.trim();
+    const input = document.getElementById('inputCodigoEliminarIndex');
+    if (input && code) {
+        input.value = code;
+        input.focus();
+    }
+}
+</script>
 {% endblock %}

@@ -73,3 +73,20 @@ class AuthService:
             "password_nueva": password_nueva
         })
 
+    @staticmethod
+    def solicitar_eliminacion_cuenta(password_actual):
+        """
+        Paso 1 de verificación en 2 pasos para eliminar la cuenta del usuario activo.
+        """
+        return APIClient.post('/auth/eliminar-cuenta-solicitar', data={
+            "password_actual": password_actual
+        })
+
+    @staticmethod
+    def confirmar_eliminacion_cuenta(codigo):
+        """
+        Paso 2 de verificación en 2 pasos: confirma el código OTP de 6 dígitos y elimina la cuenta.
+        """
+        return APIClient.post('/auth/eliminar-cuenta-confirmar', data={
+            "codigo": codigo
+        })

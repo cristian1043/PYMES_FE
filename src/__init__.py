@@ -66,8 +66,16 @@ def create_app(config_name='default'):
             'auth.recuperar_password_confirmar',
             'static'
         ]
-        # Rutas accesibles tras iniciar sesión pero sin haber seleccionado empresa activa aún
-        rutas_sin_empresa = ['auth.seleccionar_empresa', 'auth.activar_empresa', 'empresas.nueva_empresa']
+        # Rutas accesibles tras iniciar sesión incluso si el usuario aún no tiene empresa activa
+        rutas_sin_empresa = [
+            'index',
+            'auth.seleccionar_empresa',
+            'auth.activar_empresa',
+            'empresas.nueva_empresa',
+            'usuarios.perfil',
+            'usuarios.solicitar_eliminacion_cuenta',
+            'usuarios.confirmar_eliminacion_cuenta'
+        ]
 
         if request.endpoint and request.endpoint not in rutas_sin_login:
             if 'usuario' not in session:
@@ -89,8 +97,23 @@ def create_app(config_name='default'):
         if 'usuario' not in session:
             return redirect(url_for('auth.login'))
 
+        from src.services.usuarios_service import UsuariosService
+        user_id = session.get('usuario', {}).get('id')
+        usuario_perfil = UsuariosService.obtener_por_id(user_id) if user_id else None
+        if not isinstance(usuario_perfil, dict) or 'id' not in usuario_perfil:
+            usuario_perfil = session.get('usuario', {})
+
         if not session.get('empresa_activa'):
-            return render_template('index.html', bajos=[], sobrestock=[], optimos=[], total_productos=0, total_ventas=0, total_facturas=0)
+            return render_template(
+                'index.html',
+                bajos=[],
+                sobrestock=[],
+                optimos=[],
+                total_productos=0,
+                total_ventas=0,
+                total_facturas=0,
+                usuario_perfil=usuario_perfil
+            )
 
         from src.services.productos_service import ProductosService
         from src.services.facturas_service import FacturasService
@@ -116,7 +139,16 @@ def create_app(config_name='default'):
         facturas_validas = [f for f in fact_list if f.get('estado', 'Emitida') != 'Cancelada']
         total_ventas = sum(float(f.get('total', 0.0)) for f in facturas_validas)
         
-        return render_template('index.html', bajos=bajos, sobrestock=sobrestock, optimos=optimos, total_productos=len(items), total_ventas=total_ventas, total_facturas=len(facturas_validas))
+        return render_template(
+            'index.html',
+            bajos=bajos,
+            sobrestock=sobrestock,
+            optimos=optimos,
+            total_productos=len(items),
+            total_ventas=total_ventas,
+            total_facturas=len(facturas_validas),
+            usuario_perfil=usuario_perfil
+        )
 
     @app.errorhandler(500)
     def internal_error(error):

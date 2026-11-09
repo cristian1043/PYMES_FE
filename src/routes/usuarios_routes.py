@@ -205,6 +205,9 @@ def perfil():
     empresa_id = empresa_activa.get('id') if empresa_activa else None
 
     if request.method == 'POST':
+        origen = request.form.get('origen', '').strip()
+        destino_redirect = url_for('index') if origen == 'index' else url_for('usuarios.perfil')
+
         # 1. Gestión de Contraseña con validación de clave actual
         password_actual = request.form.get('password_actual', '').strip()
         password_nueva = request.form.get('password_nueva', '').strip()
@@ -213,25 +216,25 @@ def perfil():
         if password_actual or password_nueva:
             if not password_actual:
                 flash("Debes ingresar tu contraseña actual para autorizar el cambio.", "danger")
-                return redirect(url_for('usuarios.perfil'))
+                return redirect(destino_redirect)
             if not password_nueva:
                 flash("Debes ingresar la nueva contraseña deseada.", "danger")
-                return redirect(url_for('usuarios.perfil'))
+                return redirect(destino_redirect)
             if len(password_nueva) < 6:
                 flash("La nueva contraseña debe tener al menos 6 caracteres.", "warning")
-                return redirect(url_for('usuarios.perfil'))
+                return redirect(destino_redirect)
             if password_nueva != password_confirmar:
                 flash("La confirmación de la nueva contraseña no coincide.", "danger")
-                return redirect(url_for('usuarios.perfil'))
+                return redirect(destino_redirect)
 
             res_pass, err_pass = AuthService.cambiar_password(user_id, password_actual, password_nueva)
             if err_pass:
                 flash(f"No se pudo cambiar la contraseña: {err_pass}", "danger")
-                return redirect(url_for('usuarios.perfil'))
+                return redirect(destino_redirect)
             else:
                 flash("¡Contraseña actualizada exitosamente con validación de seguridad!", "success")
 
-        # 2. Actualización de Datos Personales y Bancarios
+        # 2. Actualización de Datos Personales y Bancarios (los números de identificación nunca se modifican)
         nombre = request.form.get('nombre', '').strip()
         apellido = request.form.get('apellido', '').strip()
         email = request.form.get('email', '').strip()
@@ -265,9 +268,10 @@ def perfil():
             flash("¡Información personal actualizada correctamente!", "success")
             usuario_sesion['nombre'] = f"{nombre} {apellido}".strip()
             usuario_sesion['email'] = email
+            usuario_sesion['telefono'] = telefono
             session['usuario'] = usuario_sesion
 
-        return redirect(url_for('usuarios.perfil'))
+        return redirect(destino_redirect)
 
     usuario = UsuariosService.obtener_por_id(user_id) or usuario_sesion
     rol_nombre = None
@@ -277,3 +281,52 @@ def perfil():
 
     return render_template('usuarios/perfil.html', usuario=usuario, rol_nombre=rol_nombre, empresa_activa=empresa_activa)
 
+
+@usuarios_bp.route('/eliminar_cuenta/solicitar', methods=['POST'])
+def solicitar_eliminacion_cuenta():
+    """Paso 1 (AJAX/Form): Verifica la contraseña actual y genera el código de 6 dígitos para eliminar la cuenta."""
+    if 'usuario' not in session:
+        return jsonify({"exito": False, "mensaje": "Sesión expirada. Inicia sesión nuevamente."}), 401
+
+    data = request.get_json(silent=True) or request.form or {}
+    password_actual = (data.get('password_actual') or '').strip()
+    if not password_actual:
+        return jsonify({"exito": False, "mensaje": "Debes ingresar tu contraseña actual para continuar."}), 400
+
+    res, err = AuthService.solicitar_eliminacion_cuenta(password_actual)
+    if err:
+        return jsonify({"exito": False, "mensaje": err}), 400
+    return jsonify(res or {"exito": True}), 200
+
+
+@usuarios_bp.route('/eliminar_cuenta/confirmar', methods=['POST'])
+def confirmar_eliminacion_cuenta():
+    """Paso 2: Verifica el código OTP de 6 dígitos, elimina la cuenta definitivamente y cierra la sesión."""
+    if 'usuario' not in session:
+        if request.is_json:
+            return jsonify({"exito": False, "mensaje": "Sesión expirada."}), 401
+        return redirect(url_for('auth.login'))
+
+    data = request.get_json(silent=True) or request.form or {}
+    codigo = (data.get('codigo') or '').strip()
+    origen = (data.get('origen') or '').strip()
+
+    if not codigo:
+        if request.is_json:
+            return jsonify({"exito": False, "mensaje": "Ingresa el código de verificación de 6 dígitos."}), 400
+        flash("Debes ingresar el código de verificación de 6 dígitos.", "danger")
+        return redirect(url_for('index') if origen == 'index' else url_for('usuarios.perfil'))
+
+    res, err = AuthService.confirmar_eliminacion_cuenta(codigo)
+    if err:
+        if request.is_json:
+            return jsonify({"exito": False, "mensaje": err}), 400
+        flash(f"No se pudo eliminar la cuenta: {err}", "danger")
+        return redirect(url_for('index') if origen == 'index' else url_for('usuarios.perfil'))
+
+    session.clear()
+    mensaje_exito = (res.get('mensaje') if isinstance(res, dict) else None) or "Tu cuenta ha sido eliminada permanentemente tras completar la verificación en dos pasos."
+    flash(mensaje_exito, "info")
+    if request.is_json:
+        return jsonify({"exito": True, "mensaje": mensaje_exito, "redirect": url_for('auth.login')}), 200
+    return redirect(url_for('auth.login'))
