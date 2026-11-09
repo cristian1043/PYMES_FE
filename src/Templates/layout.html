@@ -21,7 +21,6 @@
       <ul class="navbar-nav mr-auto">
         {% if session.get('usuario') and session.get('empresa_activa') %}
         
-        
 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarCompras" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -63,19 +62,16 @@
           </div>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link font-weight-bold text-info" href="{{ url_for('terminales.ver_terminales') }}">💳 Terminales Pasarelas</a>
-        </li>
 
         <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle font-weight-bold text-success" href="#" id="navbarFacturas" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    💰 Ventas Facturas
-                  </a>
-                  <div class="dropdown-menu" aria-labelledby="navbarFacturas">
-                    <a class="dropdown-item font-weight-bold text-success" href="{{ url_for('facturas.nueva_factura') }}">➕ Registrar Nueva Venta (Factura)</a>
-                    <a class="dropdown-item" href="{{ url_for('facturas.ver_facturas') }}">📋 Historial de Ventas y Facturas</a>
-                  </div>
-                </li>
+          <a class="nav-link dropdown-toggle font-weight-bold text-success" href="#" id="navbarFacturas" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  💰 Ventas Facturas
+             </a>
+              <div class="dropdown-menu" aria-labelledby="navbarFacturas">
+                <a class="dropdown-item font-weight-bold text-success" href="{{ url_for('facturas.nueva_factura') }}">➕ Registrar Nueva Venta (Factura)</a>
+                <a class="dropdown-item" href="{{ url_for('facturas.ver_facturas') }}">📋 Historial de Ventas y Facturas</a>
+              </div>
+        </li>
                 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarReportes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -89,6 +85,13 @@
             <a class="dropdown-item" href="{{ url_for('reportes.reporte_inventario') }}">Reporte de Inventario</a>
           </div>
         </li>        
+        
+        <li class="nav-item">
+          <a class="nav-link font-weight-bold text-info" href="{{ url_for('terminales.ver_terminales') }}">
+            💳 Terminales Pasarelas
+          </a>
+        </li>
+        
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle font-weight-bold text-primary" href="#" id="navbarPortalClientes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             🌐 Portal Clientes
