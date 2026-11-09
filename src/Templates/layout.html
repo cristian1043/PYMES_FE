@@ -11,120 +11,194 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
     <style>
-      /* Evitar cualquier scroll horizontal indeseado en la pantalla */
+      /* 1. Prevención total de scroll horizontal en todo tipo de pantalla */
       html, body {
         max-width: 100%;
         overflow-x: hidden;
+        background-color: #f8fafc;
       }
 
-      /* Barra de navegación ultracompacta y estilizada */
+      /* 2. Barra de Navegación con margen en blanco inferior generoso */
       .navbar-pymesoft {
-        padding: 0.35rem 0.75rem !important;
         background-color: #ffffff !important;
         border-bottom: 1px solid #e2e8f0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding: 0.5rem 1.25rem !important;
+        margin-bottom: 2rem !important; /* Margen en blanco abajo */
       }
 
       .navbar-brand-pymesoft {
-        font-size: 1.05rem !important;
-        font-weight: 800 !important;
+        font-size: 1.15rem !important;
+        font-weight: 900 !important;
         letter-spacing: -0.5px;
-        margin-right: 0.5rem !important;
+        margin-right: 0.75rem !important;
       }
 
-      /* Enlaces de navegación con espaciado equilibrado */
-      .navbar-pymesoft .navbar-nav .nav-link {
-        padding: 0.32rem 0.38rem !important;
-        font-size: 0.81rem !important;
-        font-weight: 600 !important;
-        white-space: nowrap !important;
-        color: #334155;
-        transition: color 0.15s ease-in-out;
+      /* Botón del Menú Desplegable Principal */
+      .btn-master-menu {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 0.85rem !important;
+        padding: 0.38rem 0.85rem !important;
+        border-radius: 8px !important;
+        border: none !important;
+        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.28);
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
       }
-      .navbar-pymesoft .navbar-nav .nav-link:hover {
+      .btn-master-menu:hover, .btn-master-menu:focus {
+        background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.38);
+        color: #ffffff !important;
+      }
+
+      /* Mega Menú Desplegable estructurado */
+      @media (min-width: 992px) {
+        .mega-menu-dropdown {
+          width: 780px !important;
+          max-width: 90vw !important;
+          left: 0 !important;
+          right: auto !important;
+          padding: 1.25rem !important;
+          border-radius: 12px !important;
+          border: 1px solid #cbd5e1 !important;
+          box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16) !important;
+          animation: fadeInMenu 0.16s ease-in-out;
+        }
+      }
+
+      @media (max-width: 991.98px) {
+        .mega-menu-dropdown {
+          width: 100% !important;
+          max-width: 100% !important;
+          position: static !important;
+          float: none !important;
+          box-shadow: none !important;
+          border: 1px solid #e2e8f0 !important;
+          padding: 0.75rem !important;
+        }
+      }
+
+      @keyframes fadeInMenu {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .menu-category-title {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 2px solid #f1f5f9;
+      }
+
+      .menu-link-item {
+        display: flex;
+        align-items: center;
+        padding: 0.38rem 0.55rem;
+        border-radius: 6px;
+        font-size: 0.83rem;
+        font-weight: 600;
+        color: #1e293b;
+        text-decoration: none !important;
+        transition: background-color 0.15s ease, color 0.15s ease;
+        margin-bottom: 0.12rem;
+      }
+      .menu-link-item:hover {
+        background-color: #f0f9ff;
         color: #0284c7;
       }
-
-      /* Menús desplegables refinados */
-      .navbar-pymesoft .dropdown-menu {
-        font-size: 0.83rem;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-      }
-      .navbar-pymesoft .dropdown-item {
-        padding: 0.45rem 0.9rem;
-        font-size: 0.82rem;
+      .menu-link-item .menu-icon {
+        width: 22px;
+        text-align: center;
+        margin-right: 0.5rem;
+        font-size: 0.95rem;
       }
 
-      /* Contenedor de acciones del extremo derecho */
+      /* Barra de acciones de la derecha (PC) */
       .navbar-actions-toolbar {
         display: flex;
         align-items: center;
-        flex-wrap: nowrap;
-        gap: 0.3rem;
+        gap: 0.45rem;
       }
 
-      /* Truncado inteligente del selector de empresa para que jamás desborde */
-      .company-label-truncate {
-        display: inline-block;
-        max-width: 145px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        vertical-align: middle;
-      }
-
-      /* Truncado del nombre del usuario activo */
-      .user-label-truncate {
-        display: inline-block;
-        max-width: 85px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        vertical-align: middle;
-      }
-
-      /* Botones de acción compactos */
       .btn-nav-action {
-        font-size: 0.79rem !important;
-        padding: 0.24rem 0.52rem !important;
+        font-size: 0.81rem !important;
         font-weight: 700 !important;
+        padding: 0.34rem 0.65rem !important;
+        border-radius: 7px !important;
         white-space: nowrap !important;
         display: inline-flex;
         align-items: center;
-        border-radius: 6px;
       }
 
-      /* Reglas para pantallas medianas / laptops estándar (1200px - 1366px) */
-      @media (max-width: 1280px) {
-        .navbar-pymesoft .navbar-nav .nav-link {
-          padding: 0.28rem 0.3rem !important;
-          font-size: 0.77rem !important;
-        }
-        .company-label-truncate {
-          max-width: 105px !important;
-        }
-        .user-label-truncate {
-          max-width: 65px !important;
-        }
-        .btn-nav-action {
-          font-size: 0.74rem !important;
-          padding: 0.2rem 0.4rem !important;
-        }
+      .company-label-truncate {
+        display: inline-block;
+        max-width: 155px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
       }
 
-      @media (max-width: 1080px) {
-        .company-label-truncate {
-          max-width: 80px !important;
+      .user-label-truncate {
+        display: inline-block;
+        max-width: 90px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+      }
+
+      /* 3. REGLAS RESPONSIVAS PARA VISTA MÓVIL Y CELULAR (Solución Foto 2) */
+      @media (max-width: 991.98px) {
+        .navbar-pymesoft {
+          padding: 0.5rem 0.75rem !important;
+          margin-bottom: 1.25rem !important;
         }
+        .navbar-collapse {
+          padding-top: 0.75rem;
+        }
+        .navbar-actions-toolbar {
+          flex-direction: column !important;
+          align-items: stretch !important;
+          width: 100% !important;
+          gap: 0.5rem !important;
+          margin-top: 0.75rem !important;
+          padding-top: 0.75rem !important;
+          border-top: 1px solid #e2e8f0 !important;
+        }
+        .navbar-actions-toolbar .btn,
+        .navbar-actions-toolbar .dropdown,
+        .navbar-actions-toolbar .btn-nav-action {
+          width: 100% !important;
+          max-width: 100% !important;
+          display: flex !important;
+          justify-content: center !important;
+          text-align: center !important;
+        }
+        .navbar-actions-toolbar .dropdown-menu {
+          width: 100% !important;
+          position: static !important;
+          float: none !important;
+          margin-top: 0.35rem;
+          box-shadow: none !important;
+          border: 1px solid #cbd5e1 !important;
+        }
+        .company-label-truncate,
         .user-label-truncate {
-          max-width: 50px !important;
+          max-width: none !important;
         }
       }
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light navbar-pymesoft shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-light navbar-pymesoft">
     <a class="navbar-brand navbar-brand-pymesoft text-primary" href="/">PYMES.SOFT</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -134,106 +208,131 @@
       <ul class="navbar-nav mr-auto">
         {% if session.get('usuario') and session.get('empresa_activa') %}
 
+        <!-- BOTÓN DE MENÚ DESPLEGABLE CON TODOS LOS MENÚS Y MÓDULOS -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle font-weight-bold text-primary" href="#" id="navbarCompras" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            📦 Compras
+          <a class="btn-master-menu dropdown-toggle" href="#" id="masterMenuDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-th-large mr-2"></i> Menú de Módulos
           </a>
-          <div class="dropdown-menu" aria-labelledby="navbarCompras">
-            <a class="dropdown-item font-weight-bold text-primary" href="{{ url_for('compras.nueva_compra') }}">➕ Registrar Nueva Compra</a>
-            <a class="dropdown-item" href="{{ url_for('compras.ver_compras') }}">📋 Ver Compras</a>
+
+          <div class="dropdown-menu mega-menu-dropdown" aria-labelledby="masterMenuDropdown">
+            <div class="row">
+              
+              <!-- COLUMNA 1: OPERACIONES COMERCIALES -->
+              <div class="col-lg-4 col-md-6 mb-3">
+                <div class="menu-category-title">
+                  <i class="fas fa-cash-register mr-1 text-success"></i> Ventas y Compras
+                </div>
+                <a class="menu-link-item text-success font-weight-bold" href="{{ url_for('facturas.nueva_factura') }}">
+                  <span class="menu-icon">➕</span> Registrar Venta (Factura)
+                </a>
+                <a class="menu-link-item" href="{{ url_for('facturas.ver_facturas') }}">
+                  <span class="menu-icon">📋</span> Historial de Ventas
+                </a>
+                <div class="dropdown-divider my-2"></div>
+                <a class="menu-link-item text-primary font-weight-bold" href="{{ url_for('compras.nueva_compra') }}">
+                  <span class="menu-icon">➕</span> Registrar Compra
+                </a>
+                <a class="menu-link-item" href="{{ url_for('compras.ver_compras') }}">
+                  <span class="menu-icon">📋</span> Historial de Compras
+                </a>
+              </div>
+
+              <!-- COLUMNA 2: CATÁLOGO, CLIENTES Y CONTACTOS -->
+              <div class="col-lg-4 col-md-6 mb-3">
+                <div class="menu-category-title">
+                  <i class="fas fa-boxes mr-1 text-info"></i> Catálogo y Terceros
+                </div>
+                <a class="menu-link-item" href="{{ url_for('productos.ver_productos') }}">
+                  <span class="menu-icon">📦</span> Catálogo de Productos
+                </a>
+                <a class="menu-link-item" href="{{ url_for('productos.nuevo_producto') }}">
+                  <span class="menu-icon">➕</span> Nuevo Producto
+                </a>
+                <div class="dropdown-divider my-2"></div>
+                <a class="menu-link-item" href="{{ url_for('clientes.ver_clientes') }}">
+                  <span class="menu-icon">👥</span> Directorio de Clientes
+                </a>
+                <a class="menu-link-item" href="{{ url_for('clientes.nuevo_cliente') }}">
+                  <span class="menu-icon">➕</span> Nuevo Cliente
+                </a>
+                <div class="dropdown-divider my-2"></div>
+                <a class="menu-link-item" href="{{ url_for('proveedores.ver_proveedores') }}">
+                  <span class="menu-icon">🏭</span> Proveedores
+                </a>
+                <a class="menu-link-item" href="{{ url_for('terminales.ver_terminales') }}">
+                  <span class="menu-icon">💳</span> Terminales y Pasarelas
+                </a>
+              </div>
+
+              <!-- COLUMNA 3: PORTAL CLIENTES, REPORTES Y EMPRESA -->
+              <div class="col-lg-4 col-md-12 mb-3">
+                <div class="menu-category-title">
+                  <i class="fas fa-globe mr-1 text-primary"></i> Portal Clientes & Control
+                </div>
+                <a class="menu-link-item text-primary font-weight-bold" href="{{ url_for('portal_admin.dashboard') }}">
+                  <span class="menu-icon">⚙️</span> Panel del Portal Web
+                </a>
+                <a class="menu-link-item" href="{{ url_for('portal_admin.pedidos') }}">
+                  <span class="menu-icon">🛍️</span> Pedidos Recibidos
+                </a>
+                {% if session['usuario'].get('rol_id') in [1, 2] %}
+                <a class="menu-link-item" href="{{ url_for('portal_admin.reservas') }}">
+                  <span class="menu-icon">📅</span> Agenda de Reservas
+                </a>
+                <a class="menu-link-item" href="{{ url_for('portal_admin.servicios') }}">
+                  <span class="menu-icon">🛠️</span> Servicios Publicados
+                </a>
+                <a class="menu-link-item" href="{{ url_for('portal_admin.solicitudes') }}">
+                  <span class="menu-icon">💬</span> Consultas y PQRS
+                </a>
+                {% endif %}
+                <div class="dropdown-divider my-2"></div>
+                <div class="menu-category-title">
+                  <i class="fas fa-chart-line mr-1 text-secondary"></i> Informes y Personal
+                </div>
+                {% if session['usuario'].get('rol_id') == 1 %}
+                <a class="menu-link-item" href="{{ url_for('reportes.reporte_ventas') }}">
+                  <span class="menu-icon">📊</span> Reporte de Ventas
+                </a>
+                <a class="menu-link-item" href="{{ url_for('reportes.reporte_clientes') }}">
+                  <span class="menu-icon">📊</span> Reporte de Clientes
+                </a>
+                <a class="menu-link-item text-primary font-weight-bold" href="{{ url_for('usuarios.ver_usuarios') }}">
+                  <span class="menu-icon">👥</span> Gestión de Usuarios
+                </a>
+                {% endif %}
+                <a class="menu-link-item" href="{{ url_for('reportes.reporte_inventario') }}">
+                  <span class="menu-icon">📦</span> Reporte de Inventario
+                </a>
+              </div>
+
+            </div>
+
+            <!-- FILA INFERIOR DE ACCESOS RÁPIDOS DENTRO DEL MENÚ -->
+            <div class="border-top pt-2 mt-1 d-flex flex-wrap justify-content-between align-items-center">
+              <div class="small text-muted font-weight-bold">
+                🏢 {{ session['empresa_activa']['nombre'] }}
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('usuarios.perfil') }}" class="btn btn-sm btn-outline-primary py-1 px-2 font-weight-bold mr-1">
+                  <i class="fas fa-id-card mr-1"></i> Mi Información Personal
+                </a>
+                <a href="{{ url_for('auth.seleccionar_empresa') }}" class="btn btn-sm btn-outline-secondary py-1 px-2 font-weight-bold mr-1">
+                  🎛️ Cambiar Empresa
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-danger py-1 px-2 font-weight-bold">
+                  <i class="fas fa-sign-out-alt mr-1"></i> Cerrar Sesión
+                </a>
+              </div>
+            </div>
+
           </div>
         </li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle font-weight-bold text-info" href="#" id="navbarProductos" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            📦 Productos
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarProductos">
-            <a class="dropdown-item" href="{{ url_for('productos.nuevo_producto') }}">Nuevo Producto</a>
-            <a class="dropdown-item" href="{{ url_for('productos.ver_productos') }}">Ver Productos</a>
-          </div>
-        </li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle font-weight-bold text-info" href="#" id="navbarClientes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            👥 Clientes
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarClientes">
-            <a class="dropdown-item" href="{{ url_for('clientes.nuevo_cliente') }}">Nuevo Cliente</a>
-            <a class="dropdown-item" href="{{ url_for('clientes.ver_clientes') }}">Ver Clientes</a>
-          </div>
-        </li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle font-weight-bold text-info" href="#" id="navbarProveedores" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            📦 Proveedores
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarProveedores">
-            <a class="dropdown-item" href="{{ url_for('proveedores.nuevo_proveedor') }}">Nuevo Proveedor</a>
-            <a class="dropdown-item" href="{{ url_for('proveedores.ver_proveedores') }}">Ver Proveedores</a>
-          </div>
-        </li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle font-weight-bold text-success" href="#" id="navbarFacturas" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            💰 Ventas
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarFacturas">
-            <a class="dropdown-item font-weight-bold text-success" href="{{ url_for('facturas.nueva_factura') }}">➕ Registrar Nueva Venta (Factura)</a>
-            <a class="dropdown-item" href="{{ url_for('facturas.ver_facturas') }}">📋 Historial de Ventas y Facturas</a>
-          </div>
-        </li>
-                
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle font-weight-bold text-info" href="#" id="navbarReportes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-             📊 Reportes
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarReportes">
-            {% if session['usuario'].get('rol_id') == 1 %}
-            <a class="dropdown-item" href="{{ url_for('reportes.reporte_ventas') }}">Reporte de Ventas</a>
-            <a class="dropdown-item" href="{{ url_for('reportes.reporte_clientes') }}">Reporte de Clientes</a>
-            {% endif %}
-            <a class="dropdown-item" href="{{ url_for('reportes.reporte_inventario') }}">Reporte de Inventario</a>
-          </div>
-        </li>        
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle font-weight-bold text-primary" href="#" id="navbarPortalClientes" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            🌐 Portal
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarPortalClientes">
-            <a class="dropdown-item font-weight-bold text-primary" href="{{ url_for('portal_admin.dashboard') }}">⚙️ Panel y Configuración del Portal</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="{{ url_for('portal_admin.pedidos') }}">🛍️ Pedidos Recibidos</a>
-            {% if session['usuario'].get('rol_id') in [1, 2] %}
-            <a class="dropdown-item" href="{{ url_for('portal_admin.reservas') }}">📅 Reservas y Agenda de Citas</a>
-            <a class="dropdown-item" href="{{ url_for('portal_admin.servicios') }}">🛠️ Servicios Publicados</a>
-            <a class="dropdown-item" href="{{ url_for('portal_admin.clientes') }}">👥 Clientes del Portal</a>
-            <a class="dropdown-item" href="{{ url_for('portal_admin.solicitudes') }}">💬 Consultas y Reclamos (PQRS)</a>
-            {% endif %}
-            {% if session['usuario'].get('rol_id') in [1, 3] %}
-            <a class="dropdown-item" href="{{ url_for('portal_admin.productos') }}">📦 Catálogo e Inventario Publicado</a>
-            {% endif %}
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="{{ url_for('portal_admin.notificaciones') }}">🔔 Notificaciones del Portal</a>
-          </div>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link font-weight-bold text-info" href="{{ url_for('terminales.ver_terminales') }}">
-            💳 Terminales
-          </a>
-        </li>
-
-        {% if session['usuario'].get('rol_id') == 1 %}
-        <li class="nav-item">
-          <a class="nav-link font-weight-bold text-primary" href="{{ url_for('usuarios.ver_usuarios') }}">👥 Usuarios</a>
-        </li>
-        {% endif %}
 
         {% endif %}
       </ul>
 
+      <!-- ACCIONES PRINCIPALES DEL ENCABEZADO (DENTRO DEL MARGEN DE PANTALLA) -->
       {% if session.get('usuario') %}
       <div class="navbar-actions-toolbar ml-auto">
 
@@ -241,22 +340,24 @@
         {% if session.get('empresa_activa') %}
         <a href="{{ url_for('facturas.nueva_factura') }}"
            class="btn btn-sm btn-success btn-nav-action shadow-sm"
-           title="Registrar una nueva venta">
-          💰 + <span class="d-none d-md-inline">Registrar </span>Venta
+           title="Registrar una nueva venta rápida">
+          <i class="fas fa-plus-circle mr-1"></i>+ Registrar Venta
         </a>
 
         <!-- 2. BOTÓN ELEGIR EMPRESA -->
         <div class="dropdown">
-          <button class="btn btn-sm btn-outline-primary dropdown-toggle btn-nav-action"
+          <button class="btn btn-sm btn-outline-primary dropdown-toggle btn-nav-action font-weight-bold"
                   type="button" id="companyDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                  title="{{ session['empresa_activa']['nombre'] }} (Clic para cambiar empresa)">
+                  title="{{ session['empresa_activa']['nombre'] }} (Clic para elegir otra empresa)">
             <span class="mr-1">{{ session['empresa_activa']['icono'] }}</span>
             <span class="company-label-truncate">{{ session['empresa_activa']['nombre'] }}</span>
           </button>
-          <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="companyDropdown" style="min-width: 260px;">
-            <h6 class="dropdown-header">🏢 Cambiar Espacio de Trabajo</h6>
+          <div class="dropdown-menu dropdown-menu-right shadow border-0" aria-labelledby="companyDropdown" style="min-width: 270px;">
+            <h6 class="dropdown-header font-weight-bold text-uppercase text-primary small">
+              🏢 Cambiar Espacio de Empresa
+            </h6>
             {% for emp in session.get('empresas', []) %}
-              <a class="dropdown-item d-flex justify-content-between align-items-center {% if emp.id == session['empresa_activa']['id'] %}active font-weight-bold{% endif %}"
+              <a class="dropdown-item d-flex justify-content-between align-items-center py-2 {% if emp.id == session['empresa_activa']['id'] %}active font-weight-bold{% endif %}"
                  href="{{ url_for('auth.activar_empresa', empresa_id=emp.id) }}">
                 <span class="text-truncate mr-2">{{ emp.icono }} {{ emp.nombre }}</span>
                 <span class="badge badge-light border small">{{ emp.rol_nombre }}</span>
@@ -282,7 +383,7 @@
         <a href="{{ url_for('usuarios.perfil') }}"
            class="btn btn-sm btn-primary btn-nav-action shadow-sm"
            title="Ver y editar mi información personal">
-          <i class="fas fa-id-card mr-1"></i><span class="d-none d-lg-inline">Info </span>Personal
+          <i class="fas fa-id-card mr-1"></i>Información Personal
         </a>
 
         <!-- 4. MENÚ DE USUARIO ACTIVO Y ROL -->
@@ -302,8 +403,8 @@
                 {% endif %}
             {% endif %}
           </button>
-          <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="userMenuDropdown">
-            <h6 class="dropdown-header">Cuenta de Usuario</h6>
+          <div class="dropdown-menu dropdown-menu-right shadow border-0" aria-labelledby="userMenuDropdown">
+            <h6 class="dropdown-header small font-weight-bold text-uppercase">Cuenta de Usuario</h6>
             <div class="px-3 py-1 font-weight-bold text-dark small border-bottom mb-2">
               {{ session['usuario']['nombre'] }}
             </div>
@@ -329,11 +430,12 @@
     </div>
   </nav>
 
-  <div class="container mt-3">
+  <!-- CONTENEDOR PRINCIPAL CON ESPACIO EN BLANCO Y MENSAJES FLASH -->
+  <div class="container mt-2 mb-4">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
             {{ message }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
               <span aria-hidden="true">&times;</span>
