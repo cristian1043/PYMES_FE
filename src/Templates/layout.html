@@ -336,15 +336,7 @@
       {% if session.get('usuario') %}
       <div class="navbar-actions-toolbar ml-auto">
 
-        <!-- 1. BOTÓN REGISTRAR VENTA -->
-        {% if session.get('empresa_activa') %}
-        <a href="{{ url_for('facturas.nueva_factura') }}"
-           class="btn btn-sm btn-success btn-nav-action shadow-sm"
-           title="Registrar una nueva venta rápida">
-          <i class="fas fa-plus-circle mr-1"></i>+ Registrar Venta
-        </a>
-
-        <!-- 2. BOTÓN ELEGIR EMPRESA -->
+        <!-- 1. BOTÓN ELEGIR EMPRESA -->
         <div class="dropdown">
           <button class="btn btn-sm btn-outline-primary dropdown-toggle btn-nav-action font-weight-bold"
                   type="button" id="companyDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
@@ -379,14 +371,7 @@
         </div>
         {% endif %}
 
-        <!-- 3. BOTÓN INFORMACIÓN PERSONAL -->
-        <a href="{{ url_for('usuarios.perfil') }}"
-           class="btn btn-sm btn-primary btn-nav-action shadow-sm"
-           title="Ver y editar mi información personal">
-          <i class="fas fa-id-card mr-1"></i>Información Personal
-        </a>
-
-        <!-- 4. MENÚ DE USUARIO ACTIVO Y ROL -->
+        <!-- 2. MENÚ DE USUARIO ACTIVO Y ROL -->
         <div class="dropdown">
           <button class="btn btn-sm btn-outline-secondary dropdown-toggle btn-nav-action"
                   type="button" id="userMenuDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
@@ -404,27 +389,10 @@
             {% endif %}
           </button>
           <div class="dropdown-menu dropdown-menu-right shadow border-0" aria-labelledby="userMenuDropdown">
-            <h6 class="dropdown-header small font-weight-bold text-uppercase">Cuenta de Usuario</h6>
-            <div class="px-3 py-1 font-weight-bold text-dark small border-bottom mb-2">
-              {{ session['usuario']['nombre'] }}
-            </div>
-            <a class="dropdown-item font-weight-bold text-primary" href="{{ url_for('usuarios.perfil') }}">
-              <i class="fas fa-id-card mr-2"></i> Información Personal / Mi Perfil
-            </a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item text-danger font-weight-bold" href="{{ url_for('auth.logout') }}">
-              <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
-            </a>
-          </div>
+            <h6 
+              class="dropdown-header small font-weight-bold text-uppercase">Cuenta de Usuario
+            </h6>
         </div>
-
-        <!-- 5. BOTÓN SALIR RÁPIDO -->
-        <a href="{{ url_for('auth.logout') }}"
-           class="btn btn-sm btn-outline-danger btn-nav-action px-2"
-           title="Cerrar Sesión">
-          <i class="fas fa-sign-out-alt"></i>
-        </a>
-
       </div>
       {% endif %}
     </div>
