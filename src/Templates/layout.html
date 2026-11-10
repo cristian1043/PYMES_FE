@@ -370,7 +370,8 @@
           </div>
         </div>
         {% endif %}
-
+        
+        {% if session.get('empresa_activa') %}
         <!-- 2. MENÚ DE USUARIO ACTIVO Y ROL -->
         <div class="dropdown">
           <button class="btn btn-sm btn-outline-secondary dropdown-toggle btn-nav-action"
